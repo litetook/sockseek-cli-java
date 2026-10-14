@@ -1,0 +1,23 @@
+# Gradle
+.gradle/
+build/
+*.class
+
+# the Soulseek login and any local override of sockseek.conf
+sockseek.local.conf
+
+# the pinned external tools, fetched on demand
+sockseek.exe
+sockseek
+yt-dlp.exe
+yt-dlp
+yt-dlp_macos
+
+# downloads, run logs, generated list files
+output/
+logs/
+work/
+
+# your own playlists stay yours
+Playlists/*
+!Playlists/example.txt
