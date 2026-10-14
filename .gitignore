@@ -3,21 +3,23 @@
 build/
 *.class
 
-# the Soulseek login and any local override of sockseek.conf
-sockseek.local.conf
+# The pinned external tools. Anchored with a leading slash on purpose: a bare
+# "sockseek" matches ANY path component, and it silently swallowed the whole
+# dev/litetook/sockseek package once already.
+/sockseek.exe
+/sockseek
+/yt-dlp.exe
+/yt-dlp
+/yt-dlp_macos
 
-# the pinned external tools, fetched on demand
-sockseek.exe
-sockseek
-yt-dlp.exe
-yt-dlp
-yt-dlp_macos
+# the Soulseek login and any local override of sockseek.conf
+/sockseek.local.conf
 
 # downloads, run logs, generated list files
-output/
-logs/
-work/
+/output/
+/logs/
+/work/
 
 # your own playlists stay yours
-Playlists/*
-!Playlists/example.txt
+/Playlists/*
+!/Playlists/example.txt
