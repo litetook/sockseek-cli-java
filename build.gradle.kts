@@ -1,0 +1,59 @@
+plugins {
+    java
+}
+
+// Not the `application` plugin: its start scripts collide with the fat jar below, and
+// run.cmd / run.sh already do that job the same way they do for the Python tool.
+val mainClassName = "dev.litetook.sockseek.App"
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencies {
+    // the flags and --help; the Python tool uses argparse, which has no counterpart here
+    implementation("info.picocli:picocli:4.7.7")
+    // one JSON document: the track list inside Spotify's embed page
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.19.0")
+    // sockseek's _index.csv quotes any field holding a comma, and file names do
+    implementation("org.apache.commons:commons-csv:1.14.1")
+    // the JDK unpacks zip and gzip but not tar, and the macOS/Linux assets are .tar.gz
+    implementation("org.apache.commons:commons-compress:1.27.1")
+
+    testImplementation(platform("org.junit:junit-bom:5.12.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}
+
+// One file to hand out, so run.cmd is a two-liner and nothing has to be installed.
+// Written by hand rather than with a shading plugin: this is ten lines, and a plugin
+// is one more thing to keep in step with Gradle.
+val fatJar by tasks.registering(Jar::class) {
+    archiveFileName = "sockseek-cli.jar"
+    manifest { attributes("Main-Class" to mainClassName) }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(sourceSets.main.get().output)
+    from({
+        configurations.runtimeClasspath.get()
+            .filter { it.name.endsWith(".jar") }
+            .map { zipTree(it) }
+    })
+    // signatures of the libraries we unpack do not apply to the jar we build
+    exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "module-info.class")
+}
+
+tasks.build { dependsOn(fatJar) }
