@@ -176,7 +176,7 @@ public final class Importer {
         List<String> lines = text.lines()
                 .map(String::strip)
                 .filter(line -> !line.isEmpty() && !line.startsWith("#"))
-                .map(line -> String.join(" ", line.split("\\s+")))
+                .map(Imports::collapse)
                 .toList();
         return new Imported(lines, lines.isEmpty()
                 ? List.of("the file has no usable lines") : List.of(), "text");

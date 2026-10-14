@@ -16,9 +16,25 @@ public final class Imports {
     private Imports() {
     }
 
+    /**
+     * Whitespace of every kind collapsed to one plain space.
+     *
+     * <p>UNICODE_CHARACTER_CLASS is the whole point: Java's {@code \s} is ASCII only, and
+     * Spotify really does send a NO-BREAK SPACE after the commas in "KAROL G, Judeline".
+     * Left in, that character goes into the search string, and Soulseek wants every word of
+     * the query to appear in the file path - so the track would never be found. Measured
+     * 2026-10-15 against the live playlist.
+     */
+    public static String collapse(String text) {
+        return WHITESPACE.matcher(text == null ? "" : text).replaceAll(" ").strip();
+    }
+
+    private static final java.util.regex.Pattern WHITESPACE =
+            java.util.regex.Pattern.compile("\\s+", java.util.regex.Pattern.UNICODE_CHARACTER_CLASS);
+
     /** One playlist line: {@code Name | m:ss}, or just the name when the length is unknown. */
     public static String trackLine(String name, OptionalInt length) {
-        String cleaned = String.join(" ", name.strip().split("\\s+"));
+        String cleaned = collapse(name);
         if (length.isEmpty()) {
             return cleaned;
         }
