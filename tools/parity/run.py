@@ -36,6 +36,8 @@ PAIRS = {
     "imp2": ("importing a generated m3u and a Spotify-shaped csv", False),
     "cmd": ("the generated sockseek command lines", False),
     "blk": ("the configuration block the run log opens with", False),
+    "ui": ("the front end: the menu, the missing lists, what the engine is handed",
+           False),
     "lnk": ("a Spotify playlist and a SoundCloud set", True),
     "exp": ("the explain step against live Soulseek", True),
 }

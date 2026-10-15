@@ -96,11 +96,21 @@ public final class Imports {
         return new ImportResult(written, found);
     }
 
+    /**
+     * Where a playlist of that name belongs.
+     *
+     * <p>Public because the front end has to name the file before it is written - to ask
+     * whether to replace it, and to say which one it refused to.
+     */
+    public static Path playlistFile(Path playlistsDir, String name) {
+        return playlistsDir.resolve((name == null || name.isBlank() ? "playlist"
+                : name.strip()) + ".txt");
+    }
+
     /** The playlist file, or empty when one is already there and may not be replaced. */
     public static Optional<Path> writePlaylist(List<String> lines, Path playlistsDir, String name,
                                                boolean overwrite) throws IOException {
-        Path target = playlistsDir.resolve((name == null || name.isBlank() ? "playlist"
-                : name.strip()) + ".txt");
+        Path target = playlistFile(playlistsDir, name);
         if (Files.exists(target) && !overwrite) {
             return Optional.empty();
         }
