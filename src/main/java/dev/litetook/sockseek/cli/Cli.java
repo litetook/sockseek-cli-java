@@ -280,6 +280,17 @@ public final class Cli implements Callable<Integer> {
         return String.valueOf(value);
     }
 
+    /**
+     * The engine on its own, which is what {@code py -m soulseek} is in the Python tool.
+     *
+     * <p>The everyday entry point is {@link dev.litetook.sockseek.App}; this one exists so the
+     * engine's own options can be read and a run can be started without the menu:
+     * {@code java -cp sockseek-cli.jar dev.litetook.sockseek.cli.Cli --help}.
+     */
+    public static void main(String[] args) {
+        System.exit(main(List.of(args), Path.of(".").toAbsolutePath().normalize(), System.err));
+    }
+
     /** Parse, resolve and run. Returns the exit code; bad values exit with 2, as argparse does. */
     public static int main(List<String> argv, Path appDir, PrintStream err) {
         Cli cli = new Cli().appDir(appDir);

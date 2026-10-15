@@ -7,7 +7,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -119,6 +118,22 @@ class CliTest {
         Cli cli = parsed(app, "--sockseek-args=--mock-files-dir \"C:\\a b\\mock\" --no-config");
         assertEquals(List.of("--mock-files-dir", "C:\\a b\\mock", "--no-config"),
                 cli.splitSockseekArgs());
+    }
+
+    @Test
+    void theEngineCanBeStartedOnItsOwn() throws NoSuchMethodException {
+        // the manual documents `java -cp sockseek-cli.jar dev.litetook.sockseek.cli.Cli --help`
+        // as the counterpart of `py -m soulseek --help`, and that needs this exact signature
+        var entry = Cli.class.getMethod("main", String[].class);
+        assertTrue(java.lang.reflect.Modifier.isStatic(entry.getModifiers()));
+        assertTrue(java.lang.reflect.Modifier.isPublic(entry.getModifiers()));
+        assertEquals(void.class, entry.getReturnType());
+    }
+
+    @Test
+    void theHelpIsNotAnError(@TempDir Path app) {
+        assertEquals(0, Cli.main(List.of("--help"), app,
+                new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8)));
     }
 
     @Test
