@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.litetook.sockseek.process.ProcessRunner;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -188,7 +189,7 @@ class LinkReaderTest {
             if (calls != null) {
                 calls.add(command);
             }
-            return new ProcessRunner.Output(code, ytdlpOutput(rows));
+            return new ProcessRunner.Output(code, ytdlpOutput(rows), "");
         };
         return new LinkReader(null, runner).read(SC_URL,
                 tool == null ? null : java.nio.file.Path.of(tool), cookiesFrom);

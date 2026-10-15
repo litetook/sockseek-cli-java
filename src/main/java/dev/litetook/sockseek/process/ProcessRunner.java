@@ -1,4 +1,4 @@
-package dev.litetook.sockseek.links;
+package dev.litetook.sockseek.process;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -14,8 +14,16 @@ import java.util.concurrent.TimeUnit;
 @FunctionalInterface
 public interface ProcessRunner {
 
-    /** What a finished program left behind. */
-    record Output(int code, String text) {
+    /** What a finished program left behind. Some callers want only stdout, some want both. */
+    record Output(int code, String out, String err) {
+
+        public String text() {
+            return out;
+        }
+
+        public String both() {
+            return out + err;
+        }
     }
 
     Output run(List<String> command);
@@ -37,19 +45,20 @@ public interface ProcessRunner {
             builder.redirectErrorStream(false);
             try {
                 Process process = builder.start();
-                String text = new String(process.getInputStream().readAllBytes(),
+                String out = new String(process.getInputStream().readAllBytes(),
+                        StandardCharsets.UTF_8);
+                String err = new String(process.getErrorStream().readAllBytes(),
                         StandardCharsets.UTF_8);
                 if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-                    process.descendants().forEach(ProcessHandle::destroyForcibly);
-                    process.destroyForcibly();
-                    return new Output(-1, text);
+                    Runner.killTree(process);
+                    return new Output(-1, out, err);
                 }
-                return new Output(process.exitValue(), text);
+                return new Output(process.exitValue(), out, err);
             } catch (IOException cannotStart) {
                 throw new UncheckedIOException(cannotStart);
             } catch (InterruptedException interrupted) {
                 Thread.currentThread().interrupt();
-                return new Output(-1, "");
+                return new Output(-1, "", "");
             }
         };
     }
