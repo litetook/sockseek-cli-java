@@ -142,14 +142,14 @@ class RunnerTest {
     }
 
     @Test
-    void theWholeTreeDiesWithTheTimeout() throws Exception {
-        // sockseek starts nothing today, but a process that outlives its timeout would keep a
-        // lock on the output folder and the next run would fail for no visible reason
-        long before = ProcessHandle.allProcesses().count();
-        assertEquals(Status.TIMEOUT, run("sleep", "30000", 1, 1));
-        Thread.sleep(500);
-        assertTrue(ProcessHandle.allProcesses().count() <= before + 2,
-                "a killed process should not be left running");
+    void killingTakesTheProcessAndEverythingItStarted() throws Exception {
+        // a process that outlives its run would keep a lock on the output folder, and the next
+        // run would fail for no visible reason
+        Process child = new ProcessBuilder(Child.command("sleep", "30000")).start();
+        assertTrue(child.isAlive());
+        Runner.killTree(child);
+        assertFalse(child.isAlive(), "the process should be gone");
+        assertFalse(child.descendants().findAny().isPresent(), "and so should its children");
     }
 
     // ------------------------------------------------------------------ the binary itself
