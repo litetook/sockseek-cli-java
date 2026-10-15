@@ -5,8 +5,10 @@ a batch downloader that drives [sockseek](https://github.com/fiso64/sockseek) to
 playlist from Soulseek.
 
 **The working tool is the Python one.** This repository is the port to Java 21, built phase by
-phase, and the Python version stays the reference until this one matches it exactly. Nothing
-here downloads anything yet.
+phase, and the Python version stays the reference until this one matches it exactly. Phases 0-4
+are done, so it runs a whole playlist from the menu to the report; what nobody has yet done is
+a real download from Soulseek driven by this version - sockseek has only been started from it
+in its mock mode.
 
 Written with AI, which is worth knowing before running it.
 
@@ -15,11 +17,20 @@ Written with AI, which is worth knowing before running it.
 | Phase | What | State |
 |---|---|---|
 | 0 | JDK 21, Gradle wrapper | done |
-| 1 | build, launchers, the opening menu | **done** — output matches the Python tool line for line |
-| 2 | the pure logic: playlist, index, settings, importing, links | next |
-| 3 | the process layer: running sockseek, the pinned tools, failure explanations | |
-| 4 | the run itself, the report, exit codes | |
-| 5 | parity against the Python tool on real playlists | the gate that decides the port is done |
+| 1 | build, launchers, the opening menu | done |
+| 2 | the pure logic: playlist, index, settings, importing, links | done |
+| 3 | the process layer: running sockseek, the pinned tools, failure explanations | done |
+| 4 | the run, the flags, the front end, exit codes | **done** — 212 tests |
+| 5 | parity against the Python tool on real playlists | ten pairs identical; a real end-to-end run is what is left |
+| 6 | the README, the launchers, what becomes of the Python version | |
+
+The gate that decides the port is done is phase 5, and it is not a test suite: both tools are
+run over the owner's own playlists and every line they print is diffed.
+
+```bash
+py tools/parity/run.py --offline     # eight pairs, no network
+py tools/parity/run.py               # all ten, Spotify and live Soulseek included
+```
 
 ## Build and run
 
