@@ -21,16 +21,23 @@ Written with AI, which is worth knowing before running it.
 | 2 | the pure logic: playlist, index, settings, importing, links | done |
 | 3 | the process layer: running sockseek, the pinned tools, failure explanations | done |
 | 4 | the run, the flags, the front end, exit codes | **done** — 212 tests |
-| 5 | parity against the Python tool on real playlists | ten pairs identical; a real end-to-end run is what is left |
+| 5 | parity against the Python tool on real playlists | **done** — ten module pairs and the whole tool, in three states |
 | 6 | the README, the launchers, what becomes of the Python version | |
 
 The gate that decides the port is done is phase 5, and it is not a test suite: both tools are
 run over the owner's own playlists and every line they print is diffed.
 
 ```bash
-py tools/parity/run.py --offline     # eight pairs, no network
+py tools/parity/run.py --offline     # eight module pairs, no network
 py tools/parity/run.py               # all ten, Spotify and live Soulseek included
+py tools/parity/e2e.py               # both whole tools, three states of the export folder
 ```
+
+`e2e.py` builds a sandbox that looks like the tool's own folder - the Python code, the config,
+the real playlists, and only the `_index.csv` of each export folder - runs both tools in it
+with `--dry-run`, and diffs every line. It never writes to the real folder and never moves the
+run counter. What it does not reach is the report a failed download writes: that needs sockseek
+to actually run.
 
 ## Build and run
 
