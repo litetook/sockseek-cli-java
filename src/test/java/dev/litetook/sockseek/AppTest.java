@@ -215,6 +215,48 @@ class AppTest {
         assertEquals(List.of(), engine.calls);
     }
 
+    // ------------------------------------------------------------------ the step back
+
+    @Test
+    void bAtTheTableGoesBackToTheSourceMenu() throws IOException {
+        ready();
+        playlist("mix", "Artist - One");
+        Run run = run(List.of(), "1", "b", "");
+        assertEquals(0, run.code());
+        // the menu is printed twice: once at the start, once after the step back
+        assertEquals(2, run.printed().stream().filter(line -> line.equals("Where from?")).count(),
+                run.printed().toString());
+    }
+
+    @Test
+    void bAtTheLinkGoesBackToTheSourceMenu() throws IOException {
+        ready();
+        Run run = run(List.of(), "2", "b", "");
+        assertEquals(0, run.code());
+        assertEquals(2, run.printed().stream().filter(line -> line.equals("Where from?")).count(),
+                run.printed().toString());
+        assertTrue(run.said("Paste the Spotify link ([b] back, Enter cancels): "),
+                run.printed().toString());
+    }
+
+    @Test
+    void backIsOfferedInThePromptItself() throws IOException {
+        ready();
+        playlist("mix", "Artist - One");
+        assertTrue(run(List.of(), "1", "").said("[b] back"));
+    }
+
+    @Test
+    void enterStillQuitsRatherThanSteppingBack() throws IOException {
+        ready();
+        playlist("mix", "Artist - One");
+        Run run = run(List.of(), "1", "");
+        assertEquals(0, run.code());
+        assertEquals(1, run.printed().stream().filter(line -> line.equals("Where from?")).count(),
+                run.printed().toString());
+        assertEquals(List.of(), engine.calls);
+    }
+
     // ------------------------------------------------------------------ the download
 
     @Test

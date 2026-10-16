@@ -181,6 +181,20 @@ public final class App {
     record Written(int code, Path file) {
     }
 
+    /**
+     * An answer to a question that offers a way back.
+     *
+     * <p>Three outcomes, not two: an answer, "b" to step back to the question before, or the
+     * end of it (Enter, a closed pipe) which quits. A plain Optional cannot say which of the
+     * last two happened, and the difference is the whole point of the back step.
+     */
+    record Link(String url, boolean back) {
+    }
+
+    /** The same three outcomes for the playlist table. An empty list with back=false quits. */
+    record Choice(List<Info> playlists, boolean back) {
+    }
+
     private App() {
     }
 
@@ -251,53 +265,65 @@ public final class App {
         }
 
         // the opening question comes before the scan: with an empty Playlists folder, pasting a
-        // link is exactly what a new user needs, and "no playlist files" would be a dead end
-        Source source = Source.TXT;
-        if (ask != null && front.only() == null && !front.yes()) {
-            Optional<Source> picked = sourceMenu(ask, out);
-            if (picked.isEmpty()) {
-                return 0;
-            }
-            source = picked.get();
-        }
-
+        // link is exactly what a new user needs, and "no playlist files" would be a dead end.
+        // The loop is what makes "b" work: every question below can send the person back here
+        // instead of forcing them to quit and start the tool again.
         List<Info> chosen;
-        if (source != Source.TXT) {
-            Optional<String> url = askForLink(source, ask, out);
-            if (url.isEmpty()) {
-                return 0;
+        while (true) {
+            Source source = Source.TXT;
+            if (ask != null && front.only() == null && !front.yes()) {
+                Optional<Source> picked = sourceMenu(ask, out);
+                if (picked.isEmpty()) {
+                    return 0;
+                }
+                source = picked.get();
             }
-            Written written = linkToPlaylist(url.get(), playlistsDir, front.importName(),
-                    front.overwrite(), out, config, front.cookiesFrom(), ask, wiring, true);
-            if (written.file() == null) {
-                return written.code();
+
+            if (source != Source.TXT) {
+                Link link = askForLink(source, ask, out);
+                if (link.back()) {
+                    continue;
+                }
+                if (link.url() == null) {
+                    return 0;
+                }
+                Written written = linkToPlaylist(link.url(), playlistsDir, front.importName(),
+                        front.overwrite(), out, config, front.cookiesFrom(), ask, wiring, true);
+                if (written.file() == null) {
+                    return written.code();
+                }
+                chosen = named(scan(playlistsDir, outputDir), stem(written.file()));
+                if (chosen.isEmpty()) {
+                    out.accept("Wrote " + written.file().getFileName()
+                            + ", but reading it back found nothing. Look at the file.");
+                    return 1;
+                }
+            } else if (front.only() != null) {
+                chosen = named(scan(playlistsDir, outputDir), front.only());
+                if (chosen.isEmpty()) {
+                    out.accept("No playlist named '" + front.only() + "' in " + playlistsDir);
+                    return 2;
+                }
+            } else {
+                List<Info> infos = scan(playlistsDir, outputDir);
+                if (infos.isEmpty()) {
+                    out.accept("No playlist .txt files in " + playlistsDir);
+                    return 2;
+                }
+                out.accept("Playlists:");
+                out.accept("");
+                formatTable(infos).forEach(out);
+                out.accept("");
+                Choice choice = pick(infos, ask, out);
+                if (choice.back()) {
+                    continue;
+                }
+                if (choice.playlists().isEmpty()) {
+                    return 0;   // Enter, or the end of input: quitting is not an error
+                }
+                chosen = choice.playlists();
             }
-            chosen = named(scan(playlistsDir, outputDir), stem(written.file()));
-            if (chosen.isEmpty()) {
-                out.accept("Wrote " + written.file().getFileName()
-                        + ", but reading it back found nothing. Look at the file.");
-                return 1;
-            }
-        } else if (front.only() != null) {
-            chosen = named(scan(playlistsDir, outputDir), front.only());
-            if (chosen.isEmpty()) {
-                out.accept("No playlist named '" + front.only() + "' in " + playlistsDir);
-                return 2;
-            }
-        } else {
-            List<Info> infos = scan(playlistsDir, outputDir);
-            if (infos.isEmpty()) {
-                out.accept("No playlist .txt files in " + playlistsDir);
-                return 2;
-            }
-            out.accept("Playlists:");
-            out.accept("");
-            formatTable(infos).forEach(out);
-            out.accept("");
-            chosen = pick(infos, ask, out);
-            if (chosen.isEmpty()) {
-                return 0;   // Enter, or the end of input: quitting is not an error
-            }
+            break;
         }
 
         int worst = 0;
@@ -469,26 +495,34 @@ public final class App {
         }
     }
 
-    /** The link for option 2 or 3. Empty means the person changed their mind. */
-    static Optional<String> askForLink(Source service, Ask ask, Consumer<String> out) {
+    /** The link for option 2 or 3. "b" goes back to the source menu, Enter cancels. */
+    static Link askForLink(Source service, Ask ask, Consumer<String> out) {
         out.accept("");
         if (ask == null) {
-            return Optional.empty();
+            return new Link(null, false);
         }
-        return ask.ask("Paste the " + service.label() + " link (Enter cancels): ")
-                .map(App::strip).filter(url -> !url.isEmpty());
+        String answer = ask.ask("Paste the " + service.label()
+                + " link ([b] back, Enter cancels): ").map(App::strip).orElse("");
+        if (isBack(answer)) {
+            return new Link(null, true);
+        }
+        return new Link(answer.isEmpty() ? null : answer, false);
     }
 
-    /** The playlists the person asked for, or an empty list when they quit. */
-    private static List<Info> pick(List<Info> infos, Ask ask, Consumer<String> out) {
+    /** The playlists the person asked for; "b" goes back, Enter quits. */
+    private static Choice pick(List<Info> infos, Ask ask, Consumer<String> out) {
         if (ask == null) {
-            return List.of();   // nobody to ask and no --only: there is nothing to choose with
+            // nobody to ask and no --only: there is nothing to choose with
+            return new Choice(List.of(), false);
         }
         while (true) {
             Optional<String> answer =
-                    ask.ask("What to download? (1, or 1,2, or all; Enter quits): ");
+                    ask.ask("What to download? (1, or 1,2, or all; [b] back, Enter quits): ");
             if (answer.isEmpty()) {
-                return List.of();
+                return new Choice(List.of(), false);
+            }
+            if (isBack(strip(answer.get()))) {
+                return new Choice(List.of(), true);
             }
             Optional<List<Integer>> picked = parseChoice(answer.get(), infos.size());
             if (picked.isEmpty()) {
@@ -496,8 +530,14 @@ public final class App {
                         + ", several separated by commas, or all.");
                 continue;
             }
-            return picked.get().stream().map(infos::get).toList();
+            return new Choice(picked.get().stream().map(infos::get).toList(), false);
         }
+    }
+
+    /** "b" or "back", in any case: the step back to the question before this one. */
+    private static boolean isBack(String answer) {
+        String said = answer.toLowerCase(Locale.ROOT);
+        return said.equals("b") || said.equals("back");
     }
 
     /** [y] download / [n] skip. Anything else asks again; the end of input means no. */

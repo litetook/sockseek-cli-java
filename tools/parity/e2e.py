@@ -49,8 +49,9 @@ ANSWERS = "all\n"
 FLAGS = ["--yes", "--dry-run"]
 # written by a run, so they are wiped between the two of them
 WRITTEN = ("logs", "work")
-# the one difference we know about and accept, same as run.py: the port has no ffprobe
-IGNORE = ("ffprobe_path",)
+# the differences we know about and accept, same list as run.py: the port has no ffprobe,
+# and two prompts offer "[b] back", which the Python tool has no counterpart for
+IGNORE = ("ffprobe_path", "What to download?", "Paste the ")
 # sockseek's own meaning: 1 = downloaded, 3 = was already there and skipped
 OK_STATES = {"1", "3"}
 # the two runs are a second apart, and the clock is not part of the parity - the SHAPE of the

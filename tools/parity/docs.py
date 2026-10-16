@@ -59,6 +59,7 @@ FOREIGN = {
     "--min-bitrate", "--mock-files-dir", "--name-format", "--no-config", "--no-skip-existing",
     "--output-dir", "--pref-min-bitrate", "--print", "--remove-brackets", "--remove-ft",
     "--searches-per-time", "--searches-renew-time", "--search-timeout", "--strict-conditions",
+    "--pref-max-bitrate", "--pref-format", "--format", "--max-bitrate",
     "--strict-title",
     # yt-dlp, for the SoundCloud import (section 1a)
     "--flat-playlist", "--ignore-errors", "--no-warnings", "--skip-download",

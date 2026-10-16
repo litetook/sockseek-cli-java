@@ -203,7 +203,7 @@ Playlists:
   -  ----------------------------  ------  ----  -------
   1  cry-for-you-linds-edit-top30      30    15       15
 
-What to download? (1, or 1,2, or all; Enter quits): 1
+What to download? (1, or 1,2, or all; [b] back, Enter quits): 1
 
 cry-for-you-linds-edit-top30: 30 tracks, 15 here, 15 missing
 
@@ -219,6 +219,12 @@ Download these 15? [y] yes  [n] no:
 (state 1 or 3) AND the file is really on disk. An index row whose file was deleted reads as
 missing again. File names alone cannot be used for this: they come from the uploader
 (`... (Clean) 1A 142 [www.dj-promo.org].mp3`) and no longer carry the playlist line.
+
+**[port]** Every question offers a way back: `b` (or `back`) at the playlist table returns to
+the source menu, and so does `b` at the link prompt. Enter still quits, and `n` at the
+confirmation still means "skip this playlist", not "go back". The Python tool has no step
+back - the owner asked for one 2026-10-16 - so the wording of those two prompts is the one
+place the two tools deliberately read differently.
 
 `run.cmd` is a thin shim around the jar; it pauses at the end only when double-clicked
 (`if "%~1"=="" pause`), so a scheduled run with arguments does not hang waiting for a key.
@@ -434,8 +440,8 @@ max-stale-time = 30000
 
 min-bitrate = 256
 pref-min-bitrate = 320
-pref-max-bitrate = 1000000
-pref-format = flac,wav,mp3
+pref-max-bitrate = 1411
+pref-format = flac,mp3
 
 fast-search = true
 fast-search-delay = 2000
@@ -445,10 +451,29 @@ pref-strict-artist = true
 ```
 
 **Quality.** `min-bitrate = 256` is the only hard floor (owner's call 2026-10-07: "256 is the
-baseline minimum"). A hard maximum is deliberately **not set at all - unlimited** (owner,
-2026-10-11); to cap it, add `max-bitrate = N`. `pref-*` keys only rank, they never reject:
-`pref-max-bitrate = 1000000` exists purely to lift sockseek's own default ranking cap of **2500
-kbps**, which quietly ranked 24-bit lossless BELOW an mp3 320. Do not enable
+baseline minimum"). A hard **maximum** is deliberately **not set at all** (owner, 2026-10-11
+and again 2026-10-16: an expensive file may still be downloaded, it should merely come last);
+to reject outright anyway, add `max-bitrate = N`.
+
+**The ceiling on disk space is a preference, not a limit** (owner, 2026-10-16). `pref-*` keys
+only rank, they never reject, so these two cost nothing in coverage:
+
+- `pref-max-bitrate = 1411` - 1411 kbps is exactly CD lossless, so anything above it can only
+  be 24-bit or above 48 kHz. Those rank last and arrive only when there is nothing cheaper,
+  not even an mp3 320. Measured on the owner's 57 downloaded files: the heaviest was a flac at
+  **2722 kbps, 102 MB for 5:15**, and the six files above 1411 kbps held **26% of all the
+  bytes**. To loosen it for one run: `--sockseek-args="--pref-max-bitrate 3000"`; to change it
+  for good, edit this one line.
+- `pref-format = flac,mp3` - wav is left out on purpose. A CD wav costs **10 MB a minute**
+  where a flac of the very same CD quality costs about **7**, so wav ranks below both and is
+  taken only as a last resort. The list is unordered, by sockseek's own help ("pref-format =
+  flac,mp3 does not prioritize flac over mp3"), so this says "flac or mp3 are both fine, wav
+  is not what we are after", nothing more.
+
+The previous value here was `pref-max-bitrate = 1000000`, which existed purely to lift
+sockseek's own default ranking cap of **2500 kbps** - that cap quietly ranked 24-bit lossless
+BELOW an mp3 320. With a deliberate ceiling of 1411 that lift is no longer wanted. Do not
+enable
 `strict-conditions`: together with `min-bitrate` it discards every share from the standard
 Soulseek client, which does not broadcast a bitrate at all - which is also why a file can slip
 through below the floor.
@@ -723,6 +748,8 @@ does not have or something the owner decided not to carry over:
 | where a relative path starts | the folder holding `run.py` | the working directory (section 5) |
 | the pre-release `.ini` migration | present | not ported (section 5) |
 | a malformed quote in a csv | read silently | read, with a WARN naming what is wrong (section 1a) |
+| a step back in the questions | none | `b` at the table and at the link prompt (section 3) |
+| the disk-space ceiling | `pref-max-bitrate = 1000000`, wav preferred | `1411`, wav not preferred (section 7) |
 
 Everything else is compared, and a difference in the text is a bug, not a detail: this text is
 the interface of the tool.

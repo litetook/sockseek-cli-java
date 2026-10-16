@@ -42,9 +42,13 @@ PAIRS = {
     "exp": ("the explain step against live Soulseek", True),
 }
 # the one difference we know about and accept: the Java port has no ffprobe yet
-# the Java side warns about a malformed CSV quote where Python silently tolerates it
-# (imp2, the broken-quotes.csv case): the lines still have to match, the warning may differ
-IGNORE = ("ffprobe_path", "is not doubled")
+# Lines whose difference is a decision, not a bug:
+#   ffprobe_path     the quality module was dropped (owner, 2026-10-16)
+#   is not doubled   the Java side warns about a malformed CSV quote, Python tolerates it
+#   What to download / Paste the   these two prompts now offer "[b] back", which the Python
+#                    tool has no counterpart for (owner asked for it 2026-10-16). Only the
+#                    WORDING of the prompt is skipped; every answer it accepts is still compared
+IGNORE = ("ffprobe_path", "is not doubled", "What to download?", "Paste the ")
 
 
 def java_classpath() -> str:

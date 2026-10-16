@@ -49,11 +49,20 @@ public final class Settings {
 
     /**
      * sockseek.conf is recreated when it is missing, like config.yaml: it carries measured
-     * decisions - the 256 kbps floor, the 30 s wait, the lifted ranking cap - and losing them
+     * decisions - the 256 kbps floor, the 30 s wait, the ranking ceiling - and losing them
      * silently would quietly change every run.
      *
      * <p>The two login keys stay as comments because sockseek refuses a key with an empty value
      * (measured 2026-10-11: "Error parsing config ... at line 0").
+     *
+     * <p>{@code pref-max-bitrate = 1411} and {@code pref-format = flac,mp3} are the owner's
+     * decision of 2026-10-16 about disk space, and both are PREFERENCES, so nothing is ever
+     * refused for being too big: 1411 kbps is exactly CD lossless, so anything above it can
+     * only be 24-bit or above 48 kHz, and a wav costs 10 MB a minute where a flac of the same
+     * CD quality costs 7. Both still download when nothing cheaper exists. Measured on the
+     * owner's own 57 files: the heaviest was a 2722 kbps flac, 102 MB for 5:15, and the six
+     * files above 1411 kbps held 26% of all the bytes. The Python tool keeps the old
+     * {@code 1000000} and {@code flac,wav,mp3}, which is a divergence on purpose.
      */
     public static final String SOCKSEEK_CONF_TEMPLATE = """
             # username =
@@ -63,8 +72,8 @@ public final class Settings {
 
             min-bitrate = 256
             pref-min-bitrate = 320
-            pref-max-bitrate = 1000000
-            pref-format = flac,wav,mp3
+            pref-max-bitrate = 1411
+            pref-format = flac,mp3
 
             fast-search = true
             fast-search-delay = 2000
