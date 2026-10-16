@@ -97,20 +97,34 @@ public final class Importer {
     public Imported fromTable(String text) {
         String first = text.lines().findFirst().orElse("");
         char delimiter = first.indexOf('\t') >= 0 ? '\t' : ',';
-        CSVFormat format = CSVFormat.DEFAULT.builder()
+        CSVFormat.Builder shape = CSVFormat.DEFAULT.builder()
                 .setDelimiter(delimiter)
                 .setHeader()
                 .setSkipHeaderRecord(true)
-                .setDuplicateHeaderMode(DuplicateHeaderMode.ALLOW_ALL)
-                .get();
+                .setDuplicateHeaderMode(DuplicateHeaderMode.ALLOW_ALL);
         List<CSVRecord> rows;
         List<String> headers;
-        try (CSVParser parser = CSVParser.parse(new StringReader(text), format)) {
+        List<String> warnings = new ArrayList<>();
+        try (CSVParser parser = CSVParser.parse(new StringReader(text), shape.get())) {
             rows = parser.getRecords();
             headers = parser.getHeaderNames();
-        } catch (IOException | IllegalArgumentException notATable) {
-            return new Imported(List.of(), List.of("this does not read as a table: "
-                    + notATable.getMessage()), "table");
+        } catch (IOException | RuntimeException notATable) {
+            // A real export does this: Exportify writes a label as "ТОВ "Супериор Мьюзик""
+            // - quotes inside a quoted field, not doubled, which is malformed CSV. Python's
+            // csv module reads it anyway, so a file that works with the Python tool has to
+            // work here too; found 2026-10-16 on the owner's own Liked Songs export.
+            // RuntimeException and not IllegalArgumentException alone: commons-csv throws
+            // CSVException (an IllegalStateException) wrapped in an UncheckedIOException.
+            try (CSVParser second = CSVParser.parse(new StringReader(text),
+                    shape.setTrailingData(true).get())) {
+                rows = second.getRecords();
+                headers = second.getHeaderNames();
+                warnings.add("a quote inside a quoted field is not doubled, which is not valid "
+                        + "CSV - read it anyway, ignoring what follows the closing quote");
+            } catch (IOException | RuntimeException reallyNotATable) {
+                return new Imported(List.of(), List.of("this does not read as a table: "
+                        + reallyNotATable.getMessage()), "table");
+            }
         }
         if (rows.isEmpty()) {
             return new Imported(List.of(), List.of("the table has a header but no rows"),
@@ -130,7 +144,6 @@ public final class Importer {
         Optional<String> artist = column(byName, ARTIST_COLUMNS);
         Optional<String> lengthColumn = column(byName, LENGTH_COLUMNS);
         List<String> lines = new ArrayList<>();
-        List<String> warnings = new ArrayList<>();
         if (lengthColumn.isEmpty()) {
             warnings.add("no duration column, the lines will have no length - the length is "
                     + "what keeps another version of the song out");

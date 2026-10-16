@@ -234,4 +234,29 @@ class ImporterTest {
         assertEquals("s:\"title=Alpha Band - First Song, length=249\"",
                 playlist.entries().get(0).listLine());
     }
+
+    @Test
+    void aQuoteInsideAQuotedFieldDoesNotStopTheImport(@TempDir Path dir) throws IOException {
+        // exactly what Exportify wrote in the owner's own export (2026-10-16): the label
+        // field carries quotes that are not doubled, which is malformed CSV. The Python
+        // tool reads such a file, so this one has to as well - it used to die with an
+        // UncheckedIOException from commons-csv instead.
+        Imported found = read(dir, "liked.csv",
+                "Track Name,Artist Name(s),Duration (ms),Record Label\n"
+                + "Fortepiano,Khrystyna Soloviy,246760,\"ТОВ \"Супериор Мьюзик\"\"\n"
+                + "Second,Someone,120000,Label\n");
+        assertEquals(List.of("Khrystyna Soloviy - Fortepiano | 4:07",
+                "Someone - Second | 2:00"), found.lines());
+        assertTrue(said(found, "is not doubled"), found.warnings().toString());
+    }
+
+    @Test
+    void aWellFormedTableIsStillReadStrictly(@TempDir Path dir) throws IOException {
+        // the lenient second attempt must not become the normal path: a good file gets no
+        // warning about quotes
+        Imported found = read(dir, "ok.csv",
+                "Track Name,Artist Name(s),Duration (ms)\nOne,Someone,60000\n");
+        assertEquals(List.of("Someone - One | 1:00"), found.lines());
+        assertEquals(List.of(), found.warnings());
+    }
 }

@@ -42,7 +42,9 @@ PAIRS = {
     "exp": ("the explain step against live Soulseek", True),
 }
 # the one difference we know about and accept: the Java port has no ffprobe yet
-IGNORE = ("ffprobe_path",)
+# the Java side warns about a malformed CSV quote where Python silently tolerates it
+# (imp2, the broken-quotes.csv case): the lines still have to match, the warning may differ
+IGNORE = ("ffprobe_path", "is not doubled")
 
 
 def java_classpath() -> str:
