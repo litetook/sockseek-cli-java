@@ -90,12 +90,6 @@ public final class Tools {
                 .findFirst();
     }
 
-    /** {@code <tool>.optional: true} - pinned, but nothing needs it until something does. */
-    public static boolean optional(String name, Map<String, String> config) {
-        String value = config.getOrDefault(name + ".optional", "").strip().toLowerCase(Locale.ROOT);
-        return value.equals("true") || value.equals("yes") || value.equals("1");
-    }
-
     public static String digest(byte[] data) {
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(data));
@@ -236,12 +230,4 @@ public final class Tools {
         return install(tool, log, downloader) ? Optional.of(tool.target()) : Optional.empty();
     }
 
-    /** Every pinned tool with "ok", "missing" or "optional". */
-    public static List<String> status(Map<String, String> config, Path appDir) {
-        return tools(config, appDir, null).stream()
-                .map(tool -> tool.name() + " " + tool.version() + ": "
-                        + (tool.isPresent() ? "ok"
-                        : optional(tool.name(), config) ? "optional" : "missing"))
-                .toList();
-    }
 }

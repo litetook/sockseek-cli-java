@@ -17,6 +17,10 @@ Options that belong to sockseek, yt-dlp or Gradle are named in the manuals on pu
 listed in FOREIGN below; the two implementations' own options are compared against each other
 as well, with the differences we mean to have in EXPECTED.
 
+The Python tool is asked for its help inside a SANDBOX COPY, never in the folder the owner
+works in: a run there is his to approve, even one that only prints a help text (his rule of
+2026-10-16). The manuals are read from his folder, because reading is not running.
+
 Needs: the Python tool checked out (SOCKSEEK_PY), the fat jar (`gradlew fatJar`), and a JDK.
 """
 from __future__ import annotations
@@ -24,9 +28,13 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
+
+import e2e   # its sandbox(), so nothing here runs inside the owner's own folder
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
@@ -137,10 +145,13 @@ def main() -> int:
             ask([java(), "-cp", str(JAR), "dev.litetook.sockseek.cli.Cli", "--help"], REPO)])
         worst |= report("java", documented([REPO / "README.md", REPO / "docs" / "README.md"]),
                         taken["java"])
+    sandbox = None
     if "python" in which:
+        sandbox = Path(tempfile.mkdtemp(prefix="sockseek-docs-"))
+        copy = e2e.sandbox(sandbox / "tool", index=False, files=False)
         taken["python"] = accepted([
-            ask([sys.executable, "-X", "utf8", "run.py", "--help"], PYTHON_TOOL),
-            ask([sys.executable, "-X", "utf8", "-m", "soulseek", "--help"], PYTHON_TOOL)])
+            ask([sys.executable, "-X", "utf8", "run.py", "--help"], copy),
+            ask([sys.executable, "-X", "utf8", "-m", "soulseek", "--help"], copy)])
         worst |= report("python",
                         documented([PYTHON_TOOL / "README.md",
                                     PYTHON_TOOL / "docs" / "README.md"]), taken["python"])
@@ -157,6 +168,8 @@ def main() -> int:
         else:
             print(f"ok both: the same options, apart from the {len(EXPECTED)} we mean to differ "
                   f"({', '.join(sorted(EXPECTED))})")
+    if sandbox is not None:
+        shutil.rmtree(sandbox, ignore_errors=True)
     return worst
 
 
