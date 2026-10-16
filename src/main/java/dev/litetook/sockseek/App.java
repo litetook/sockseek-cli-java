@@ -382,19 +382,19 @@ public final class App {
         }
         List<Info> found = new ArrayList<>();
         for (Path file : files) {
-            Playlist playlist;
             try {
-                playlist = Playlist.fromFile(file);
-            } catch (IOException | UncheckedIOException cannotRead) {
+                Playlist playlist = Playlist.fromFile(file);
+                // the index is read inside the same try on purpose: nothing about one
+                // playlist's files may stop the table that lists all of them
+                Status status = SockseekIndex.playlistStatus(playlist.entries(),
+                        outputDir.resolve(stem(file)));
+                found.add(new Info(stem(file), file, playlist.entries().size(), status,
+                        playlist.warnings()));
+            } catch (IOException | RuntimeException cannotRead) {
                 found.add(new Info(stem(file), file, 0,
                         new Status(List.of(), List.of(), Map.of()),
                         List.of("cannot read: " + cannotRead.getMessage())));
-                continue;
             }
-            Status status = SockseekIndex.playlistStatus(playlist.entries(),
-                    outputDir.resolve(stem(file)));
-            found.add(new Info(stem(file), file, playlist.entries().size(), status,
-                    playlist.warnings()));
         }
         return List.copyOf(found);
     }

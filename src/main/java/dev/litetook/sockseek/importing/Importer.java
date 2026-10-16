@@ -105,6 +105,7 @@ public final class Importer {
         List<CSVRecord> rows;
         List<String> headers;
         List<String> warnings = new ArrayList<>();
+        boolean lenient = false;
         try (CSVParser parser = CSVParser.parse(new StringReader(text), shape.get())) {
             rows = parser.getRecords();
             headers = parser.getHeaderNames();
@@ -119,6 +120,7 @@ public final class Importer {
                     shape.setTrailingData(true).get())) {
                 rows = second.getRecords();
                 headers = second.getHeaderNames();
+                lenient = true;
                 warnings.add("a quote inside a quoted field is not doubled, which is not valid "
                         + "CSV - read it anyway, ignoring what follows the closing quote");
             } catch (IOException | RuntimeException reallyNotATable) {
@@ -151,6 +153,24 @@ public final class Importer {
         int number = 1;
         for (CSVRecord row : rows) {
             number++;
+            // After the LENIENT retry, a row whose field count does not match the header is a
+            // row whose columns have MOVED: what follows a stray closing quote is dropped only
+            // up to the next comma, so a comma inside it ends the field early. Reading it
+            // would quietly hand us the wrong artist, the wrong title and no length - and a
+            // line with no length loses the hard length filter that keeps another version of
+            // the song out. Better one named skip than one silent lie (found by an independent
+            // review, 2026-10-16).
+            //
+            // Only after the lenient retry: in a table that parsed cleanly a short row is
+            // ordinary and both tools keep it. The tool's own example.txt is such a file - its
+            // comment lines hold commas, so it reads as a ragged table - and checking the
+            // count there threw five of its six lines away (caught by the imp parity pair).
+            if (lenient && row.size() != headers.size()) {
+                warnings.add("row " + number + ": skipped (" + row.size() + " fields where the "
+                        + "header has " + headers.size() + " - a quote inside a quoted field "
+                        + "moved the columns)");
+                continue;
+            }
             String name = value(row, title.get());
             if (name.isEmpty()) {
                 warnings.add("row " + number + ": skipped (no title)");

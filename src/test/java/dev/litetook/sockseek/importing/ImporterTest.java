@@ -251,6 +251,20 @@ class ImporterTest {
     }
 
     @Test
+    void aRowWhoseColumnsMovedIsSkippedWithItsNumber(@TempDir Path dir) throws IOException {
+        // the lenient retry drops what follows a stray closing quote only up to the next
+        // comma, so a comma inside it ends the field early and every later column shifts by
+        // one. Reading such a row would give the wrong artist and lose the length silently.
+        Imported found = read(dir, "shifted.csv", """
+                Track URI,Track Name,Artist Name(s),Album Name,Duration (ms)
+                spotify:track:1,"He said "hello, world"",Real Artist,Real Album,249000
+                spotify:track:2,Clean Title,Other Artist,Album,200000
+                """);
+        assertEquals(List.of("Other Artist - Clean Title | 3:20"), found.lines());
+        assertTrue(said(found, "moved the columns"), found.warnings().toString());
+    }
+
+    @Test
     void aWellFormedTableIsStillReadStrictly(@TempDir Path dir) throws IOException {
         // the lenient second attempt must not become the normal path: a good file gets no
         // warning about quotes

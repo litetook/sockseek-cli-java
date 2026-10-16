@@ -90,24 +90,47 @@ public final class SockseekIndex {
         return readWithFolders(paths).stream().map(Located::row).toList();
     }
 
-    /** An index we cannot read is skipped, never fatal: it is sockseek's file, not ours. */
+    /**
+     * An index we cannot read is skipped, never fatal: it is sockseek's file, not ours.
+     *
+     * <p>And "never fatal" has to be true, which it was not until 2026-10-16: the catch named
+     * {@code IOException | IllegalArgumentException}, while commons-csv throws
+     * {@code CSVException} (an {@link IllegalStateException}) wrapped in an
+     * {@link UncheckedIOException} - so a single stray quote in a file name escaped all the way
+     * out of the front end as a stack trace, and no playlist could be listed at all.
+     *
+     * <p>Dropping the whole file is also worse than it looks: every track it says arrived would
+     * read as missing and be searched again. So a malformed quote is retried leniently first,
+     * the way the importer does it and the way Python's csv module reads such a file anyway.
+     */
     private static List<IndexRow> rowsOf(Path path) {
         Optional<String> text = decodeUtf8(path);
         if (text.isEmpty()) {
             return List.of();
         }
-        CSVFormat format = CSVFormat.DEFAULT.builder()
+        CSVFormat.Builder shape = CSVFormat.DEFAULT.builder()
                 .setHeader()
-                .setSkipHeaderRecord(true)
-                .get();
-        try (CSVParser parser = CSVParser.parse(new StringReader(text.get()), format)) {
+                .setSkipHeaderRecord(true);
+        try {
+            return parse(text.get(), shape.get());
+        } catch (IOException | RuntimeException notReadable) {
+            try {
+                // an uploader's file name carrying a quote: sockseek quotes the field but does
+                // not double the quote inside it, which is malformed CSV
+                return parse(text.get(), shape.setTrailingData(true).get());
+            } catch (IOException | RuntimeException reallyNotReadable) {
+                return List.of();
+            }
+        }
+    }
+
+    private static List<IndexRow> parse(String text, CSVFormat format) throws IOException {
+        try (CSVParser parser = CSVParser.parse(new StringReader(text), format)) {
             List<IndexRow> rows = new ArrayList<>();
             for (CSVRecord record : parser) {
                 rows.add(IndexRow.from(record));
             }
             return rows;
-        } catch (IOException | IllegalArgumentException notReadable) {
-            return List.of();
         }
     }
 

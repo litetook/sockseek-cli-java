@@ -81,9 +81,14 @@ Playlists/ output/ work/ logs/   input, downloads, generated list files, run log
    Then run this again. Nothing can be downloaded until then.
    ```
 
-   `sockseek.local.conf` is the only file that holds secrets, it is git-ignored, and nothing in
-   the logs ever prints its values. It also overrides any other key of `sockseek.conf`
-   (section 7).
+   `sockseek.local.conf` is the only file you put secrets INTO, it is git-ignored, and nothing
+   in the logs ever prints its values. It also overrides any other key of `sockseek.conf`
+   (section 7). It is not the only file that ends up holding them, though: every run merges
+   the layers into `work/sockseek.effective.conf` and hands sockseek that path, so **your
+   login is in `work/` too**, in plain text, with ordinary file permissions. `work/` is
+   git-ignored and safe to delete at any time - but do not copy it to another machine, put it
+   in a backup you share, or paste its contents anywhere. Deleting the folder is the cheapest
+   way to be sure (the next run rebuilds it).
 4. Put playlist files into `Playlists/` (next section), or generate one with `--import`.
 
 `sockseek.conf` holds every quality and waiting knob (section 7) and **no credentials**, so it
@@ -285,7 +290,7 @@ up the rest.
 |---|---|
 | `output/<name>/` | downloaded audio, flat, named `Artist - Title.ext` |
 | `output/<name>/_index.csv` | sockseek's index for that playlist: the only link between a playlist line and a file (section 8) |
-| `work/` | generated sockseek list files and the merged `sockseek.effective.conf`, rebuilt on every run, safe to delete |
+| `work/` | generated sockseek list files and the merged `sockseek.effective.conf` - **which holds your login in plain text** (section 1); rebuilt on every run, safe to delete |
 | `logs/run_<NNNN>_<stamp>.log` | the run log; **first line is `run #NNNN`, then the effective configuration**. `<stamp>` is `YYYY-MM-DD_HH-MM-SS` |
 | `logs/run_seq.txt` | the run counter, one integer: the last run number used |
 | `logs/sockseek_<NNNN>_<name>.log` | sockseek's own verbose log (only with `--verbose`) |

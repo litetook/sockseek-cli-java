@@ -163,6 +163,22 @@ class IndexTest {
     }
 
     @Test
+    void aStrayQuoteInTheIndexStillCountsTheTrackAsHere(@TempDir Path out) throws IOException {
+        // A quoted field holding a quote that is not doubled is malformed CSV, and it reaches
+        // this file through any text sockseek writes - an album or a title from Spotify or
+        // SoundCloud, where a name like Say "Hello" is ordinary. (Not through the file name:
+        // Windows forbids a quote there.) Until 2026-10-16 this threw an UncheckedIOException
+        // that escaped the whole front end, so NO playlist could be listed at all. Dropping
+        // the index instead would be just as wrong: every downloaded track would read as
+        // missing and be searched again.
+        Status status = status(out,
+                List.of("./one.mp3,,\"Album \"live\"\",A - One,60,0,1,0"),
+                "one.mp3");
+        assertEquals(List.of("A - One | 1:00"), lines(status.have()));
+        assertEquals(List.of("B - Two | 2:00"), lines(status.missing()));
+    }
+
+    @Test
     void noIndexAtAllMeansEverythingIsMissing(@TempDir Path out) throws IOException {
         Status status = status(out, List.of());
         assertEquals(List.of("A - One | 1:00", "B - Two | 2:00"), lines(status.missing()));
