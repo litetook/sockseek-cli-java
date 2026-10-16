@@ -51,7 +51,10 @@ FLAGS = ["--yes", "--dry-run"]
 WRITTEN = ("logs", "work")
 # the differences we know about and accept, same list as run.py: the port has no ffprobe,
 # and two prompts offer "[b] back", which the Python tool has no counterpart for
-IGNORE = ("ffprobe_path", "What to download?", "Paste the ")
+# state=0 (never searched, the run was cut short) and state=4 (skipped by
+# --skip-not-found) now say so here, while the Python tool still prints
+# "unknown reason code" for both - measured 2026-10-17, deliberate
+IGNORE = ("ffprobe_path", "What to download?", "Paste the ", "state=0", "state=4")
 # sockseek's own meaning: 1 = downloaded, 3 = was already there and skipped
 OK_STATES = {"1", "3"}
 # the two runs are a second apart, and the clock is not part of the parity - the SHAPE of the

@@ -80,7 +80,16 @@ public final class Runner {
             if (timeoutSeconds > 0) {
                 if (!process.waitFor((long) (timeoutSeconds * 1000), TimeUnit.MILLISECONDS)) {
                     killTree(process);
-                    log.accept(String.format("timeout after %.0f s, process killed",
+                    // The banner is not decoration. sockseek paints its progress display in
+                    // place, and once it is killed nothing repaints it - so the last frame it
+                    // drew sits on the screen forever, counters frozen, looking exactly like a
+                    // hang. The owner read it as one on 2026-10-17 and asked why the tool was
+                    // stuck, while it had moved on minutes earlier. The blank line pushes the
+                    // dead frame up and the line below says who is speaking now.
+                    log.accept("");
+                    log.accept(String.format("--- sockseek stopped: timeout after %.0f s, "
+                            + "process tree killed. Anything above this line is its last "
+                            + "screen, frozen - not a live one. What follows is this tool.",
                             timeoutSeconds));
                     return Status.TIMEOUT;
                 }

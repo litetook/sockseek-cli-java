@@ -51,7 +51,24 @@ public final class SockseekIndex {
      */
     private static final Map<String, String> REASON_TEXT = Map.of(
             "9", "no candidate passed the name/length/quality conditions",
-            "4", "found, but the download did not come through");
+            "4", "found, but the download did not come through",
+            "0", "no failure recorded");
+
+    /**
+     * What a state MEANS, for the report. Without this a row the tool never searched is
+     * printed as a failure with an "unknown reason code", which reads as "we looked and found
+     * nothing" - the opposite of the truth.
+     *
+     * <p>0 and 4 were measured on 2026-10-17: 0 is what a row left in the queue carries when a
+     * run is cut short (the owner's own index had eleven of them after a timeout), and 4 is
+     * what sockseek writes when {@code --skip-not-found} skips a row - also never searched.
+     */
+    private static final Map<String, String> STATE_TEXT = Map.of(
+            "0", "never searched - the run ended before its turn",
+            "1", "downloaded",
+            "2", "searched and failed",
+            "3", "already there, skipped",
+            "4", "not searched - skipped as not found last time");
 
     private static final Pattern SPACES = Pattern.compile("\\s+", Pattern.UNICODE_CHARACTER_CLASS);
     private static final char BOM = '﻿';
@@ -268,8 +285,13 @@ public final class SockseekIndex {
     /** One log line for a failed track. */
     public static String format(Failure failure) {
         String reason = failure.failureReason().isBlank() ? "?" : failure.failureReason().strip();
-        String meaning = REASON_TEXT.getOrDefault(reason, "unknown reason code");
-        String state = failure.state().isEmpty() ? "?" : failure.state();
+        String state = failure.state().isEmpty() ? "?" : failure.state().strip();
+        // the state first, because for 0 and 4 it is the whole story: those tracks were never
+        // searched, and printing only the reason code calls them failures of the search
+        String meaning = STATE_TEXT.containsKey(state) && !OK_STATES.contains(state)
+                && !state.equals("2")
+                ? STATE_TEXT.get(state)
+                : REASON_TEXT.getOrDefault(reason, "unknown reason code");
         String head = "FAILED  state=" + state + " reason=" + reason + " (" + meaning + ")  ";
         return failure.playlistLine().isEmpty()
                 ? head + "(no matching playlist line, index title: " + failure.indexTitle() + ")"

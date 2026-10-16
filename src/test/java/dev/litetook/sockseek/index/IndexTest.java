@@ -138,6 +138,21 @@ class IndexTest {
     }
 
     @Test
+    void aTrackThatWasNeverSearchedIsNotCalledASearchFailure() {
+        // state 0: left in the queue when the run was cut short - the owner's index had eleven
+        // after the 10-minute cap killed run #0056. state 4: skipped by --skip-not-found.
+        // Both used to print "unknown reason code", which reads as "we looked and found
+        // nothing" (found by an independent review, 2026-10-17).
+        assertTrue(SockseekIndex.format(failure("x", "t", "0", "0"))
+                .contains("(never searched - the run ended before its turn)"));
+        assertTrue(SockseekIndex.format(failure("x", "t", "4", "9"))
+                .contains("(not searched - skipped as not found last time)"));
+        // a real search failure still reports the reason, not the state
+        assertTrue(SockseekIndex.format(failure("x", "t", "2", "9"))
+                .contains("(no candidate passed the name/length/quality conditions)"));
+    }
+
+    @Test
     void aMissingStateOrReasonShowsAsAQuestionMark() {
         assertTrue(SockseekIndex.format(failure("x", "t", "", ""))
                 .startsWith("FAILED  state=? reason=? (unknown reason code)  "));

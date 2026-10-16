@@ -48,7 +48,10 @@ PAIRS = {
 #   What to download / Paste the   these two prompts now offer "[b] back", which the Python
 #                    tool has no counterpart for (owner asked for it 2026-10-16). Only the
 #                    WORDING of the prompt is skipped; every answer it accepts is still compared
-IGNORE = ("ffprobe_path", "is not doubled", "What to download?", "Paste the ")
+# state=0 (never searched, the run was cut short) and state=4 (skipped by
+# --skip-not-found) now say so here, while the Python tool still prints
+# "unknown reason code" for both - measured 2026-10-17, deliberate
+IGNORE = ("ffprobe_path", "is not doubled", "What to download?", "Paste the ", "state=0", "state=4")
 
 
 def java_classpath() -> str:
