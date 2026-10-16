@@ -265,6 +265,27 @@ class ImporterTest {
     }
 
     @Test
+    void theTitleColumnIsNotStolenByAlbumName(@TempDir Path dir) throws IOException {
+        // "album name" contains "name", so iterating the headers made it win as the title and
+        // the real title was never searched - silently
+        Imported found = read(dir, "shop.csv", """
+                Album Name,Artist,Song Name,Duration
+                Greatest Hits,Real Artist,Real Song,3:30
+                """);
+        assertEquals(List.of("Real Artist - Real Song | 3:30"), found.lines());
+    }
+
+    @Test
+    void theDurationColumnIsNotStolenByAddedTime(@TempDir Path dir) throws IOException {
+        // "added time" contains "time", so it won as the duration and every length was lost
+        Imported found = read(dir, "added.csv", """
+                Added Time,Track Name,Artist,Track Duration (ms)
+                2026-01-01,T,A,200000
+                """);
+        assertEquals(List.of("A - T | 3:20"), found.lines());
+    }
+
+    @Test
     void aWellFormedTableIsStillReadStrictly(@TempDir Path dir) throws IOException {
         // the lenient second attempt must not become the normal path: a good file gets no
         // warning about quotes

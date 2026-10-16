@@ -134,8 +134,18 @@ public final class Settings {
             // lose everything after its own colon
             int separator = line.indexOf(": ");
             String head = separator >= 0 ? line.substring(0, separator) : trimTrailingColons(line);
-            String value = separator >= 0 ? scalar(line.substring(separator + 2)) : "";
+            String given = separator >= 0 ? line.substring(separator + 2).strip() : "";
+            String value = separator >= 0 ? scalar(given) : "";
             String key = head.strip();
+            if (!value.isEmpty() && !value.equals(given) && given.indexOf('#') >= 0
+                    && warn != null) {
+                // a folder really can be called Rock#1, and cutting it down to Rock without a
+                // word ended in "No playlist .txt files in ...\Rock" with no hint why (found
+                // by an independent review, 2026-10-16)
+                warn.accept("line " + number + ": '" + given + "' was read as '" + value
+                        + "' - everything after # is taken as a comment; put the value in "
+                        + "quotes if the # belongs to it");
+            }
             if (!key.isEmpty() && !value.isEmpty()) {
                 values.put(key, value);
             } else if ((key.isEmpty() || !line.endsWith(":")) && warn != null) {

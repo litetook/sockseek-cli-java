@@ -156,10 +156,16 @@ public final class App {
     }
 
     /** One playlist as the menu shows it. */
-    public record Info(String name, Path path, int total, Status status, List<String> warnings) {
+    public record Info(String name, Path path, int total, Status status, List<String> warnings,
+                       boolean unreadable) {
 
         public Info {
             warnings = List.copyOf(warnings);
+        }
+
+        /** The ordinary case: a playlist that was read. */
+        public Info(String name, Path path, int total, Status status, List<String> warnings) {
+            this(name, path, total, status, warnings, false);
         }
 
         public List<Entry> missing() {
@@ -214,7 +220,13 @@ public final class App {
 
     /**
      * Pick, show, confirm, download. Returns the worst exit code of the runs it started:
-     * 0 worked, 1 the tool failed, 2 a setup problem, 130 Ctrl+C.
+     * 0 worked, 1 the tool failed, 2 a setup problem.
+     *
+     * <p>130 is the Python tool's code for Ctrl+C and nothing here produces it: the JVM takes
+     * the signal and dies before any of this runs. The branch below that stops the session on
+     * 130 is kept because an engine that does return it must not be mistaken for "skip to the
+     * next playlist" - but do not read the table in the manual as a promise that this tool
+     * exits with 130 (an independent review called the javadoc out on it, 2026-10-16).
      */
     public static int run(String[] args, Ask ask, Consumer<String> out) {
         return run(args, ask, out, Wiring.standard(Path.of(".").toAbsolutePath().normalize()));
@@ -269,9 +281,11 @@ public final class App {
         // The loop is what makes "b" work: every question below can send the person back here
         // instead of forcing them to quit and start the tool again.
         List<Info> chosen;
+        boolean canGoBack = ask != null && front.only() == null
+                && !front.yes();   // there is a question to go back TO only then
         while (true) {
             Source source = Source.TXT;
-            if (ask != null && front.only() == null && !front.yes()) {
+            if (canGoBack) {
                 Optional<Source> picked = sourceMenu(ask, out);
                 if (picked.isEmpty()) {
                     return 0;
@@ -314,7 +328,7 @@ public final class App {
                 out.accept("");
                 formatTable(infos).forEach(out);
                 out.accept("");
-                Choice choice = pick(infos, ask, out);
+                Choice choice = pick(infos, ask, out, canGoBack);
                 if (choice.back()) {
                     continue;
                 }
@@ -332,6 +346,17 @@ public final class App {
             formatMissing(info).forEach(out);
             for (String warning : info.warnings()) {
                 out.accept("WARN " + warning);
+            }
+            if (info.unreadable()) {
+                // "0 tracks, 0 here, 0 missing" plus "Nothing to do." and exit 0 is what a
+                // locked file or an unavailable network drive used to produce, so a scheduled
+                // run recorded success having looked at nothing. The engine has always called
+                // this a broken playlist and returned 1; now the two agree (found by an
+                // independent review, 2026-10-16).
+                out.accept("ERROR " + info.name() + ": this playlist could not be read, "
+                        + "nothing was searched");
+                worst = 1;
+                continue;
             }
             if (info.missing().isEmpty()) {
                 out.accept("Nothing to do.");
@@ -393,7 +418,7 @@ public final class App {
             } catch (IOException | RuntimeException cannotRead) {
                 found.add(new Info(stem(file), file, 0,
                         new Status(List.of(), List.of(), Map.of()),
-                        List.of("cannot read: " + cannotRead.getMessage())));
+                        List.of("cannot read: " + cannotRead.getMessage()), true));
             }
         }
         return List.copyOf(found);
@@ -510,18 +535,22 @@ public final class App {
     }
 
     /** The playlists the person asked for; "b" goes back, Enter quits. */
-    private static Choice pick(List<Info> infos, Ask ask, Consumer<String> out) {
+    private static Choice pick(List<Info> infos, Ask ask, Consumer<String> out,
+                               boolean canGoBack) {
         if (ask == null) {
             // nobody to ask and no --only: there is nothing to choose with
             return new Choice(List.of(), false);
         }
         while (true) {
-            Optional<String> answer =
-                    ask.ask("What to download? (1, or 1,2, or all; [b] back, Enter quits): ");
+            // "[b] back" is offered only when the source menu was actually shown: with
+            // --yes there is no earlier question, and advertising a step back that merely
+            // redisplays the same table is a lie (found by an independent review, 2026-10-16)
+            Optional<String> answer = ask.ask("What to download? (1, or 1,2, or all; "
+                    + (canGoBack ? "[b] back, " : "") + "Enter quits): ");
             if (answer.isEmpty()) {
                 return new Choice(List.of(), false);
             }
-            if (isBack(strip(answer.get()))) {
+            if (canGoBack && isBack(strip(answer.get()))) {
                 return new Choice(List.of(), true);
             }
             Optional<List<Integer>> picked = parseChoice(answer.get(), infos.size());

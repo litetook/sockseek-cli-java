@@ -250,7 +250,7 @@ such track is named in the log with the reason, and the run still ends with `0`.
 | `0` | the run worked. Some tracks may be missing; the summary line says how many |
 | `1` | the run broke: sockseek reported errors, timed out, or a playlist could not be read |
 | `2` | setup error: bad option, missing `sockseek.exe`, unknown `--only` name, **an option this version does not have** |
-| `130` | Ctrl+C. **[port]** In the Python tool this comes from `except KeyboardInterrupt`; here the JVM takes the signal and what `java -jar` finally returns has **not been measured**. The front end still stops the whole session rather than skipping to the next playlist when the engine returns 130 |
+| `130` | Ctrl+C **in the Python tool only**. Nothing in this version produces it: the JVM takes the signal and dies, so the run log gets no closing line and what `java -jar` finally returns has never been measured. The front end still treats a 130 from the engine as "stop the session", not "skip to the next playlist" |
 
 An option that exists in the Python tool but not here is refused rather than ignored - measured:
 `--ffprobe-check` prints `Unknown option: '--ffprobe-check'` and the run ends with `2`.

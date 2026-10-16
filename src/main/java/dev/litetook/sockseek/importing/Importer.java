@@ -33,6 +33,21 @@ public final class Importer {
             List.of("duration (ms)", "duration_ms", "duration", "time", "length",
                     "track duration");
 
+    /**
+     * Words that disqualify a LOOSE header match, per field.
+     *
+     * <p>Without them "Album Name" wins the title (it contains "name") and "Added Time" wins
+     * the duration (it contains "time"), both silently and both wrong - which is exactly what
+     * an independent review found on 2026-10-16. A header named by its exact alias is never
+     * blocked: "album artist" still works as an artist column.
+     */
+    private static final List<String> NOT_A_TITLE =
+            List.of("album", "artist", "added", "release", "playlist", "uri", "id");
+    private static final List<String> NOT_AN_ARTIST =
+            List.of("added", "release", "uri", "id");
+    private static final List<String> NOT_A_LENGTH =
+            List.of("added", "release", "uri", "id");
+
     private static final String EXTINF = "#EXTINF:";
 
     /** A single track four hours long: the number is milliseconds, not seconds. */
@@ -136,15 +151,15 @@ public final class Importer {
         for (String header : headers) {
             byName.putIfAbsent(header.strip().toLowerCase(), header);
         }
-        Optional<String> title = column(byName, TITLE_COLUMNS);
+        Optional<String> title = column(byName, TITLE_COLUMNS, NOT_A_TITLE);
         if (title.isEmpty()) {
             return new Imported(List.of(),
                     List.of("no title column: looked for " + String.join(", ", TITLE_COLUMNS)
                             + "; the header has " + String.join(", ", byName.keySet().stream()
                             .sorted().toList())), "table");
         }
-        Optional<String> artist = column(byName, ARTIST_COLUMNS);
-        Optional<String> lengthColumn = column(byName, LENGTH_COLUMNS);
+        Optional<String> artist = column(byName, ARTIST_COLUMNS, NOT_AN_ARTIST);
+        Optional<String> lengthColumn = column(byName, LENGTH_COLUMNS, NOT_A_LENGTH);
         List<String> lines = new ArrayList<>();
         if (lengthColumn.isEmpty()) {
             warnings.add("no duration column, the lines will have no length - the length is "
@@ -189,13 +204,30 @@ public final class Importer {
         return row.isMapped(column) && row.isSet(column) ? row.get(column).strip() : "";
     }
 
-    private static Optional<String> column(Map<String, String> header, List<String> names) {
+    private static Optional<String> column(Map<String, String> header, List<String> names,
+                                           List<String> avoid) {
         for (String name : names) {
             if (header.containsKey(name)) {
                 return Optional.of(header.get(name));
             }
         }
-        return header.entrySet().stream()                      // "artist(s)" and the like
+        // By ALIAS in priority order, not by header: iterating the headers meant the first
+        // header that happened to contain any alias won, so "Album Name" was taken as the
+        // title because it contains "name", and "Added Time" as the duration because it
+        // contains "time" - both silently, both wrong (found by an independent review,
+        // 2026-10-16). Asking for each alias in turn keeps "Track Name" ahead of "Album Name".
+        for (String name : names) {
+            Optional<String> loose = header.entrySet().stream()   // "artist(s)" and the like
+                    .filter(pair -> pair.getKey().contains(name))
+                    .filter(pair -> avoid.stream().noneMatch(word ->
+                            !name.contains(word) && pair.getKey().contains(word)))
+                    .map(Map.Entry::getValue)
+                    .findFirst();
+            if (loose.isPresent()) {
+                return loose;
+            }
+        }
+        return header.entrySet().stream()
                 .filter(pair -> names.stream().anyMatch(name -> pair.getKey().contains(name)))
                 .map(Map.Entry::getValue)
                 .findFirst();

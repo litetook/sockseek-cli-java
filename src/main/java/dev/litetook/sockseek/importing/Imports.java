@@ -115,9 +115,29 @@ public final class Imports {
             return Optional.empty();
         }
         Files.createDirectories(playlistsDir);
-        Files.writeString(target, lines.isEmpty() ? "" : String.join("\n", lines) + "\n",
-                StandardCharsets.UTF_8);
+        // Written beside the target and renamed, the way Tools.install puts a binary in place.
+        // A playlist is hand-edited - the one file here that is the person's own work - and
+        // writing in place means a disk full or an antivirus lock halfway through leaves it
+        // truncated, with the original gone (found by an independent review, 2026-10-16).
+        Path part = target.resolveSibling(target.getFileName() + ".part");
+        try {
+            Files.writeString(part, lines.isEmpty() ? "" : String.join("\n", lines) + "\n",
+                    StandardCharsets.UTF_8);
+            move(part, target);
+        } catch (IOException cannotWrite) {
+            Files.deleteIfExists(part);
+            throw cannotWrite;
+        }
         return Optional.of(target);
+    }
+
+    private static void move(Path part, Path target) throws IOException {
+        try {
+            Files.move(part, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                    java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+        } catch (java.nio.file.AtomicMoveNotSupportedException notAtomic) {
+            Files.move(part, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     private static String stem(Path path) {

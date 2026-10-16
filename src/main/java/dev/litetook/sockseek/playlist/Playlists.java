@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
@@ -185,6 +186,16 @@ public final class Playlists {
             if (track.length().isEmpty()) {
                 warnings.add("line " + number
                         + ": no valid length, searching without length filter");
+            } else if (looksLikeAYear(track.length().getAsInt(), raw)) {
+                // "Summer Mix | 2024" is a title, not a length - but it parses as one, and the
+                // length is a HARD condition, so the track could never match and nothing would
+                // say why. Imports write such a title verbatim when the export has no duration
+                // (found by an independent review, 2026-10-16).
+                warnings.add("line " + number + ": the tail after | reads as a length of "
+                        + track.length().getAsInt() / 60 + ":"
+                        + String.format("%02d", track.length().getAsInt() % 60)
+                        + " - if 1900-2100 was meant as part of the title, the length filter "
+                        + "will never match; write it without the | or give a real length");
             }
             entries.add(new Entry(listLine, raw.strip(), track));
         }
@@ -194,11 +205,25 @@ public final class Playlists {
         return new Converted(List.copyOf(entries), List.copyOf(warnings));
     }
 
+    /** A bare four-digit tail in 1900-2100: far more likely a year in the title than a length. */
+    private static boolean looksLikeAYear(int length, String raw) {
+        int bar = raw.lastIndexOf('|');
+        if (bar < 0 || length < 1900 || length > 2100) {
+            return false;
+        }
+        return raw.substring(bar + 1).strip().matches("[0-9]{4}");
+    }
+
     /** Every playlist file in the folder, generated ones excluded, in a stable order. */
     public static List<Path> find(Path playlistsDir) throws IOException {
         try (Stream<Path> files = Files.list(playlistsDir)) {
             return files.filter(Files::isRegularFile)
-                    .filter(file -> file.getFileName().toString().endsWith(".txt"))
+                    // not endsWith(".txt"): Python globs "*.txt", which Windows answers
+                    // case-insensitively, so a playlist saved as Mix.TXT was listed by the
+                    // Python tool and invisible here - a playlist silently absent from the
+                    // menu (found by an independent review, 2026-10-16)
+                    .filter(file -> file.getFileName().toString().toLowerCase(Locale.ROOT)
+                            .endsWith(".txt"))
                     .filter(file -> !isGenerated(file))
                     .sorted(Comparator.comparing(file -> file.getFileName().toString()))
                     .toList();

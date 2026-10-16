@@ -235,6 +235,14 @@ public final class LinkReader {
         try (HttpClient client = HttpClient.newBuilder().connectTimeout(FETCH_TIMEOUT).build()) {
             HttpResponse<String> response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                // Without this the error page came back as a body and the parser then blamed
+                // the page for having changed, sending the owner to investigate a change that
+                // never happened. A deleted or region-blocked playlist is a link problem and
+                // should say so (found by an independent review, 2026-10-16).
+                throw new LinkError("HTTP " + response.statusCode() + " for " + url
+                        + " - the playlist may be private, deleted or blocked where you are");
+            }
             return response.body();
         } catch (IOException cannotFetch) {
             throw new UncheckedIOException(cannotFetch);
