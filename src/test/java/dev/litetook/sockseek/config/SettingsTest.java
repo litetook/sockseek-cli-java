@@ -411,13 +411,18 @@ class SettingsTest {
     @Test
     void aDeletedSockseekConfComesBackWithTheMeasuredValues(@TempDir Path dir)
             throws IOException {
-        // losing it silently would drop the 256 kbps floor and the 30 s wait from every run
+        // losing it silently would drop the 256 kbps floor and the waiting rules from every
+        // run - and those rules ARE the owner's "three tries, then somebody else"
         Settings.ensureFiles(dir, warnings::add);
         Files.delete(dir.resolve(Settings.SOCKSEEK_CONF));
         assertEquals(List.of(Settings.SOCKSEEK_CONF), Settings.ensureFiles(dir, warnings::add));
         Path conf = dir.resolve(Settings.SOCKSEEK_CONF);
         assertEquals(OptionalInt.of(256), Settings.readMinBitrate(conf));
-        assertEquals("30000", Settings.parseConf(Files.readString(conf)).get("max-stale-time"));
+        Map<String, String> keys = Settings.parseConf(Files.readString(conf));
+        assertEquals("12000", keys.get("max-stale-time"));
+        assertEquals("3", keys.get("max-retries"));
+        assertEquals("1", keys.get("fails-to-downrank"));
+        assertEquals("2", keys.get("fails-to-ignore"));
         assertEquals(List.of("username", "password"),
                 Settings.missingCredentials(Files.readString(conf)));
     }

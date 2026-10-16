@@ -45,6 +45,8 @@ public final class Settings {
               length_tol_s: 45
               retries: 1
               playlist_timeout_min: 10
+              stall_timeout_s: 300
+              skip_not_found_days: 1
             """;
 
     /**
@@ -54,6 +56,18 @@ public final class Settings {
      *
      * <p>The two login keys stay as comments because sockseek refuses a key with an empty value
      * (measured 2026-10-11: "Error parsing config ... at line 0").
+     *
+     * <p>The four waiting keys are the honest answer to the owner's rule of 2026-10-17, "якщо
+     * швидкість до 60 кб/с це дуже мало... переключаємось на наступне. і так тричі". sockseek
+     * has no "slower than N kB/s" lever at all - there is no such condition
+     * ({@code uploadspeed}, {@code upspeed} and {@code speed} are all rejected as unknown,
+     * measured) and no way to interrupt one transfer from outside without taking the console
+     * away. What it does have is these: {@code max-stale-time} drops a source that has sent
+     * nothing for 12 s rather than 30, {@code max-retries} caps the attempts at the three he
+     * asked for (and sockseek does move to the next candidate by itself - measured with three
+     * copies of one track and two forced failures), and the two {@code fails-to-} keys push a
+     * bad uploader down the ranking after one failure and out of it after two. That is "three
+     * tries, then somebody else", bounded by sockseek's own clock instead of ours.
      *
      * <p>{@code pref-max-bitrate = 1411} and {@code pref-format = flac,mp3} are the owner's
      * decision of 2026-10-16 about disk space, and both are PREFERENCES, so nothing is ever
@@ -68,7 +82,10 @@ public final class Settings {
             # username =
             # password =
 
-            max-stale-time = 30000
+            max-stale-time = 12000
+            max-retries = 3
+            fails-to-downrank = 1
+            fails-to-ignore = 2
 
             min-bitrate = 256
             pref-min-bitrate = 320
@@ -95,7 +112,13 @@ public final class Settings {
                     0.0, "wall-clock limit per attempt for one playlist, in minutes, 0 = none "
                             + "(default 40)", List.of("timeout")),
             new Setting("retries", "--retries", Setting.Kind.INTEGER, 2, 1.0,
-                    "attempts per playlist, at least 1 (default 2)", List.of()));
+                    "attempts per playlist, at least 1 (default 2)", List.of()),
+            new Setting("stall_timeout_s", "--stall-timeout", Setting.Kind.DECIMAL, 300.0, 0.0,
+                    "stop a playlist when no track has finished for this many seconds, "
+                            + "0 = never (default 300)", List.of()),
+            new Setting("skip_not_found_days", "--skip-not-found-days", Setting.Kind.INTEGER, 1,
+                    0.0, "do not search again for a track nobody had, if that was within this "
+                            + "many days; 0 = always search (default 1)", List.of()));
 
     /** Taken from the template rather than written out again: renaming a placeholder there must
      *  not quietly turn "you have not filled this in yet" into "you have". */

@@ -4,6 +4,7 @@ import dev.litetook.sockseek.config.Settings;
 import dev.litetook.sockseek.explain.Candidate;
 import dev.litetook.sockseek.explain.Explain;
 import dev.litetook.sockseek.index.Failure;
+import dev.litetook.sockseek.index.Failures;
 import dev.litetook.sockseek.index.IndexRow;
 import dev.litetook.sockseek.index.Located;
 import dev.litetook.sockseek.index.SockseekIndex;
@@ -11,6 +12,7 @@ import dev.litetook.sockseek.index.Status;
 import dev.litetook.sockseek.playlist.Entry;
 import dev.litetook.sockseek.playlist.Playlist;
 import dev.litetook.sockseek.playlist.Playlists;
+import dev.litetook.sockseek.process.Events;
 import dev.litetook.sockseek.process.ProcessRunner;
 import dev.litetook.sockseek.process.Runner;
 import dev.litetook.sockseek.process.Sockseek;
@@ -19,11 +21,14 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -145,20 +150,49 @@ public final class Batch {
             return new Result(entries.size(), 0, false);
         }
 
+        // A track nobody had yesterday is not worth one of today's 34 searches per 220 s. The
+        // skip happens HERE, in the open, rather than through sockseek's --skip-not-found,
+        // which remembers for ever and cannot tell "nobody had it" from "found and rejected".
+        Path cacheFile = cfg.appDir().resolve(Failures.FILE_NAME);
+        List<Failures.Miss> remembered = Failures.read(cacheFile);
+        Set<String> skip = Failures.skippable(remembered, playlist.name(),
+                cfg.skipNotFoundDays(), LocalDate.now());
+        List<Entry> wanted = before.missing().stream()
+                .filter(entry -> !skip.contains(entry.original())).toList();
+        int skipped = before.missing().size() - wanted.size();
+        if (skipped > 0) {
+            log.accept("skipping " + skipped + " track(s) nobody had within the last "
+                    + cfg.skipNotFoundDays() + " day(s); set skip_not_found_days: 0 to search "
+                    + "them anyway");
+        }
+        if (wanted.isEmpty()) {
+            log.accept("nothing left to search: every missing track was searched for recently "
+                    + "and nobody had it");
+            return new Result(entries.size(), before.missing().size(), false);
+        }
+
         Path listFile = workDir.resolve(playlist.name() + ".list.txt");
         Files.createDirectories(workDir);
-        Files.writeString(listFile, before.missing().stream().map(Entry::listLine)
+        Files.writeString(listFile, wanted.stream().map(Entry::listLine)
                 .reduce((a, b) -> a + "\n" + b).orElse("") + "\n", StandardCharsets.UTF_8);
         Sockseek client = cfg.client();
         Path logFile = cfg.verbose() ? verboseLog(playlist.name()) : null;
-        List<String> command = client.command(listFile, outDir, logFile, null, Runner.INDEX_NAME);
+        // one file per playlist per run, beside the list it belongs to
+        Path eventsFile = workDir.resolve(playlist.name() + ".events.txt");
+        Files.deleteIfExists(eventsFile);
+        List<String> command = client.command(listFile, outDir, logFile, null, Runner.INDEX_NAME,
+                eventsFile);
         if (cfg.dryRun()) {
             log.accept("dry run: " + Runs.commandLine(command));
             return new Result(entries.size(), before.missing().size(), false);
         }
         Files.createDirectories(outDir);
+        Map<String, Events.Event> said = new LinkedHashMap<>();
+        Events.Tail watch = new Events.Tail(eventsFile, event -> record(event, wanted, said));
         dev.litetook.sockseek.process.Status status = Runner.runWithRetry(command, cfg.appDir(),
-                client.timeoutSeconds(), cfg.retries(), log, Runner.RETRY_PAUSE_SECONDS);
+                client.timeoutSeconds(), cfg.retries(), log, Runner.RETRY_PAUSE_SECONDS,
+                watch, cfg.stallSeconds());
+        remember(cacheFile, remembered, playlist.name(), said);
         if (cfg.options().preview()) {
             log.accept(status == dev.litetook.sockseek.process.Status.OK ? "preview done"
                     : "FAILED");
@@ -189,23 +223,60 @@ public final class Batch {
         // A non-zero exit is the EVERYDAY case: sockseek returns one whenever a single track
         // fails (run #0028 brought 6 of 10 and still exited 1). What marks a broken run is the
         // process being killed, or exiting non-zero with no index and nothing to show.
-        boolean broke = status == dev.litetook.sockseek.process.Status.TIMEOUT
-                && arrived.isEmpty();
+        boolean broke = status.cutShort() && arrived.isEmpty();
         if (broke) {
-            log.accept("ERROR sockseek was killed by the timeout before anything arrived");
+            log.accept("ERROR sockseek was stopped before anything arrived ("
+                    + (status == dev.litetook.sockseek.process.Status.STALLED
+                            ? "it had gone quiet" : "it ran out of time") + ")");
         } else if (status != dev.litetook.sockseek.process.Status.OK && arrived.isEmpty()
                 && indexFiles.isEmpty()) {
             log.accept("ERROR sockseek exited with an error and wrote no index: nothing was "
                     + "searched");
             broke = true;
         }
-        if (!still.isEmpty() && !broke) {
-            report(still, entries, rows, listFile, outDir, client);
+        // the ones held back by the cache were never searched, so there is nothing to explain
+        // about them and the index has nothing to say either; they are counted, not listed
+        List<Entry> reportable = still.stream()
+                .filter(entry -> !skip.contains(entry.original())).toList();
+        if (!reportable.isEmpty() && !broke) {
+            report(reportable, entries, rows, listFile, outDir, client);
         }
         log.accept("run #" + Runs.label(cfg.runNo()) + ": " + arrived.size() + " arrived, "
                 + still.size() + " still missing, " + after.have().size() + " of "
                 + entries.size() + " in the folder");
         return new Result(entries.size(), still.size(), broke);
+    }
+
+    /**
+     * One finished track, as sockseek reported it the moment it ended.
+     *
+     * <p>{@code row} is the line number in the list file this run wrote, so the track it
+     * belongs to is known exactly rather than matched by name. The line printed here is the
+     * only live count there is: sockseek's own display knows this playlist, not the run.
+     */
+    void record(Events.Event event, List<Entry> wanted, Map<String, Events.Event> said) {
+        if (event.row() > wanted.size()) {
+            return;   // a row we never wrote: nothing to attach it to, and nothing to claim
+        }
+        String line = wanted.get(event.row() - 1).original();
+        said.put(line, event);
+        long done = said.size();
+        long got = said.values().stream().filter(Events.Event::succeeded).count();
+        log.accept(">> " + done + " of " + wanted.size() + " done, " + got + " downloaded"
+                + (event.succeeded() ? "" : "  (" + event.reason() + ": " + line + ")"));
+    }
+
+    /** Write back what this playlist now knows about tracks nobody had. */
+    void remember(Path cacheFile, List<Failures.Miss> existing, String playlist,
+                  Map<String, Events.Event> said) {
+        if (said.isEmpty()) {
+            return;   // no events at all: say nothing rather than forget what was known
+        }
+        List<Failures.Miss> after = Failures.after(existing, playlist, said, LocalDate.now());
+        if (!Failures.write(cacheFile, after)) {
+            log.accept("WARN cannot write " + cacheFile + ", tracks nobody had will be "
+                    + "searched for again next time");
+        }
     }
 
     /** One FAILED line per track still missing, with the reason in words. */

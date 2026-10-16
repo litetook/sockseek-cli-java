@@ -24,8 +24,14 @@ public record Sockseek(Path exe, Path cwd, Options options, List<String> extraAr
 
     public List<String> command(Path listFile, Path outDir, Path logFile, Options override,
                                 String indexName) {
+        return command(listFile, outDir, logFile, override, indexName, null);
+    }
+
+    /** The same, asking sockseek to report each finished track into {@code eventsFile}. */
+    public List<String> command(Path listFile, Path outDir, Path logFile, Options override,
+                                String indexName, Path eventsFile) {
         return Runner.buildCommand(exe, listFile, outDir, override == null ? options : override,
-                logFile, extraArgs, indexName, conf);
+                logFile, extraArgs, indexName, conf, eventsFile);
     }
 
     public Status run(List<String> command, Consumer<String> log) {

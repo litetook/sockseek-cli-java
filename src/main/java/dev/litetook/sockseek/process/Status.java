@@ -8,5 +8,10 @@ package dev.litetook.sockseek.process;
  * once: a run that never started reported every track as "not on the network".
  */
 public enum Status {
-    OK, FAILED, TIMEOUT, ERROR
+    OK, FAILED, TIMEOUT, ERROR, STALLED;
+
+    /** The two ways a run was cut short by this tool rather than finishing on its own. */
+    public boolean cutShort() {
+        return this == TIMEOUT || this == STALLED;
+    }
 }

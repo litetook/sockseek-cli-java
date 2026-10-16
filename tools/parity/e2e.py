@@ -54,7 +54,13 @@ WRITTEN = ("logs", "work")
 # state=0 (never searched, the run was cut short) and state=4 (skipped by
 # --skip-not-found) now say so here, while the Python tool still prints
 # "unknown reason code" for both - measured 2026-10-17, deliberate
-IGNORE = ("ffprobe_path", "What to download?", "Paste the ", "state=0", "state=4")
+IGNORE = ("ffprobe_path", "What to download?", "Paste the ", "state=0", "state=4",
+          "stall_timeout_s", "skip_not_found_days", "skipping ")
+# stall_timeout_s / skip_not_found_days  two keys the Java tool gained on 2026-10-17:
+#   a playlist that has finished nothing for N seconds is stopped, and a track nobody
+#   had within N days is not searched for again. Both rest on --on-complete, which
+#   the Python tool never used, so the oracle has no counterpart for either
+
 # The front end of the Java tool deliberately stopped being a copy on 2026-10-17: it asks
 # about the whole set ONCE instead of once per playlist, prices the set before asking, and
 # prints a numbered progress line around every playlist it runs. The owner asked for all
@@ -133,8 +139,21 @@ def reset(folder: Path) -> None:
         shutil.rmtree(folder / name, ignore_errors=True)
 
 
+
+# The Java tool ends a sockseek command with --on-complete, whose value is a whole shell
+# command: that is how it hears about each finished track without taking the console. The
+# Python oracle has nothing of the kind, so a dry-run line is compared up to that point and
+# the rest - which no human reads anyway - is cut off rather than making the line differ.
+ON_COMPLETE = " --on-complete "
+
+
+def cut_on_complete(line: str) -> str:
+    at = line.find(ON_COMPLETE)
+    return line if at < 0 else line[:at]
+
+
 def clean(text: str) -> list[str]:
-    return [CLOCK.sub("[time]", line) for line in text.splitlines()
+    return [cut_on_complete(CLOCK.sub("[time]", line)) for line in text.splitlines()
             if not any(skip in line for skip in IGNORE)]
 
 

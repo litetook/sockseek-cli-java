@@ -35,6 +35,20 @@ public final class Runner {
     public static List<String> buildCommand(Path sockseek, Path listFile, Path outDir,
                                             Options options, Path logFile, List<String> extraArgs,
                                             String indexName, Path conf) {
+        return buildCommand(sockseek, listFile, outDir, options, logFile, extraArgs, indexName,
+                conf, null);
+    }
+
+    /**
+     * The same, asking sockseek to report every finished track into {@code eventsFile}.
+     *
+     * <p>That is the whole mechanism behind the live count and the silence watchdog, and it
+     * costs the run nothing it was not already paying: the action is a child process of
+     * sockseek, so the console stays where it was.
+     */
+    public static List<String> buildCommand(Path sockseek, Path listFile, Path outDir,
+                                            Options options, Path logFile, List<String> extraArgs,
+                                            String indexName, Path conf, Path eventsFile) {
         List<String> command = new ArrayList<>(List.of(
                 sockseek.toString(),
                 listFile.toString(),
@@ -57,6 +71,13 @@ public final class Runner {
             command.addAll(List.of("--config", conf.toString()));
         }
         command.addAll(extraArgs);
+        // last on the line on purpose: its value is a whole shell command, by far the longest
+        // thing here, and keeping it at the end leaves the readable part of a dry-run line
+        // readable - and lets the parity gate cut the line at it, since the Python oracle has
+        // no counterpart for it at all
+        if (eventsFile != null && !options.preview()) {
+            command.addAll(List.of("--on-complete", Events.argument(eventsFile)));
+        }
         return List.copyOf(command);
     }
 
@@ -66,6 +87,23 @@ public final class Runner {
      */
     public static Status runProcess(List<String> command, Path cwd, double timeoutSeconds,
                                     Consumer<String> log) {
+        return runProcess(command, cwd, timeoutSeconds, log, null, 0);
+    }
+
+    /**
+     * The same, watched.
+     *
+     * <p>{@code watch} is read every half second while the child runs, which is both how the
+     * live progress is printed and how a silence is noticed. {@code stallSeconds} is the
+     * silence that means the run is no longer going anywhere; 0 turns that off.
+     *
+     * <p>A silence is not the same thing as the wall clock running out, and the two are
+     * reported apart: the timeout says "this playlist was given N minutes and used them",
+     * the silence says "nothing has finished for N seconds, it is stuck".
+     */
+    public static Status runProcess(List<String> command, Path cwd, double timeoutSeconds,
+                                    Consumer<String> log, Events.Tail watch,
+                                    double stallSeconds) {
         ProcessBuilder builder = new ProcessBuilder(command)
                 .directory(cwd.toFile())
                 .inheritIO();
@@ -77,24 +115,26 @@ public final class Runner {
             return Status.ERROR;
         }
         try {
-            if (timeoutSeconds > 0) {
-                if (!process.waitFor((long) (timeoutSeconds * 1000), TimeUnit.MILLISECONDS)) {
+            long started = System.nanoTime();
+            while (!process.waitFor(Events.POLL_MILLIS, TimeUnit.MILLISECONDS)) {
+                if (watch != null) {
+                    watch.poll();
+                }
+                double ran = (System.nanoTime() - started) / 1_000_000_000.0;
+                if (timeoutSeconds > 0 && ran >= timeoutSeconds) {
                     killTree(process);
-                    // The banner is not decoration. sockseek paints its progress display in
-                    // place, and once it is killed nothing repaints it - so the last frame it
-                    // drew sits on the screen forever, counters frozen, looking exactly like a
-                    // hang. The owner read it as one on 2026-10-17 and asked why the tool was
-                    // stuck, while it had moved on minutes earlier. The blank line pushes the
-                    // dead frame up and the line below says who is speaking now.
-                    log.accept("");
-                    log.accept(String.format("--- sockseek stopped: timeout after %.0f s, "
-                            + "process tree killed. Anything above this line is its last "
-                            + "screen, frozen - not a live one. What follows is this tool.",
-                            timeoutSeconds));
+                    stopped(log, String.format("timeout after %.0f s", timeoutSeconds));
                     return Status.TIMEOUT;
                 }
-            } else {
-                process.waitFor();
+                if (watch != null && stallSeconds > 0 && watch.silentSeconds() >= stallSeconds) {
+                    killTree(process);
+                    stopped(log, String.format("nothing finished for %.0f s (%d track(s) had "
+                            + "finished before that)", stallSeconds, watch.seen()));
+                    return Status.STALLED;
+                }
+            }
+            if (watch != null) {
+                watch.drain();
             }
         } catch (InterruptedException interrupted) {
             killTree(process);
@@ -107,6 +147,22 @@ public final class Runner {
         }
         log.accept("exit code " + code);
         return Status.FAILED;
+    }
+
+    /**
+     * Say that sockseek was stopped, and by whom.
+     *
+     * <p>The banner is not decoration. sockseek paints its progress display in place, and once
+     * it is killed nothing repaints it - so the last frame it drew sits on the screen forever,
+     * counters frozen, looking exactly like a hang. The owner read it as one on 2026-10-17 and
+     * asked why the tool was stuck, while it had moved on minutes earlier. The blank line
+     * pushes the dead frame up and the line below says who is speaking now.
+     */
+    private static void stopped(Consumer<String> log, String why) {
+        log.accept("");
+        log.accept("--- sockseek stopped: " + why + ", process tree killed. Anything above "
+                + "this line is its last screen, frozen - not a live one. What follows is "
+                + "this tool.");
     }
 
     /**
@@ -137,10 +193,18 @@ public final class Runner {
      */
     public static Status runWithRetry(List<String> command, Path cwd, double timeoutSeconds,
                                       int retries, Consumer<String> log, double pauseSeconds) {
+        return runWithRetry(command, cwd, timeoutSeconds, retries, log, pauseSeconds, null, 0);
+    }
+
+    /** The same, with the watcher of {@link #runProcess(List, Path, double, Consumer,
+     *  Events.Tail, double)}. */
+    public static Status runWithRetry(List<String> command, Path cwd, double timeoutSeconds,
+                                      int retries, Consumer<String> log, double pauseSeconds,
+                                      Events.Tail watch, double stallSeconds) {
         Status status = Status.ERROR;
         for (int attempt = 1; attempt <= retries; attempt++) {
             log.accept("attempt " + attempt + "/" + retries);
-            status = runProcess(command, cwd, timeoutSeconds, log);
+            status = runProcess(command, cwd, timeoutSeconds, log, watch, stallSeconds);
             if (status == Status.OK || status == Status.ERROR) {
                 return status;
             }

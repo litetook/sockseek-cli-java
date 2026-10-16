@@ -4,10 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * The sockseek command line and the process around it.
@@ -166,5 +168,48 @@ class RunnerTest {
     void itKnowsWhetherItIsThere() {
         assertFalse(new Sockseek(Path.of("nope-xyz.exe"), Path.of("."), Options.defaults(),
                 List.of(), 10, 2, null).isPresent());
+    }
+
+    // ------------------------------------------------------- the watcher and the silence
+
+    @Test
+    void theOnCompleteActionIsAskedForOnlyWhenThereIsSomewhereToPutIt(@TempDir Path work) {
+        Path events = work.resolve("mix.events.txt");
+        List<String> without = Runner.buildCommand(Path.of("s.exe"), Path.of("l.txt"),
+                Path.of("out"), Options.defaults(), null, List.of(), Runner.INDEX_NAME, null);
+        assertFalse(without.contains("--on-complete"));
+        List<String> with = Runner.buildCommand(Path.of("s.exe"), Path.of("l.txt"),
+                Path.of("out"), Options.defaults(), null, List.of(), Runner.INDEX_NAME, null,
+                events);
+        assertTrue(with.get(with.indexOf("--on-complete") + 1).contains("{row};{state}"));
+        // a preview downloads nothing, so no track ever completes and the action is pointless
+        List<String> preview = Runner.buildCommand(Path.of("s.exe"), Path.of("l.txt"),
+                Path.of("out"), new Options(3, true), null, List.of(), Runner.INDEX_NAME, null,
+                events);
+        assertFalse(preview.contains("--on-complete"));
+    }
+
+    @Test
+    void aRunThatFinishesNothingForTooLongIsStopped(@TempDir Path work) {
+        // the owner's "щоб не завтикував": a playlist that has gone quiet is not waited out
+        // to the end of its wall clock, it is stopped and said to have gone quiet
+        Events.Tail watch = new Events.Tail(work.resolve("never-written.txt"), event -> { });
+        Status status = Runner.runProcess(Child.command("sleep", "30000"), Path.of("."),
+                0, logs::add, watch, 1.5);
+        assertEquals(Status.STALLED, status);
+        assertTrue(logs.stream().anyMatch(line -> line.contains("nothing finished for")),
+                logs.toString());
+    }
+
+    @Test
+    void aRunThatKeepsFinishingTracksIsLeftAlone(@TempDir Path work) throws Exception {
+        Path events = work.resolve("mix.events.txt");
+        Files.writeString(events, "1;Succeeded;None\n");
+        List<Events.Event> seen = new ArrayList<>();
+        Events.Tail watch = new Events.Tail(events, seen::add);
+        Status status = Runner.runProcess(Child.command("sleep", "1200"), Path.of("."),
+                0, logs::add, watch, 10);
+        assertEquals(Status.OK, status);
+        assertEquals(List.of(new Events.Event(1, "Succeeded", "None")), seen);
     }
 }

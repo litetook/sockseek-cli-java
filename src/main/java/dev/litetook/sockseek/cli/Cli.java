@@ -71,6 +71,16 @@ public final class Cli implements Callable<Integer> {
             description = "attempts per playlist, at least 1 (default 2)")
     Integer retries;
 
+    @Option(names = "--stall-timeout", paramLabel = "SEC",
+            description = "stop a playlist when no track has finished for this many seconds, "
+                    + "0 = never (default 300)")
+    Double stallTimeout;
+
+    @Option(names = "--skip-not-found-days", paramLabel = "DAYS",
+            description = "do not search again for a track nobody had, if that was within this "
+                    + "many days; 0 = always search (default 1)")
+    Integer skipNotFoundDays;
+
     @Option(names = "--dry-run",
             description = "write the list file, print the sockseek command, run nothing")
     boolean dryRun;
@@ -177,6 +187,8 @@ public final class Cli implements Callable<Integer> {
             case "length_tol_s" -> lengthTol;
             case "playlist_timeout_min" -> playlistTimeout;
             case "retries" -> retries;
+            case "stall_timeout_s" -> stallTimeout;
+            case "skip_not_found_days" -> skipNotFoundDays;
             default -> null;
         };
     }
@@ -239,6 +251,8 @@ public final class Cli implements Callable<Integer> {
                 .explain(explain && !noExplain)
                 .sockseekArgs(splitSockseekArgs())
                 .sockseekConf(sockseekConf)
+                .stallSeconds(decimal("stall_timeout_s"))
+                .skipNotFoundDays(integer("skip_not_found_days"))
                 .build();
     }
 

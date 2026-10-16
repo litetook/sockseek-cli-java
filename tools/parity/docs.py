@@ -78,7 +78,8 @@ FOREIGN = {
 # Python tool, frozen as the oracle, still turns it OFF with --no-explain. The Java tool keeps
 # accepting --no-explain as a hidden no-op, which is why its manual names an option its --help
 # does not list.
-EXPECTED = {"--ffprobe-check", "--ffprobe", "--explain", "--no-explain"}
+EXPECTED = {"--ffprobe-check", "--ffprobe", "--explain", "--no-explain",
+            "--stall-timeout", "--skip-not-found-days"}
 
 
 def java() -> str:
