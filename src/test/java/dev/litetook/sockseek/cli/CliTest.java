@@ -81,10 +81,19 @@ class CliTest {
     void onlyTheFlagsThatWereGivenAppearAtTheEnd(@TempDir Path app) {
         String bare = block(parsed(app));
         assertTrue(!bare.contains("dry_run"), bare);
-        String said = block(parsed(app, "--dry-run", "--only", "mix", "--no-explain"));
+        assertTrue(!bare.contains("explain"), bare);   // off by default, so nothing to report
+        String said = block(parsed(app, "--dry-run", "--only", "mix", "--explain"));
         assertTrue(said.contains("  only = mix [cli]"), said);
         assertTrue(said.contains("  dry_run = True [cli]"), said);   // True, as Python prints it
-        assertTrue(said.contains("  explain = False [cli]"), said);
+        assertTrue(said.contains("  explain = True [cli]"), said);
+    }
+
+    @Test
+    void theOldNoExplainFlagIsStillAccepted(@TempDir Path app) {
+        // it is in the owner's fingers and in every note written before 2026-10-17; a flag that
+        // used to work must not start failing the command line
+        String said = block(parsed(app, "--no-explain"));
+        assertTrue(!said.contains("explain = True"), said);
     }
 
     @Test

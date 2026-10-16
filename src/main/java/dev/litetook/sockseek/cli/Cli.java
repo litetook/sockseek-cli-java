@@ -79,9 +79,18 @@ public final class Cli implements Callable<Integer> {
             description = "print search results instead of downloading")
     boolean preview;
 
-    @Option(names = "--no-explain",
-            description = "skip the extra search that explains every failed track; it costs one "
-                    + "query per failure")
+    @Option(names = "--explain",
+            description = "after the run, search once more for every failed track and say why "
+                    + "it was rejected; it costs one query per failure (off by default)")
+    boolean explain;
+
+    /**
+     * Kept because it is in everyone's fingers and in the old notes. Explaining is off by
+     * default since 2026-10-17, so this now only forces off what is already off - but a flag
+     * that used to work must not start failing the command line.
+     */
+    @Option(names = "--no-explain", hidden = true,
+            description = "no longer needed: explaining is off unless --explain is given")
     boolean noExplain;
 
     @Option(names = "--verbose",
@@ -227,7 +236,7 @@ public final class Cli implements Callable<Integer> {
                 .dryRun(dryRun)
                 .only(only)
                 .verbose(verbose)
-                .explain(!noExplain)
+                .explain(explain && !noExplain)
                 .sockseekArgs(splitSockseekArgs())
                 .sockseekConf(sockseekConf)
                 .build();
@@ -252,7 +261,7 @@ public final class Cli implements Callable<Integer> {
                 new Extra("dry_run", dryRun ? Boolean.TRUE : null),
                 new Extra("preview", preview ? Boolean.TRUE : null),
                 new Extra("verbose", verbose ? Boolean.TRUE : null),
-                new Extra("explain", noExplain ? Boolean.FALSE : null),
+                new Extra("explain", explain && !noExplain ? Boolean.TRUE : null),
                 new Extra("sockseek_conf", sockseekConf),
                 new Extra("sockseek_args", sockseekArgs.isEmpty() ? null : sockseekArgs))) {
             if (extra.value() != null) {

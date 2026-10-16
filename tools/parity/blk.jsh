@@ -1,7 +1,9 @@
 import dev.litetook.sockseek.cli.*;
 import java.nio.file.*;
 import java.util.*;
-var app = Path.of("C:/claude_tasks/Soulseek-Batch");
+var fromEnv = System.getenv("SOCKSEEK_PY");
+var app = Path.of(fromEnv == null || fromEnv.isBlank()
+        ? "C:/claude_tasks/Soulseek-Batch" : fromEnv);
 var cases = List.of(List.<String>of(), List.of("--only", "mix"),
   List.of("--retries", "3", "--length-tol", "-1", "--dry-run"),
   List.of("--playlists", "lists", "--no-explain", "--verbose"));

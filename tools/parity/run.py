@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import re
 import os
 import subprocess
 import sys
@@ -51,7 +52,16 @@ PAIRS = {
 # state=0 (never searched, the run was cut short) and state=4 (skipped by
 # --skip-not-found) now say so here, while the Python tool still prints
 # "unknown reason code" for both - measured 2026-10-17, deliberate
-IGNORE = ("ffprobe_path", "is not doubled", "What to download?", "Paste the ", "state=0", "state=4")
+# explain = ...  the flag changed sides on 2026-10-17: the Java tool explains only when asked
+#                (--explain), the Python oracle explains unless told not to (--no-explain), so
+#                the configuration block reports it in opposite cases. The owner asked for the
+#                default off because every explained failure costs one more search
+IGNORE = ("ffprobe_path", "is not doubled", "What to download?", "Paste the ", "state=0",
+          "state=4", "explain = ")
+# The Java front end stopped being a copy on 2026-10-17, by the owner's request: it prices the
+# whole set and asks about it ONCE instead of once per playlist, and prints a numbered line
+# around every playlist it runs. The Python tool is the frozen oracle and has no counterpart.
+NEW_FRONT = re.compile(r"^(To download: |That is about |\[\d+/\d+\] )")
 
 
 def java_classpath() -> str:
@@ -89,7 +99,7 @@ def both(name: str, work: Path) -> tuple[str, str]:
 
 def clean(text: str) -> list[str]:
     return [line for line in text.splitlines()
-            if not any(skip in line for skip in IGNORE)]
+            if not any(skip in line for skip in IGNORE) and not NEW_FRONT.match(line)]
 
 
 def main() -> int:

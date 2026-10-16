@@ -71,7 +71,14 @@ FOREIGN = {
     "--all", "--check", "--upgrade",
 }
 # the differences between the two implementations that are meant to be there
-EXPECTED = {"--ffprobe-check", "--ffprobe"}
+#
+# --explain / --no-explain: explaining a failed track costs one more search per failure, and
+# the search limiter (34 per 220 s) is what makes a big playlist take a night. On 2026-10-16
+# the owner asked for it off by default, so the Java tool turns it ON with --explain while the
+# Python tool, frozen as the oracle, still turns it OFF with --no-explain. The Java tool keeps
+# accepting --no-explain as a hidden no-op, which is why its manual names an option its --help
+# does not list.
+EXPECTED = {"--ffprobe-check", "--ffprobe", "--explain", "--no-explain"}
 
 
 def java() -> str:

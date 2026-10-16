@@ -84,7 +84,10 @@ public final class App {
                                   (chrome, firefox, edge, brave, ...) - you log in there, not here
                 --version         print the version and exit
             Anything else is passed straight through to the engine, e.g. --length-tol 60, --verbose,
-            --no-explain, --dry-run.
+            --explain, --dry-run.
+
+            Everything you see on screen is also written to logs/session_<date>.log, one file per
+            start of this command.
 
             A tool it needs but cannot find (sockseek, and later yt-dlp) is offered for download at the
             version pinned in dependencies.yaml.""";
@@ -207,8 +210,23 @@ public final class App {
     public static void main(String[] args) {
         // Windows consoles are not UTF-8 by default, and playlists carry names like
         // "ADELA" with an accent and "Ben Bohmer" with an umlaut: say it explicitly
-        PrintStream out = new PrintStream(new FileOutputStream(FileDescriptor.out), true,
+        PrintStream console = new PrintStream(new FileOutputStream(FileDescriptor.out), true,
                 StandardCharsets.UTF_8);
+        Path appDir = Path.of(".").toAbsolutePath().normalize();
+        // One file per start of the command, holding the whole conversation - the menu, the
+        // questions and every line the engine printed. The run logs (run_NNNN_...) hold one
+        // run each and say nothing about what was asked before it; the owner asked on
+        // 2026-10-16 for the screen itself to be kept.
+        //
+        // What it does NOT hold is sockseek's own display: that child inherits the real console
+        // handles (Runner.inheritIO), so it writes past this stream entirely. Its lines go to
+        // logs/sockseek_<run>_<name>.log instead, with --verbose.
+        PrintStream out = Session.onlyAsking(args) ? console
+                : Session.tee(console, appDir.resolve("logs"));
+        // the engine prints through a System.out of its own, so that one is pointed at the
+        // same file rather than being taught about it. System.err is left alone: the parity
+        // harness reads the two streams apart.
+        System.setOut(out);
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(System.in, StandardCharsets.UTF_8));
         System.exit(run(args, prompt -> {
@@ -340,7 +358,11 @@ public final class App {
             break;
         }
 
+        // Everything is shown and priced FIRST, then asked about once. Until 2026-10-17 the
+        // question came per playlist, so picking "all" meant sitting at the keyboard for the
+        // whole night answering it: "один раз дати відповідь на всі питання початкові".
         int worst = 0;
+        List<Info> work = new ArrayList<>();
         for (Info info : chosen) {
             out.accept("");
             formatMissing(info).forEach(out);
@@ -362,17 +384,32 @@ public final class App {
                 out.accept("Nothing to do.");
                 continue;
             }
+            work.add(info);
+        }
+        if (work.isEmpty()) {
+            return worst;
+        }
+
+        out.accept("");
+        formatPrice(work).forEach(out);
+        if (!front.yes() && !confirm(ask, wanted(work))) {
+            out.accept("Skipped.");
+            return worst;
+        }
+        // the tool is asked for only once the answer is yes: nobody wants to be asked about
+        // a 50 MB download before seeing what it would be for
+        if (!haveSockseek(config, front.yes() ? null : ask, out, wiring)) {
+            return 2;
+        }
+
+        int wanted = wanted(work);
+        int arrivedSoFar = 0;
+        for (int number = 0; number < work.size(); number++) {
+            Info info = work.get(number);
+            String step = "[" + (number + 1) + "/" + work.size() + "] ";
             out.accept("");
-            if (!front.yes() && !confirm(ask, info.missing().size())) {
-                out.accept("Skipped.");
-                continue;
-            }
-            // the tool is asked for only once the answer is yes: nobody wants to be asked about
-            // a 50 MB download before seeing what it would be for
-            if (!haveSockseek(config, front.yes() ? null : ask, out, wiring)) {
-                return 2;
-            }
-            out.accept("");
+            out.accept(step + info.name() + ": searching " + info.missing().size()
+                    + " missing track(s)");
             List<String> argv = new ArrayList<>(List.of("--only", info.name()));
             argv.addAll(front.extra());
             int code;
@@ -388,6 +425,13 @@ public final class App {
                         + "), going on to the next playlist");
                 code = 1;
             }
+            // counted here rather than asked of the engine, which answers with an exit code
+            // only: the folder is the truth either way, and it is the same reading the menu did
+            int arrived = info.missing().size() - stillMissing(info, outputDir);
+            arrivedSoFar += Math.max(0, arrived);
+            out.accept(step + info.name() + ": " + Math.max(0, arrived) + " of "
+                    + info.missing().size() + " arrived - " + arrivedSoFar + " of " + wanted
+                    + " in all");
             worst = Math.max(worst, code);
             if (code == 130) {   // Ctrl+C means stop the session, not "skip to the next playlist"
                 out.accept("Interrupted.");
@@ -395,6 +439,59 @@ public final class App {
             }
         }
         return worst;
+    }
+
+    /** How many tracks the whole set is missing - the number the one question is about. */
+    static int wanted(List<Info> work) {
+        return work.stream().mapToInt(info -> info.missing().size()).sum();
+    }
+
+    /**
+     * What this is going to cost, before the only yes of the session.
+     *
+     * <p>The minutes are search time alone and nothing else: sockseek asks the Soulseek server
+     * at most 34 times per 220 seconds, and that limiter - not the downloads - is what makes a
+     * big playlist take a night. The owner's own words on it, 2026-10-17: "я бачив що там треба
+     * періодично search rate чекати, але це норм". Saying the number up front turns that wait
+     * from a hang into a price.
+     */
+    public static List<String> formatPrice(List<Info> work) {
+        int tracks = wanted(work);
+        List<String> lines = new ArrayList<>();
+        lines.add("To download: " + work.size() + " playlist(s), " + tracks
+                + " missing track(s).");
+        lines.add("That is about " + tracks + " search(es); sockseek is allowed "
+                + SEARCHES_PER_WINDOW + " per " + WINDOW_SECONDS + " s, so searching alone "
+                + "takes about " + searchMinutes(tracks) + " min. Downloads come on top.");
+        return List.copyOf(lines);
+    }
+
+    /** sockseek's own search limiter, which it keeps to in order to avoid a 30-minute ban. */
+    static final int SEARCHES_PER_WINDOW = 34;
+    static final int WINDOW_SECONDS = 220;
+
+    /**
+     * Whole minutes of search for that many tracks, rounded up, never less than one.
+     *
+     * <p>The first {@value #SEARCHES_PER_WINDOW} searches cost nothing but their own time; it
+     * is every window after that which has to be waited out.
+     */
+    static int searchMinutes(int tracks) {
+        int windows = Math.max(0, (tracks - 1) / SEARCHES_PER_WINDOW);
+        return Math.max(1, (int) Math.ceil(windows * WINDOW_SECONDS / 60.0));
+    }
+
+    /** How many of this playlist's missing tracks are still missing, read from the folder. */
+    private static int stillMissing(Info info, Path outputDir) {
+        try {
+            Status now = SockseekIndex.playlistStatus(Playlist.fromFile(info.path()).entries(),
+                    outputDir.resolve(info.name()));
+            return (int) info.missing().stream()
+                    .filter(entry -> !now.files().containsKey(entry.original())).count();
+        } catch (IOException | RuntimeException cannotRead) {
+            // the progress line is not worth a failed run; say nothing moved rather than guess
+            return info.missing().size();
+        }
     }
 
     /** Every playlist in the folder, with what is already downloaded. */

@@ -55,6 +55,14 @@ WRITTEN = ("logs", "work")
 # --skip-not-found) now say so here, while the Python tool still prints
 # "unknown reason code" for both - measured 2026-10-17, deliberate
 IGNORE = ("ffprobe_path", "What to download?", "Paste the ", "state=0", "state=4")
+# The front end of the Java tool deliberately stopped being a copy on 2026-10-17: it asks
+# about the whole set ONCE instead of once per playlist, prices the set before asking, and
+# prints a numbered progress line around every playlist it runs. The owner asked for all
+# three ("один раз дати відповідь на всі питання початкові", "в процесі щоб було видно").
+# The Python tool is frozen as the oracle, so these lines have no counterpart there - and
+# because the single question also moves the engine's output to after ALL the tables, the
+# two streams are compared apart (see split() below) rather than as one interleaved text.
+NEW_FRONT = re.compile(r"^(To download: |That is about |\[\d+/\d+\] )")
 # sockseek's own meaning: 1 = downloaded, 3 = was already there and skipped
 OK_STATES = {"1", "3"}
 # the two runs are a second apart, and the clock is not part of the parity - the SHAPE of the
@@ -130,6 +138,25 @@ def clean(text: str) -> list[str]:
             if not any(skip in line for skip in IGNORE)]
 
 
+def split(lines: list[str]) -> tuple[list[str], list[str]]:
+    """(what the engine printed, what the front end printed).
+
+    The engine stamps every line with a clock and the front end stamps none, which is what
+    makes the two separable. They are compared apart because the Java front end now asks its
+    one question before any playlist runs, so the engine's blocks sit after all the tables
+    instead of between them - a different ORDER of the same lines, which a single diff would
+    report as hundreds of changes while nothing either tool says has changed.
+
+    Blank lines are dropped from the front end for the same reason: the Python tool spaces a
+    question out from the table above it, and the Java tool no longer asks that question
+    there. What both still have to say word for word is every line that has words on it.
+    """
+    engine = [line for line in lines if line.startswith("[time]")]
+    front = [line for line in lines
+             if line.strip() and not line.startswith("[time]") and not NEW_FRONT.match(line)]
+    return engine, front
+
+
 def run(command: list[str], folder: Path) -> str:
     done = subprocess.run(command, cwd=folder, input=ANSWERS, capture_output=True, text=True,
                           encoding="utf-8", errors="replace",
@@ -168,14 +195,20 @@ def main() -> int:
     try:
         for state in args.only or list(STATES):
             python, java_out = both(state, temporary / state)
-            difference = list(difflib.unified_diff(python, java_out, "python", "java",
-                                                   lineterm="", n=1))
-            if difference:
-                worst = 1
-                print(f"XX {state}: DIFFERS - {len(difference)} diff line(s)")
-                for line in difference[:40]:
-                    print("   " + line)
-            else:
+            python_engine, python_front = split(python)
+            java_engine, java_front = split(java_out)
+            differed = False
+            for part, mine, theirs in (("engine", python_engine, java_engine),
+                                       ("front end", python_front, java_front)):
+                difference = list(difflib.unified_diff(mine, theirs, "python", "java",
+                                                       lineterm="", n=1))
+                if difference:
+                    worst = 1
+                    differed = True
+                    print(f"XX {state} / {part}: DIFFERS - {len(difference)} diff line(s)")
+                    for line in difference[:40]:
+                        print("   " + line)
+            if not differed:
                 print(f"ok {state}: {len(python)} lines identical - the whole tool, "
                       f"{playlists} playlists, {' '.join(FLAGS)}")
         return worst

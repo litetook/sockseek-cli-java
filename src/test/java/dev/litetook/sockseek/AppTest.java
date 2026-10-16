@@ -449,6 +449,69 @@ class AppTest {
                 run.printed().toString());
     }
 
+    // ------------------------------------------------------- one question, and the progress
+
+    @Test
+    void severalPlaylistsAreAskedAboutOnceForAllOfThem() throws IOException {
+        ready();
+        playlist("one", "Artist - A", "Artist - B");
+        playlist("two", "Artist - C");
+        Run run = run(List.of(), "1", "all", "y");
+        assertEquals(0, run.code());
+        assertEquals(List.of(List.of("--only", "one"), List.of("--only", "two")), engine.calls);
+        assertEquals(1, run.printed().stream()
+                .filter(line -> line.startsWith("Download these")).count(),
+                run.printed().toString());
+        assertTrue(run.said("Download these 3? [y] yes  [n] no: "), run.printed().toString());
+    }
+
+    @Test
+    void thePriceIsShownBeforeTheOnlyYes() throws IOException {
+        ready();
+        playlist("one", "Artist - A", "Artist - B");
+        playlist("two", "Artist - C");
+        Run run = run(List.of(), "1", "all", "n");
+        assertTrue(run.said("To download: 2 playlist(s), 3 missing track(s)."),
+                run.printed().toString());
+        assertTrue(run.said("34 per 220 s"), run.printed().toString());
+        assertEquals(List.of(), engine.calls);
+    }
+
+    @Test
+    void noNowStopsTheWholeSetRatherThanOnePlaylist() throws IOException {
+        ready();
+        playlist("one", "Artist - A");
+        playlist("two", "Artist - C");
+        Run run = run(List.of(), "1", "all", "n");
+        assertEquals(0, run.code());
+        assertTrue(run.said("Skipped."), run.printed().toString());
+        assertEquals(List.of(), engine.calls);
+    }
+
+    @Test
+    void everyPlaylistReportsItsShareAndTheRunningTotal() throws IOException {
+        ready();
+        playlist("one", "Artist - A", "Artist - B");
+        playlist("two", "Artist - C");
+        Run run = run(List.of(), "1", "all", "y");
+        // the fake engine downloads nothing, so nothing arrives - what is tested is that the
+        // line is there, numbered, and counts against the whole set
+        assertTrue(run.said("[1/2] one: 0 of 2 arrived - 0 of 3 in all"),
+                run.printed().toString());
+        assertTrue(run.said("[2/2] two: 0 of 1 arrived - 0 of 3 in all"),
+                run.printed().toString());
+    }
+
+    @Test
+    void theSearchMinutesCountWindowsRatherThanSearches() {
+        // one window is free: its searches cost only their own time
+        assertEquals(1, App.searchMinutes(1));
+        assertEquals(1, App.searchMinutes(34));
+        assertEquals(4, App.searchMinutes(35));     // one window waited out: 220 s
+        assertEquals(4, App.searchMinutes(68));
+        assertEquals(8, App.searchMinutes(69));     // two windows: 440 s
+    }
+
     private static Status empty() {
         return new Status(List.of(), List.of(), Map.of());
     }

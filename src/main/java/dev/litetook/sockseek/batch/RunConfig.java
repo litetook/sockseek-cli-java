@@ -54,7 +54,9 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path soc
         private boolean dryRun;
         private String only;
         private boolean verbose;
-        private boolean explain = true;
+        // Off by default since 2026-10-17: the extra query per failed track doubled the time a
+        // big playlist spent in the search limiter, and the owner reads the reasons rarely.
+        private boolean explain;
         private List<String> sockseekArgs = List.of();
         private Path sockseekConf;
 
