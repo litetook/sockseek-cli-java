@@ -62,8 +62,11 @@ Playlists/ output/ work/ logs/   input, downloads, generated list files, run log
    the sha256 of every file verified **before** it is put in place. A run that needs a tool it
    cannot find offers to fetch exactly that one, after you have chosen a playlist and confirmed
    the download. Nothing is installed system-wide and nothing needs administrator rights.
-   **[port]** The Python tool also has `py setup.py` to fetch them up front; here the on-demand
-   path is the only one.
+   **[port]** The Python tool also has `py setup.py` to fetch them up front. There is no
+   counterpart here and there will not be one: the owner's decision of 2026-10-16 is that the
+   jar IS the delivery, so a separate setup step would only be one more thing to run. The
+   binaries still cannot live inside a jar - sockseek alone is 114 MB - so they keep arriving
+   on demand, checksum first.
 3. **The first run creates the three config files and stops**, because nothing can be
    downloaded before it knows who you are:
 
@@ -636,9 +639,9 @@ Things to try, roughly in this order:
 ## 9. Length check (ffprobe) - not in this version
 
 **[port]** The Python tool has an optional ffprobe step (`--ffprobe-check`, off by default since
-2026-10-07 by the owner's call). It is **not ported**: there is no `quality` module here, and
-`--ffprobe-check` or `--ffprobe PATH` ends the run with `2` and `Unknown option`. Whether it
-should be ported, left to the Python tool, or dropped from both is an open decision.
+2026-10-07 by the owner's call). It is **not ported, and that is settled**: the owner's decision
+of 2026-10-16 is that a probe after the download is not wanted. There is no `quality` module
+here, and `--ffprobe-check` or `--ffprobe PATH` ends the run with `2` and `Unknown option`.
 
 So nothing in this version verifies that a downloaded file holds the music that was asked for;
 the only claim about a file is the one its uploader made. The three facts that made the check
@@ -707,17 +710,19 @@ whose files are gone, and the index with the files. It never writes to the real 
 moves the real run counter. What it does not reach is the report a failed download writes: that
 needs sockseek to really run.
 
-**The differences that are meant to be there**, all of them a Python command this version does
-not have or a module that was not ported:
+**The differences that are meant to be there**, each one either a Python command this version
+does not have or something the owner decided not to carry over:
 
 | Where | Python | Here |
 |---|---|---|
 | the invocation in `--help` | `py run.py` | `run.cmd`, or `./run.sh` |
-| the pass-through examples in `--help` | include `--ffprobe-check` | dropped: no `quality` module |
-| the "now run this" hints | `py run.py --only X`, `py setup.py` | `run.cmd --only X`; there is no setup step |
-| the configuration block | has `ffprobe_path` | one line shorter |
+| the ffprobe step | `--ffprobe-check`, `--ffprobe PATH` | **dropped by decision, 2026-10-16**: no probe after the download |
+| the configuration block | has `ffprobe_path` | one line shorter, for the same reason |
+| fetching the tools up front | `py setup.py` | **dropped by decision, 2026-10-16**: the jar is the delivery, binaries come on demand |
+| the "now run this" hints | `py run.py --only X`, `py setup.py` | `run.cmd --only X` |
 | where a relative path starts | the folder holding `run.py` | the working directory (section 5) |
 | the pre-release `.ini` migration | present | not ported (section 5) |
+| a malformed quote in a csv | read silently | read, with a WARN naming what is wrong (section 1a) |
 
 Everything else is compared, and a difference in the text is a bug, not a detail: this text is
 the interface of the tool.
