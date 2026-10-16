@@ -324,7 +324,19 @@ public final class App {
             out.accept("");
             List<String> argv = new ArrayList<>(List.of("--only", info.name()));
             argv.addAll(front.extra());
-            int code = wiring.engine().run(List.copyOf(argv));
+            int code;
+            try {
+                code = wiring.engine().run(List.copyOf(argv));
+            } catch (RuntimeException broke) {
+                // One playlist must never take the rest of the session with it. A bug inside
+                // the engine arrives here as a throw rather than an exit code - that is what
+                // the malformed csv of 2026-10-16 did - and the playlists the person is still
+                // waiting for are worth more than a stack trace.
+                out.accept("ERROR " + info.name() + ": the engine broke on this one ("
+                        + broke.getClass().getSimpleName() + ": " + broke.getMessage()
+                        + "), going on to the next playlist");
+                code = 1;
+            }
             worst = Math.max(worst, code);
             if (code == 130) {   // Ctrl+C means stop the session, not "skip to the next playlist"
                 out.accept("Interrupted.");

@@ -270,6 +270,32 @@ class AppTest {
     }
 
     @Test
+    void onePlaylistBlowingUpDoesNotTakeTheOthersWithIt() throws IOException {
+        ready();
+        playlist("one", "Artist - One");
+        playlist("two", "Artist - Two");
+        List<List<String>> calls = new ArrayList<>();
+        App.Engine exploding = argv -> {
+            calls.add(argv);
+            if (argv.contains("one")) {
+                // what a bug inside the engine looks like from here: not an exit code, a
+                // throw. Today's csv crash was exactly this shape.
+                throw new IllegalStateException("something inside the engine broke");
+            }
+            return 0;
+        };
+        Script script = new Script("1", "all", "y", "y");
+        int code = App.run(new String[0], script, script.printed::add,
+                new App.Wiring(home, exploding, new LinkReader(), url -> {
+                    throw new IOException("a test must not reach the network");
+                }));
+        assertEquals(2, calls.size(), "the second playlist never ran: " + calls);
+        assertEquals(1, code, script.printed.toString());
+        assertTrue(script.printed.stream().anyMatch(line -> line.contains("ERROR")),
+                script.printed.toString());
+    }
+
+    @Test
     void theWorstExitCodeOfTheRunsIsTheExitCode() throws IOException {
         ready();
         playlist("mix", "Artist - One");
