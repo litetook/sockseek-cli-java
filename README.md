@@ -66,21 +66,30 @@ why in detail.
 
 ## How it is checked
 
-This is a port of [sockseek-cli-playlist-downloader](https://github.com/litetook/sockseek-cli-playlist-downloader),
-and that Python tool is kept as the **oracle**. The gate is not a test suite: both tools are
-run over the same real playlists and every line they print is diffed.
+Three gates beyond the unit tests, all offline — no network, no Soulseek account, and nothing
+ever run inside the owner's own folder:
 
 ```bash
-py tools/parity/run.py --offline     # eight module pairs, no network
-py tools/parity/run.py               # all ten, Spotify and live Soulseek included
-py tools/parity/e2e.py               # both whole tools, three states of the export folder
-py tools/parity/docs.py              # the manuals against the options the tools really accept
+py tools/gates/snapshot.py     # the whole tool over 24 real playlists, against a recording
+py tools/gates/mock.py         # the real sockseek binary in mock mode, end to end
+py tools/gates/docs.py         # the manuals against the options the tool really accepts
 ```
 
-Where the two deliberately differ — the single confirmation, the live lines, `--explain`
-changing sides, the two settings the Python tool never had — the difference is named in the
-gate rather than hidden. The gates work from a sandbox copy and never run anything inside the
-owner's own folder.
+**snapshot** answers "did anything change that I did not mean to change?". It runs the whole
+command over the owner's real playlists in three states of the output folder and diffs every
+line against a recorded answer. A deliberate change is re-recorded with `--record`, and that
+diff goes in the commit — it says in plain text what every playlist will now see.
+
+**mock** is the one that can surprise you. sockseek has a mock mode, so the live count, the
+record of what happened and the skip that follows from it are exercised against the real
+binary. Three of today's measurements came out of it, and none of them matched the help text.
+
+This was a port of
+[sockseek-cli-playlist-downloader](https://github.com/litetook/sockseek-cli-playlist-downloader),
+and until 2026-10-17 the gate was that Python tool run side by side with this one, every line
+diffed. It answered "is the port faithful?", and the answer was yes. Once the two deliberately
+diverged, each new feature cost an entry in an ignore list and the gate was measuring the
+ignore list. The Python tool is legacy now; the recording took its place.
 
 ## License
 

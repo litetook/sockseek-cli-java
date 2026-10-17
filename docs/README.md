@@ -546,19 +546,28 @@ problem — a bad option, a missing `sockseek.exe`, an unknown `--only` name.
 ## Tests and gates
 
 ```bash
-./gradlew test                                 # 243 tests
-py -X utf8 tools/parity/run.py                 # 8 offline pairs against the Python tool
-py -X utf8 tools/parity/e2e.py                 # both whole tools over 24 real playlists
-py -X utf8 tools/parity/docs.py                # this manual against the options that exist
+./gradlew test                        # 249 tests
+py -X utf8 tools/gates/snapshot.py    # the whole tool over 24 real playlists, vs a recording
+py -X utf8 tools/gates/mock.py        # the real sockseek binary in mock mode, end to end
+py -X utf8 tools/gates/docs.py        # this manual against the options that exist
 ```
 
-This is a Java port of a Python tool, and that Python tool is kept as the **oracle**: the two
-are run over the same real playlists and every line they print is compared. Where they
-deliberately differ, the difference is named in the gate rather than hidden — the single
-confirmation, the live `>>` lines, `--explain` changing sides, and the two keys the Python
-tool never had.
+All of it is offline: no network, no Soulseek account, and nothing is ever run inside the
+owner's own folder — the gates copy what they need into a temporary one.
 
-The gates never run anything inside the owner's own folder: they work from a sandbox copy.
+`snapshot.py` is the broad one. It runs the whole command over the real playlists in three
+states of the output folder and diffs every line against a recorded answer, so an accidental
+change anywhere shows up as text. When a change is meant, `--record` writes the new answer and
+the diff goes in the commit.
+
+`mock.py` is the sharp one: sockseek's mock mode lets the live count, the outcome record and
+the skip be exercised against the real binary, offline. Three of the measurements in this
+manual came out of it, and none of them matched the help text.
+
+Until 2026-10-17 the gate was the Python tool this was ported from, run side by side and
+diffed line by line. That answered "is the port faithful?" and the answer was yes; once the
+two deliberately diverged the gate started measuring its own ignore list instead. The Python
+tool is legacy now.
 
 Written by an AI assistant (Claude), directed by the repository owner, with no second human
 reviewer. What has been measured is dated; what has not is marked ⚠.
