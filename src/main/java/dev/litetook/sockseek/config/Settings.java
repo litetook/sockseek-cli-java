@@ -35,19 +35,42 @@ public final class Settings {
     private static final Map<String, String> PATH_DEFAULTS = Map.of(
             "sockseek", "sockseek.exe", "playlists", "Playlists", "output", "output");
 
+    /**
+     * The settings file, written when it is missing.
+     *
+     * <p>It carries a comment per key since 2026-10-17. Until then it was a bare list of
+     * names and values and the manual did the explaining, by the owner's call of 2026-10-11 -
+     * he reversed it on seeing the file: a setting you have to leave the file to understand
+     * is a setting you will not touch. The comments say what the key IS; the manual still has
+     * the why and the measurements behind each default.
+     */
     public static final String CONFIG_TEMPLATE = """
             paths:
+              # the sockseek binary; .exe is added or dropped to match what is really there
               sockseek: sockseek.exe
+              # folder of playlist .txt files - this is the input
               playlists: Playlists
+              # where the audio goes, one sub-folder per playlist
               output: output
 
             search:
+              # HARD filter: a shared file may differ from the playlist length by this many
+              # seconds, -1 turns it off
               length_tol_s: 45
+              # how many times to attempt one playlist; each attempt is a fresh sockseek
               retries: 1
-              playlist_timeout_min: 10
+              # wall clock for ONE attempt at one playlist, in minutes, 0 = no limit
+              playlist_timeout_min: 60
+              # stop a playlist when nothing has finished AND nothing has arrived on disk for
+              # this many seconds, 0 = never stop it
               stall_timeout_s: 300
+              # do not search again for a track nobody was sharing, if that was within this
+              # many hours; 0 = always search. Fractions are fine
               skip_not_found_hours: 2
+              # the brake across playlists: all of them together stay under this many searches
+              # per 220 s, or the Soulseek server bans the account for 30 minutes
               searches_per_window: 34
+              # remember in outcomes.tsv how each track ended; false ignores the file entirely
               use_cache: true
             """;
 
@@ -81,22 +104,45 @@ public final class Settings {
      * {@code 1000000} and {@code flac,wav,mp3}, which is a divergence on purpose.
      */
     public static final String SOCKSEEK_CONF_TEMPLATE = """
+            # sockseek's own options, without the leading --. No secrets here: this file is
+            # safe to share. The login goes in sockseek.local.conf, which overrides any key
+            # below as well. `sockseek.exe --help` is the full list.
+            #
+            # These two stay commented out: sockseek refuses a key with an empty value.
             # username =
             # password =
 
+            # --- how long to wait on a source that is not delivering ---
+            # milliseconds with no bytes arriving before this candidate is dropped
             max-stale-time = 12000
+            # how many candidates one track may be tried from before it is given up
             max-retries = 3
+            # an uploader that fails once drops down the ranking
             fails-to-downrank = 1
+            # an uploader that fails twice is left out for the rest of the run
             fails-to-ignore = 2
 
+            # --- quality ---
+            # the ONLY hard floor: a file below this bitrate is refused outright
             min-bitrate = 256
+            # everything with pref- only RANKS candidates and never refuses one
             pref-min-bitrate = 320
+            # 1411 kbps is CD lossless; anything above it is 24-bit or hi-res, so it ranks
+            # last and arrives only when there is nothing cheaper
             pref-max-bitrate = 1411
+            # flac and mp3 equally preferred; wav is not listed, so it ranks below both
             pref-format = flac,mp3
 
+            # --- picking a source early ---
+            # take the first candidate that satisfies the preferred conditions instead of
+            # waiting for the whole search to finish
             fast-search = true
+            # but spend this many milliseconds collecting candidates first
             fast-search-delay = 2000
+            # a pass mark for that shortcut ONLY; a slower uploader stays in the normal set.
+            # The unit is undocumented and still unproven - 1 is sockseek's own default
             fast-search-min-up-speed = 200
+            # prefer files whose path contains the track title / the artist
             pref-strict-title = true
             pref-strict-artist = true
             """;

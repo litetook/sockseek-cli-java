@@ -55,7 +55,7 @@ class SettingsTest {
         assertEquals(List.of(), warnings);
         assertEquals(OptionalInt.of(45), config.integer("length_tol_s"));
         assertEquals(OptionalInt.of(1), config.integer("retries"));
-        assertEquals(10.0, config.decimal("playlist_timeout_min").orElseThrow());
+        assertEquals(60.0, config.decimal("playlist_timeout_min").orElseThrow());
         assertEquals(Map.of("sockseek", "sockseek.exe", "playlists", "Playlists",
                 "output", "output"), config.paths());
     }
@@ -71,9 +71,20 @@ class SettingsTest {
     }
 
     @Test
-    void theFileCarriesNoComments() {
-        // owner, 2026-10-11: the config must read like a list of values, explanations are in docs
-        assertFalse(Settings.CONFIG_TEMPLATE.contains("#"));
+    void everySettingCarriesAComment() {
+        // owner, 2026-10-17, reversing his own call of 2026-10-11 that the file should be a
+        // bare list with the explaining left to the manual: "чому не на всіх пропертях є
+        // короткий коментар який точно пояснює що це". A setting you have to leave the file
+        // to understand is a setting you will not touch.
+        List<String> lines = Settings.CONFIG_TEMPLATE.lines().toList();
+        for (int n = 0; n < lines.size(); n++) {
+            String line = lines.get(n).strip();
+            if (line.isEmpty() || line.startsWith("#") || line.endsWith(":")) {
+                continue;   // blank, a comment, or a section heading
+            }
+            String above = n == 0 ? "" : lines.get(n - 1).strip();
+            assertTrue(above.startsWith("#"), line + " has no comment above it");
+        }
     }
 
     @Test

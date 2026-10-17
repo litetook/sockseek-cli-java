@@ -151,7 +151,16 @@ class RunnerTest {
         assertTrue(child.isAlive());
         Runner.killTree(child);
         assertFalse(child.isAlive(), "the process should be gone");
-        assertFalse(child.descendants().findAny().isPresent(), "and so should its children");
+        // the handles outlive the kill by a moment on Windows, so give them one - without
+        // this the test fails about one run in twenty and teaches people to re-run tests
+        boolean gone = false;
+        for (int wait = 0; wait < 40 && !gone; wait++) {
+            gone = child.descendants().findAny().isEmpty();
+            if (!gone) {
+                Thread.sleep(50);
+            }
+        }
+        assertTrue(gone, "and so should its children");
     }
 
     // ------------------------------------------------------------------ the binary itself

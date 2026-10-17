@@ -34,10 +34,12 @@ class CliTest {
         String said = block(parsed(app));
         assertTrue(Files.isRegularFile(app.resolve("config.yaml")));
         assertTrue(said.contains("  length_tol_s = 45 [config]"), said);
-        assertTrue(said.contains("  playlist_timeout_min = 10 [config]"), said);
+        // 60, not the 10 it shipped with until 2026-10-17: ten minutes is what cut
+        // run #0056 off with 35 tracks unsearched, eleven of them never even started
+        assertTrue(said.contains("  playlist_timeout_min = 60 [config]"), said);
         assertTrue(said.contains("  retries = 1 [config]"), said);
-        // a whole number reads as a whole number, not 10.0
-        assertTrue(!said.contains("10.0"), said);
+        // a whole number reads as a whole number, not 60.0
+        assertTrue(!said.contains("60.0"), said);
     }
 
     @Test
