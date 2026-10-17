@@ -12,6 +12,11 @@ around it: one confirmation for the whole night, a live count, a watchdog for a 
 gone quiet, a memory of what nobody was sharing, and a brake that keeps the search rate under
 the limit that gets accounts banned.
 
+> **Written entirely by an AI.** Code, tests, checks and documentation were produced and
+> tested by **Claude Opus 5** at high reasoning effort, directed by the repository owner.
+> **No human has reviewed the code.** It handles your Soulseek password and writes to your
+> disk — worth knowing before you run it.
+
 ```
 Playlists:
 
@@ -257,8 +262,9 @@ pinned by tests. A hand-written fat jar task rather than a shading plugin.
 
 Developed and measured on Windows; the pins cover macOS and Linux, but neither has been tried.
 
-Written with AI, directed by the repository owner, with no second human reviewer. What has
-been measured is in the manual, dated; what has not is marked ⚠.
+Every line of this - the code, the tests, the gates and both manuals - was written and
+tested by **Claude Opus 5** at high reasoning effort, directed by the repository owner.
+No human has reviewed the code. What has been measured is dated; what has not is marked ⚠.
 
 ## License
 

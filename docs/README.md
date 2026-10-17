@@ -658,5 +658,6 @@ diffed line by line. That answered "is the port faithful?" and the answer was ye
 two deliberately diverged the gate started measuring its own ignore list instead. The Python
 tool is legacy now.
 
-Written by an AI assistant (Claude), directed by the repository owner, with no second human
-reviewer. What has been measured is dated; what has not is marked ⚠.
+Every line of this - the code, the tests, the gates and both manuals - was written and
+tested by **Claude Opus 5** at high reasoning effort, directed by the repository owner.
+No human has reviewed the code. What has been measured is dated; what has not is marked ⚠.
