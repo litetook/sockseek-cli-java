@@ -81,6 +81,11 @@ public final class Cli implements Callable<Integer> {
                     + "many days; 0 = always search (default 1)")
     Integer skipNotFoundDays;
 
+    @Option(names = "--searches-per-window", paramLabel = "N",
+            description = "keep the searches of ALL playlists together under this many per "
+                    + "220 s, by pausing between them; 0 = no pause (default 34)")
+    Integer searchesPerWindow;
+
     @Option(names = "--dry-run",
             description = "write the list file, print the sockseek command, run nothing")
     boolean dryRun;
@@ -189,6 +194,7 @@ public final class Cli implements Callable<Integer> {
             case "retries" -> retries;
             case "stall_timeout_s" -> stallTimeout;
             case "skip_not_found_days" -> skipNotFoundDays;
+            case "searches_per_window" -> searchesPerWindow;
             default -> null;
         };
     }

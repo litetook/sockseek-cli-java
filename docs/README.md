@@ -207,6 +207,32 @@ which is the 220-second search window — waiting for that window is not a hang,
 here tries to shorten it. What this is **not** is a deadline for one track: there is no way to
 cancel a single sockseek job from outside, so the tool does not pretend to have one.
 
+### `searches_per_window` — 34 · `--searches-per-window`
+
+**What it's for.** The brake across playlists. It keeps the searches of **all** of them
+together under this many per 220 seconds, by pausing between playlists. `0` turns it off.
+
+**Behind the scenes.** sockseek has the same budget, but it lives inside **one process**, and
+this tool runs one process per playlist. Every new playlist therefore starts with a full
+budget while the Soulseek server has been counting the whole time — so a row of small
+playlists can put seventy searches on the server in two minutes, with every process entirely
+within its own rules, and the account is banned for 30 minutes.
+
+Nothing had noticed while playlists were picked one at a time by hand, with minutes between
+them. `--all` made it real on the first night it existed.
+
+A playlist earns the time its searches cost — `searches / 34 × 220` seconds — and if it
+finished sooner the next one waits for the difference. A big playlist usually takes longer
+than it earned and waits for nothing. What is counted is the lines actually handed to
+sockseek, not the missing tracks: the cache holds some of those back, and waiting for a
+search that was never made would be waiting for nothing.
+
+The cost is worth saying plainly: 672 missing tracks cannot be searched in under
+`672 / 34 × 220` seconds, about 72 minutes, however they are split up. Being faster than that
+was never speed — it was borrowing against a ban.
+
+A dry run and a `--preview` ask the server for nothing, so neither is paced.
+
 ### `skip_not_found_days` — 1 day · `--skip-not-found-days`
 
 **What it's for.** Do not spend today's searches on a track that nobody had today. `0` searches
@@ -531,7 +557,8 @@ still asks which playlists, which is one keystroke too many for a scheduled nigh
 
 Engine: `--playlists DIR`, `--output DIR`, `--sockseek FILE`, `--config FILE`,
 `--sockseek-conf FILE`, `--length-tol SEC`, `--playlist-timeout MIN`, `--stall-timeout SEC`,
-`--skip-not-found-days DAYS`, `--retries N`, `--explain`, `--preview`, `--dry-run`,
+`--skip-not-found-days DAYS`, `--searches-per-window N`, `--retries N`, `--explain`,
+`--preview`, `--dry-run`,
 `--verbose`, `--sockseek-args "STRING"`.
 
 `--no-explain` is still accepted and does nothing: explaining is off unless you ask for it.

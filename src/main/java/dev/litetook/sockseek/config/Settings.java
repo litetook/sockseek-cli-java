@@ -47,6 +47,7 @@ public final class Settings {
               playlist_timeout_min: 10
               stall_timeout_s: 300
               skip_not_found_days: 1
+              searches_per_window: 34
             """;
 
     /**
@@ -118,7 +119,11 @@ public final class Settings {
                             + "0 = never (default 300)", List.of()),
             new Setting("skip_not_found_days", "--skip-not-found-days", Setting.Kind.INTEGER, 1,
                     0.0, "do not search again for a track nobody had, if that was within this "
-                            + "many days; 0 = always search (default 1)", List.of()));
+                            + "many days; 0 = always search (default 1)", List.of()),
+            new Setting("searches_per_window", "--searches-per-window", Setting.Kind.INTEGER,
+                    34, 0.0, "keep the searches of ALL playlists together under this many per "
+                            + "220 s, by pausing between them; 0 = no pause (default 34)",
+                    List.of()));
 
     /** Taken from the template rather than written out again: renaming a placeholder there must
      *  not quietly turn "you have not filled this in yet" into "you have". */

@@ -421,10 +421,16 @@ public final class App {
 
         int wanted = wanted(work);
         int arrivedSoFar = 0;
+        // A dry run and a preview ask the server for nothing, so there is nothing to pace -
+        // and pacing them would make the gates sit still for an hour.
+        boolean real = front.extra().stream()
+                .noneMatch(flag -> flag.equals("--dry-run") || flag.equals("--preview"));
+        Pace pace = new Pace(real ? searchesPerWindow(config, front) : 0, out);
         for (int number = 0; number < work.size(); number++) {
             Info info = work.get(number);
             String step = "[" + (number + 1) + "/" + work.size() + "] ";
             out.accept("");
+            pace.waitTurn();
             out.accept(step + info.name() + ": searching " + info.missing().size()
                     + " missing track(s)");
             List<String> argv = new ArrayList<>(List.of("--only", info.name()));
@@ -442,6 +448,8 @@ public final class App {
                         + "), going on to the next playlist");
                 code = 1;
             }
+            pace.spent(Pace.searchesOf(
+                    wiring.appDir().resolve("work").resolve(info.name() + ".list.txt")));
             // counted here rather than asked of the engine, which answers with an exit code
             // only: the folder is the truth either way, and it is the same reading the menu did
             int arrived = info.missing().size() - stillMissing(info, outputDir);
@@ -456,6 +464,31 @@ public final class App {
             }
         }
         return worst;
+    }
+
+    /**
+     * The global search brake, from the command line if it is there and the config if not.
+     *
+     * <p>Read here as well as in the engine because the pause happens BETWEEN engine runs,
+     * which is the only place that can see more than one playlist.
+     */
+    static int searchesPerWindow(Config config, Front front) {
+        List<String> given = front.extra();
+        for (int n = 0; n < given.size(); n++) {
+            String flag = given.get(n);
+            String value = flag.startsWith("--searches-per-window=")
+                    ? flag.substring("--searches-per-window=".length())
+                    : flag.equals("--searches-per-window") && n + 1 < given.size()
+                            ? given.get(n + 1) : null;
+            if (value != null) {
+                try {
+                    return Integer.parseInt(value.strip());
+                } catch (NumberFormatException notANumber) {
+                    return Pace.DEFAULT_PER_WINDOW;   // the engine will complain about it
+                }
+            }
+        }
+        return config.integer("searches_per_window").orElse(Pace.DEFAULT_PER_WINDOW);
     }
 
     /** How many tracks the whole set is missing - the number the one question is about. */

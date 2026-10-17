@@ -241,6 +241,21 @@ public final class Batch {
         if (!reportable.isEmpty() && !broke) {
             report(reportable, entries, rows, listFile, outDir, client);
         }
+        // The question the owner kept asking of a cut-short run: how many never got a turn?
+        // sockseek leaves state=0 on a row still in the queue, and eleven of them after the
+        // ten-minute ceiling of run #0056 read as eleven failures. They are not failures and
+        // they are not news about Soulseek - they were never searched, and saying the number
+        // in one line is the difference between "it did not find them" and "it did not reach
+        // them".
+        Map<String, IndexRow> byEntry = SockseekIndex.rowsByEntry(entries, rows);
+        long queued = still.stream()
+                .map(entry -> byEntry.get(entry.original()))
+                .filter(row -> row != null && row.state().strip().equals("0"))
+                .count();
+        if (queued > 0) {
+            log.accept(queued + " track(s) never got their turn before the run ended - they "
+                    + "were not searched, so nothing is known about them");
+        }
         log.accept("run #" + Runs.label(cfg.runNo()) + ": " + arrived.size() + " arrived, "
                 + still.size() + " still missing, " + after.have().size() + " of "
                 + entries.size() + " in the folder");

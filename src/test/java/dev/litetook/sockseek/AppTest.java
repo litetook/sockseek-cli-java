@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * The front end: what someone sees and what the engine is handed.
@@ -547,6 +548,57 @@ class AppTest {
         Run run = run(List.of("--all", "--only", "two", "--yes"));
         assertEquals(List.of(List.of("--only", "two")), engine.calls);
         assertTrue(run.said("--only wins"), run.printed().toString());
+    }
+
+    // ------------------------------------------------------------------ the search brake
+
+    @Test
+    void theFirstPlaylistNeverWaits() {
+        List<String> said = new ArrayList<>();
+        Pace pace = new Pace(34, said::add);
+        long before = System.nanoTime();
+        pace.waitTurn();
+        assertTrue((System.nanoTime() - before) / 1_000_000 < 500);
+        assertEquals(List.of(), said);
+    }
+
+    @Test
+    void aPlaylistThatSpentSearchesMakesTheNextOneWait() {
+        List<String> said = new ArrayList<>();
+        // 2 searches of a 4-per-window budget = half the window, and a window is 220 s
+        Pace pace = new Pace(4, said::add);
+        pace.waitTurn();
+        pace.spent(2);
+        Thread.currentThread().interrupt();   // so the wait ends at once instead of in 110 s
+        pace.waitTurn();
+        Thread.interrupted();                 // clear it again for the rest of the suite
+        assertEquals(1, said.size(), said.toString());
+        assertTrue(said.get(0).startsWith("pausing 1"), said.get(0));
+        assertTrue(said.get(0).contains("4 searches per 220 s"), said.get(0));
+    }
+
+    @Test
+    void zeroTurnsTheBrakeOff() {
+        List<String> said = new ArrayList<>();
+        Pace pace = new Pace(0, said::add);
+        pace.waitTurn();
+        pace.spent(1000);
+        pace.waitTurn();
+        assertEquals(List.of(), said);
+    }
+
+    @Test
+    void theSearchesCountedAreTheOnesActuallyHandedOver(@TempDir Path dir) throws IOException {
+        // not the missing tracks: the cache holds some of them back, and waiting for searches
+        // that were never made would be waiting for nothing
+        Path list = dir.resolve("mix.list.txt");
+        Files.writeString(list, """
+                s:"title=A"
+                s:"title=B"
+
+                """);
+        assertEquals(2, Pace.searchesOf(list));
+        assertEquals(0, Pace.searchesOf(dir.resolve("not-there.txt")));
     }
 
     private static Status empty() {
