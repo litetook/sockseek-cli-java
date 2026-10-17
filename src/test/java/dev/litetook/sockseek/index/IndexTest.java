@@ -112,10 +112,10 @@ class IndexTest {
     @Test
     void aMatchedFailureShowsStateReasonAndTheLine() {
         assertEquals("FAILED  state=2 reason=9 (no candidate passed the name/length/quality "
-                        + "conditions)  Funk Tribu - September - Cry For You (Funk Tribu Rework)"
+                        + "conditions)  Cosmic Drift - Pressure - Rivet (Cosmic Drift Rework)"
                         + " | 5:37",
                 SockseekIndex.format(failure(
-                        "Funk Tribu - September - Cry For You (Funk Tribu Rework) | 5:37",
+                        "Cosmic Drift - Pressure - Rivet (Cosmic Drift Rework) | 5:37",
                         "Cry For You", "2", "9")));
     }
 

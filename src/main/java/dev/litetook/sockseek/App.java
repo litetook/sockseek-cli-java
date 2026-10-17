@@ -211,7 +211,7 @@ public final class App {
 
     public static void main(String[] args) {
         // Windows consoles are not UTF-8 by default, and playlists carry names like
-        // "ADELA" with an accent and "Ben Bohmer" with an umlaut: say it explicitly
+        // "Aurora Beltran" with an accent and "Doner Kebab" with an umlaut: say it explicitly
         PrintStream console = new PrintStream(new FileOutputStream(FileDescriptor.out), true,
                 StandardCharsets.UTF_8);
         Path appDir = Path.of(".").toAbsolutePath().normalize();
