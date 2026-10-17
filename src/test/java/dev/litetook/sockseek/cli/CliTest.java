@@ -49,7 +49,7 @@ class CliTest {
         String said = block(parsed(app));
         assertTrue(said.contains("  retries = 3 [config]"), said);
         assertTrue(said.contains("  length_tol_s = 45 [default]"), said);
-        assertTrue(said.contains("  playlist_timeout_min = 40 [default]"), said);
+        assertTrue(said.contains("  playlist_timeout_min = 60 [default]"), said);
     }
 
     @Test
@@ -59,7 +59,7 @@ class CliTest {
         String said = block(parsed(app, "--retries", "3"));
         assertTrue(said.contains("  length_tol_s = 6 [config]"), said);
         assertTrue(said.contains("  retries = 3 [cli]"), said);
-        assertTrue(said.contains("  playlist_timeout_min = 40 [default]"), said);
+        assertTrue(said.contains("  playlist_timeout_min = 60 [default]"), said);
     }
 
     @Test

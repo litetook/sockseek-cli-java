@@ -36,25 +36,157 @@ Download these 31? [y] yes  [n] no: y
 [1/1] techno-hard: 24 of 31 arrived - 24 of 31 in all
 ```
 
-## Get it
+## Quick start
 
-Download `sockseek-cli.jar` from
-[Releases](https://github.com/litetook/sockseek-cli-java/releases), put it in a folder of its
-own, and run it. You need **a JDK 21** and nothing else — sockseek itself and yt-dlp are
-fetched on demand at pinned versions, each checked against its sha256 before it is put in
-place. Nothing is installed system-wide and nothing needs admin rights.
+**1. Get Java 21.** Nothing else is needed.
+[Temurin](https://adoptium.net/temurin/releases/?version=21) is the usual one; `java -version`
+should say 21 or higher.
+
+**2. Download the jar** from
+[Releases](https://github.com/litetook/sockseek-cli-java/releases) and put it in a folder of
+its own. That folder becomes the tool's home: playlists, downloads, logs and settings all
+live there.
+
+**3. Run it once.** It writes three settings files and stops, because it cannot download
+anything until it knows who you are.
+
+```bash
+java -jar sockseek-cli.jar
+```
+
+**4. Put your Soulseek login in `sockseek.local.conf`.** This is the only file you put a
+secret into, and the only one you should never share.
+
+```
+username = your-login
+password = your-password
+```
+
+**5. Write a playlist.** One `.txt` file per playlist in `Playlists/`. The file name becomes
+the name of the playlist and of its download folder. One track per line, the length after a
+`|`, lines starting with `#` ignored:
+
+```
+Aurora Beltran - Amber Jetty | 4:09
+Blue Kettle - Lantern Drift (Remix) | 5:37
+Cosmic Drift - Pressure Rivet
+```
+
+A length may be `m:ss`, `h:mm:ss` or plain seconds, and a line without one is searched with
+no length filter. If the playlist exists somewhere else already, import it rather than type
+it:
+
+```bash
+java -jar sockseek-cli.jar --import "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M"
+java -jar sockseek-cli.jar --import "https://soundcloud.com/artist/sets/a-set" --as outlier
+java -jar sockseek-cli.jar --import exported.csv --as techno-2026
+```
+
+**6. Run it for real.**
 
 ```bash
 java -jar sockseek-cli.jar              # pick a playlist, see what is missing, confirm
 java -jar sockseek-cli.jar --all --yes  # every playlist, no questions - the scheduled run
 ```
 
-The first run writes three config files and stops, because it cannot download anything until
-it knows who you are: put your Soulseek login in `sockseek.local.conf`, drop `.txt` playlists
-into `Playlists/`, and run it again. Every setting is in those files with a line saying what
-it does.
+sockseek itself is fetched the first time it is needed, at the version pinned in
+`dependencies.yaml`, checked against its sha256 before it is put in place. yt-dlp arrives the
+same way if you import from SoundCloud. Nothing is installed system-wide and nothing needs
+admin rights.
 
-Building from source instead: `./gradlew build`, and `run.cmd` / `./run.sh` do it for you.
+**7. Run it again tomorrow.** What you can get depends on who is online, so a second run over
+the same playlist is the normal way to pick up the rest. It searches only what is still
+missing.
+
+Building from source instead of downloading: `./gradlew build`, and `run.cmd` / `./run.sh` do
+it for you.
+
+### Where things end up
+
+| | |
+|---|---|
+| `Playlists/<name>.txt` | your lists - the input |
+| `output/<name>/` | the audio, flat, named `Artist - Title.ext` |
+| `output/<name>/_index.csv` | sockseek's index: the only link between a playlist line and a file |
+| `outcomes.tsv` | how each track ended last time, with the time and a run counter |
+| `logs/session_<date>.log` | everything you saw on screen, one file per start |
+| `logs/run_<NNNN>_<date>.log` | one run of one playlist |
+| `work/` | generated lists and the merged config - **holds your login in plain text**; safe to delete |
+
+---
+
+## Settings
+
+Two files, and the split is the whole point: `config.yaml` is what this tool decides,
+`sockseek.conf` is what sockseek decides. Both carry a comment per key, so you can work in
+them without coming back here. Every value can also be given on the command line, and the
+order is **command line > file > built-in default**. The run log opens with each value and
+where it came from, so "why is it this number?" is never a guess.
+
+### `config.yaml`
+
+| Key | Default | What it does |
+|---|---|---|
+| `paths.sockseek` | `sockseek.exe` | the sockseek binary; `.exe` is added or dropped to match what is really there |
+| `paths.playlists` | `Playlists` | folder of playlist `.txt` files |
+| `paths.output` | `output` | where the audio goes, one sub-folder per playlist |
+| `length_tol_s` | `45` | **hard filter.** A shared file may differ from your length by this many seconds; `-1` turns it off. sockseek's own 3 rejects the very file you asked for, because playlist lengths run short of the copies people share |
+| `retries` | `1` | attempts per playlist. A second attempt does earn tracks, but it doubles the clock and starts a fresh search budget, which raises the ban risk |
+| `playlist_timeout_min` | `60` | wall clock for **one attempt at one playlist**, in minutes; `0` = none |
+| `stall_timeout_s` | `300` | stop a playlist when nothing has finished **and** nothing has arrived on disk for this long; `0` = never. Not a deadline per track - there is no way to stop one transfer from outside |
+| `skip_not_found_hours` | `2` | do not search again for a track nobody was sharing, if that was within this many hours; `0` = always search. Fractions work |
+| `searches_per_window` | `34` | the brake: all playlists together stay under this many searches per 220 s, by pausing between them; `0` = no pause. The Soulseek server bans an account that goes faster |
+| `use_cache` | `true` | `false` makes `outcomes.tsv` not exist for the run: nothing read, nothing written |
+
+### `sockseek.conf`
+
+sockseek's own options without the leading `--`; `sockseek --help` is the full list. No
+secrets go here, so this file is safe to share.
+
+| Key | Default here | What it does |
+|---|---|---|
+| `max-stale-time` | `12000` | milliseconds with no bytes arriving before this source is dropped |
+| `max-retries` | `3` | how many sources one track may be tried from |
+| `fails-to-downrank` | `1` | an uploader that fails once drops down the ranking |
+| `fails-to-ignore` | `2` | an uploader that fails twice is left out for the rest of the run |
+| `min-bitrate` | `256` | **the only hard floor.** A file below this is refused outright |
+| `pref-min-bitrate` | `320` | everything `pref-` only **ranks** candidates; it never refuses one |
+| `pref-max-bitrate` | `1411` | CD lossless. Anything above it ranks last and arrives only when there is nothing cheaper |
+| `pref-format` | `flac,mp3` | both equally preferred; wav is left out, so it ranks below them |
+| `fast-search` | `true` | take the first candidate that satisfies the preferred conditions instead of waiting for the whole search |
+| `fast-search-delay` | `2000` | but collect candidates for this many milliseconds first |
+| `fast-search-min-up-speed` | `200` | a pass mark for that shortcut only; a slower uploader stays in the normal set. The unit is undocumented and unproven |
+| `pref-strict-title`, `pref-strict-artist` | `true` | prefer files whose path contains the title, the artist |
+
+Your login lives in a third file, `sockseek.local.conf`, which overrides any key above as
+well - so it is also the place for a machine-specific tweak. `--sockseek-conf FILE` adds one
+more layer for a single run.
+
+### On the command line
+
+Anything in the tables above, as a flag: `--length-tol 90`, `--stall-timeout 0`,
+`--skip-not-found-hours 0`, `--no-cache`. And these, which exist only there:
+
+| Flag | What it does |
+|---|---|
+| `--all` | take every playlist without asking which |
+| `--yes` | skip the confirmation; together with `--all`, no questions at all |
+| `--only NAME` | one playlist, by file name without `.txt` |
+| `--import WHAT` | turn a link or an exported file into a playlist, and stop |
+| `--as NAME`, `--overwrite` | the name for that import, and permission to replace |
+| `--cookies-from-browser B` | read a private SoundCloud set with your browser's own login |
+| `--explain` | after the run, search once more for every failed track and say why it was rejected - one extra search each |
+| `--preview` | print what the search returns, download nothing |
+| `--dry-run` | print the sockseek command, run nothing |
+| `--verbose` | sockseek's own log, in `logs/sockseek_<run>_<name>.log` |
+| `--sockseek-args "..."` | raw arguments passed straight through to sockseek |
+
+Exit codes: `0` the run worked and tracks may still be missing, `1` the tool failed, `2` a
+setup problem.
+
+**[docs/README.md](docs/README.md) is the full manual** - the same settings explained twice
+over, with what happens behind each and the measurement behind every default, what to do
+about a track that will not come down, and an honest list of what this cannot do.
 
 ## What it adds to sockseek
 
@@ -68,11 +200,6 @@ Building from source instead: `./gradlew build`, and `run.cmd` / `./run.sh` do i
 | **Only what is missing** | a track already on disk is never sent to sockseek |
 | **Reasons in words** | `reason=9` in sockseek's index means both "nobody had it" and "found and rejected"; `--explain` searches again with every condition off and says which |
 | **The screen, kept** | `logs/session_<date>.log` holds everything you saw, including the questions you were asked |
-
-**[docs/README.md](docs/README.md) is the manual** — the playlist format, importing from
-Spotify and SoundCloud, every setting explained twice over (what it is for, and what happens
-behind it), what to do about a track that will not come down, and an honest list of what this
-cannot do.
 
 ## How it works
 

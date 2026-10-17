@@ -156,11 +156,14 @@ public final class Settings {
             new Setting("length_tol_s", "--length-tol", Setting.Kind.INTEGER, 45, -1.0,
                     "length tolerance in seconds around the playlist length; HARD condition, "
                             + "-1 disables (default 45)", List.of("tol")),
-            new Setting("playlist_timeout_min", "--playlist-timeout", Setting.Kind.DECIMAL, 40.0,
+            // 60 and 1, the same numbers the shipped config.yaml carries. They used to be
+            // 40 and 2, so a deleted config file quietly changed how a run behaved and the
+            // help text named a default the file disagreed with - one number is enough.
+            new Setting("playlist_timeout_min", "--playlist-timeout", Setting.Kind.DECIMAL, 60.0,
                     0.0, "wall-clock limit per attempt for one playlist, in minutes, 0 = none "
-                            + "(default 40)", List.of("timeout")),
-            new Setting("retries", "--retries", Setting.Kind.INTEGER, 2, 1.0,
-                    "attempts per playlist, at least 1 (default 2)", List.of()),
+                            + "(default 60)", List.of("timeout")),
+            new Setting("retries", "--retries", Setting.Kind.INTEGER, 1, 1.0,
+                    "attempts per playlist, at least 1 (default 1)", List.of()),
             new Setting("stall_timeout_s", "--stall-timeout", Setting.Kind.DECIMAL, 300.0, 0.0,
                     "stop a playlist when no track has finished for this many seconds, "
                             + "0 = never (default 300)", List.of()),
