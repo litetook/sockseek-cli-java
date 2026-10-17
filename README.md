@@ -261,14 +261,12 @@ why in detail.
 ## How it is checked
 
 ```bash
-./gradlew check       # the unit tests, the manuals, and the whole command end to end
-./gradlew mockGate    # the above against the real sockseek binary; needs it present
+./gradlew check
 ```
 
-Everything is offline: no network, no Soulseek account, no credentials anywhere.
-
-Beyond the unit tests there are three checks a unit test cannot make, and each drives the
-finished jar rather than a class.
+That is all of it: the unit tests and three checks a unit test cannot make, each driving the
+finished jar as a process rather than a class. Everything is offline — no network, no
+Soulseek account, no credentials anywhere.
 
 **The whole command, against a recording.** It answers one question — did anything change
 that nobody meant to change? The command runs end to end over a generated fixture of two
@@ -276,14 +274,16 @@ dozen playlists in three states of the output folder, and every line it prints i
 against a recorded answer. The fixture is deliberately nasty: Cyrillic and accented titles,
 commas and ampersands and slashes, lengths written four different ways and sometimes
 missing, duplicates, blank lines, titles wider than any console, index rows for files that
-are not there. When a change is meant, `./gradlew record` accepts the new output and the
-diff goes into the commit, where it says in plain text what every playlist will now see.
+are not there. When a change is meant, `./gradlew test -Dgates.record=true` accepts the new
+output and the diff goes into the commit, where it says in plain text what every playlist
+will now see.
 
 **The real binary.** sockseek has a mock mode — point it at a folder of files and it behaves
 as though they were shared on Soulseek — so the live count, the record of what happened and
 the skip that follows from it are exercised against the real thing, offline. This is the one
 that surprises you: three of the measurements in the manual came out of it, and none of them
-matched sockseek's own help text.
+matched sockseek's own help text. It skips itself when the binary is not beside the project,
+which is what happens in CI — sockseek is 114 MB and does not belong in a repository.
 
 **The manuals.** Every option the tool accepts is documented, and nothing is documented that
 the tool does not accept. This text is part of the interface.

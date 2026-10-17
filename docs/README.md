@@ -639,9 +639,9 @@ problem — a bad option, a missing `sockseek.exe`, an unknown `--only` name.
 ## Tests and gates
 
 ```bash
-./gradlew check       # the unit tests, this manual, and the whole command end to end
-./gradlew mockGate    # the above against the real sockseek binary; needs it present
-./gradlew record      # accept today's output as the new recording, after a deliberate change
+./gradlew check                      # everything: the unit tests and the three below
+./gradlew test -Dgates.record=true   # accept today's output as the new recording
+./gradlew makeFixture                # build the fixture again from its fixed seed
 ```
 
 All of it is offline: no network, no Soulseek account, no credentials anywhere. Each

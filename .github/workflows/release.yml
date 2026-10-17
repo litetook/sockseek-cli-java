@@ -38,11 +38,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      # a release that fails its own gates is worse than no release
+      # a release that fails its own checks is worse than no release
       - run: ./gradlew.bat --no-daemon check
 
       - name: The jar says the version the tag does

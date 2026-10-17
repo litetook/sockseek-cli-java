@@ -7,7 +7,7 @@ name: check
 # claims otherwise would be the tool lying about itself. A Linux job is worth adding the day
 # somebody wants to support Linux.
 #
-# mockGate is deliberately left out: it drives the real sockseek binary, which is 114 MB
+# The one check that drives the real sockseek binary skips itself here: sockseek is 114 MB
 # and is not kept in the repository.
 
 on:
@@ -29,10 +29,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
 
       - name: The tests, the manuals, and the whole command end to end
         run: ./gradlew.bat --no-daemon check
