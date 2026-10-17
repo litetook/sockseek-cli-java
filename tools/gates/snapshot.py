@@ -85,7 +85,6 @@ def main() -> int:
             sys.exit(f"unknown state: {state}; known: {', '.join(sandbox.STATES)}")
 
     RECORDED.mkdir(parents=True, exist_ok=True)
-    playlists = len(list((sandbox.FIXTURE / "Playlists").glob("*.txt")))
     temporary = Path(tempfile.mkdtemp(prefix="sockseek-snap-"))
     worst = 0
     try:
@@ -110,8 +109,8 @@ def main() -> int:
                 for line in difference[:60]:
                     print("   " + line)
             else:
-                print(f"ok {state}: {len(said)} lines unchanged - the whole tool, "
-                      f"{playlists} playlists, {' '.join(FLAGS)}")
+                print(f"ok {state}: {len(said)} lines unchanged - the whole command over "
+                      f"the fixture, {' '.join(FLAGS)}")
         return worst
     finally:
         import shutil

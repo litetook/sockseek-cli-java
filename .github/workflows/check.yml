@@ -7,8 +7,8 @@ name: check
 # claims otherwise would be the tool lying about itself. A Linux job is worth adding the day
 # somebody wants to support Linux.
 #
-# The fourth gate, tools/gates/mock.py, is deliberately absent: it drives the real sockseek
-# binary, which is 114 MB and is not kept in the repository.
+# mockGate is deliberately left out: it drives the real sockseek binary, which is 114 MB
+# and is not kept in the repository.
 
 on:
   push:
@@ -34,17 +34,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Tests
-        run: ./gradlew.bat --no-daemon test
-
-      - name: Build the jar
-        run: ./gradlew.bat --no-daemon fatJar
-
-      - name: The manuals match the options
-        run: python tools/gates/docs.py
-
-      - name: The whole tool over every playlist, against the recording
-        run: python tools/gates/snapshot.py
+      - name: The tests, the manuals, and the whole command end to end
+        run: ./gradlew.bat --no-daemon check
 
       - uses: actions/upload-artifact@v4
         if: always()

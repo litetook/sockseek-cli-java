@@ -43,9 +43,7 @@ jobs:
           python-version: '3.12'
 
       # a release that fails its own gates is worse than no release
-      - run: ./gradlew.bat --no-daemon test fatJar
-      - run: python tools/gates/docs.py
-      - run: python tools/gates/snapshot.py
+      - run: ./gradlew.bat --no-daemon check
 
       - name: The jar says the version the tag does
         run: |

@@ -85,22 +85,33 @@ why in detail.
 
 ## How it is checked
 
-Three gates beyond the unit tests, all offline — no network, no Soulseek account:
-
 ```bash
-./gradlew test                 # 258 tests
-py tools/gates/snapshot.py     # the whole tool over 24 playlists, against a recording
-py tools/gates/mock.py         # the real sockseek binary in mock mode, end to end
-py tools/gates/docs.py         # the manuals against the options the tool really accepts
+./gradlew check       # the unit tests, the manuals, and the whole command end to end
+./gradlew mockGate    # the above against the real sockseek binary; needs it present
 ```
 
-**snapshot** answers "did anything change that I did not mean to change?". It runs the whole
-command over a generated fixture in three states of the output folder and diffs every line
-against a recorded answer. A deliberate change is re-recorded with `--record`, and that diff
-goes in the commit — it says in plain text what every playlist will now see.
+Everything is offline: no network, no Soulseek account, no credentials anywhere.
 
-**mock** is the one that can surprise you. sockseek has a mock mode, so the live count, the
-outcome record and the skip are exercised against the real binary.
+Beyond the unit tests there are three checks a unit test cannot make, and each drives the
+finished jar rather than a class.
+
+**The whole command, against a recording.** It answers one question — did anything change
+that nobody meant to change? The command runs end to end over a generated fixture of two
+dozen playlists in three states of the output folder, and every line it prints is diffed
+against a recorded answer. The fixture is deliberately nasty: Cyrillic and accented titles,
+commas and ampersands and slashes, lengths written four different ways and sometimes
+missing, duplicates, blank lines, titles wider than any console, index rows for files that
+are not there. When a change is meant, `./gradlew record` accepts the new output and the
+diff goes into the commit, where it says in plain text what every playlist will now see.
+
+**The real binary.** sockseek has a mock mode — point it at a folder of files and it behaves
+as though they were shared on Soulseek — so the live count, the record of what happened and
+the skip that follows from it are exercised against the real thing, offline. This is the one
+that surprises you: three of the measurements in the manual came out of it, and none of them
+matched sockseek's own help text.
+
+**The manuals.** Every option the tool accepts is documented, and nothing is documented that
+the tool does not accept. This text is part of the interface.
 
 This was a port of
 [sockseek-cli-playlist-downloader](https://github.com/litetook/sockseek-cli-playlist-downloader),

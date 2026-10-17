@@ -634,23 +634,24 @@ problem — a bad option, a missing `sockseek.exe`, an unknown `--only` name.
 ## Tests and gates
 
 ```bash
-./gradlew test                        # 249 tests
-py -X utf8 tools/gates/snapshot.py    # the whole tool over 24 real playlists, vs a recording
-py -X utf8 tools/gates/mock.py        # the real sockseek binary in mock mode, end to end
-py -X utf8 tools/gates/docs.py        # this manual against the options that exist
+./gradlew check       # the unit tests, this manual, and the whole command end to end
+./gradlew mockGate    # the above against the real sockseek binary; needs it present
+./gradlew record      # accept today's output as the new recording, after a deliberate change
 ```
 
-All of it is offline: no network, no Soulseek account, and nothing is ever run inside the
-owner's own folder — the gates copy what they need into a temporary one.
+All of it is offline: no network, no Soulseek account, no credentials anywhere. Each
+check builds itself a temporary folder and works there.
 
-`snapshot.py` is the broad one. It runs the whole command over the real playlists in three
-states of the output folder and diffs every line against a recorded answer, so an accidental
-change anywhere shows up as text. When a change is meant, `--record` writes the new answer and
-the diff goes in the commit.
+The broad one runs the whole command over a generated fixture - two dozen playlists, in
+three states of the output folder - and diffs every line against a recorded answer, so an
+accidental change anywhere shows up as text. The fixture is generated rather than real on
+purpose, and kept deliberately nasty: Cyrillic and accented titles, commas and ampersands
+and slashes, lengths written four ways and sometimes missing, duplicates, titles wider than
+a console, index rows for files that are not there.
 
-`mock.py` is the sharp one: sockseek's mock mode lets the live count, the outcome record and
-the skip be exercised against the real binary, offline. Three of the measurements in this
-manual came out of it, and none of them matched the help text.
+The sharp one is sockseek's mock mode, which lets the live count, the outcome record and the
+skip be exercised against the real binary, offline. Three of the measurements in this manual
+came out of it, and none of them matched the help text.
 
 Until 2026-10-17 the gate was the Python tool this was ported from, run side by side and
 diffed line by line. That answered "is the port faithful?" and the answer was yes; once the
