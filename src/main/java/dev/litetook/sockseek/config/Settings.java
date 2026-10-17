@@ -31,9 +31,11 @@ public final class Settings {
     public static final String SOCKSEEK_EFFECTIVE_CONF = "sockseek.effective.conf";
 
     public static final List<String> CREDENTIAL_KEYS = List.of("username", "password");
-    public static final List<String> PATH_KEYS = List.of("sockseek", "playlists", "output");
+    public static final List<String> PATH_KEYS =
+            List.of("sockseek", "playlists", "output", "work", "logs");
     private static final Map<String, String> PATH_DEFAULTS = Map.of(
-            "sockseek", "sockseek.exe", "playlists", "Playlists", "output", "output");
+            "sockseek", "sockseek.exe", "playlists", "Playlists", "output", "output",
+            "work", "work", "logs", "logs");
 
     /**
      * The settings file, written when it is missing.
@@ -52,6 +54,11 @@ public final class Settings {
               playlists: Playlists
               # where the audio goes, one sub-folder per playlist
               output: output
+              # generated list files and the merged sockseek config; rebuilt every run and
+              # safe to delete - but it holds the login in plain text while one is going
+              work: work
+              # run logs, session logs and the run counter
+              logs: logs
 
             search:
               # HARD filter: a shared file may differ from the playlist length by this many
@@ -67,9 +74,14 @@ public final class Settings {
               # do not search again for a track nobody was sharing, if that was within this
               # many hours; 0 = always search. Fractions are fine
               skip_not_found_hours: 2
-              # the brake across playlists: all of them together stay under this many searches
-              # per 220 s, or the Soulseek server bans the account for 30 minutes
+              # the brake across playlists: all of them together stay under this many
+              # searches per searches_renew_s, or the Soulseek server bans the account for
+              # half an hour. Both must match searches-per-time and searches-renew-time in
+              # sockseek.conf: sockseek keeps to them inside one process, this keeps to them
+              # across all of them
               searches_per_window: 34
+              # and the length of that window, in seconds
+              searches_renew_s: 220
               # remember in outcomes.tsv how each track ended; false ignores the file entirely
               use_cache: true
             """;
@@ -178,8 +190,12 @@ public final class Settings {
                             + "nothing down (default true)", List.of()),
             new Setting("searches_per_window", "--searches-per-window", Setting.Kind.INTEGER,
                     34, 0.0, "keep the searches of ALL playlists together under this many per "
-                            + "220 s, by pausing between them; 0 = no pause (default 34)",
-                    List.of()));
+                            + "searches_renew_s, by pausing between playlists; 0 = no pause. "
+                            + "Must match sockseek's searches-per-time (default 34)",
+                    List.of()),
+            new Setting("searches_renew_s", "--searches-renew-s", Setting.Kind.INTEGER, 220,
+                    1.0, "the window those searches are counted in, in seconds. Must match "
+                            + "sockseek's searches-renew-time (default 220)", List.of()));
 
     /** Taken from the template rather than written out again: renaming a placeholder there must
      *  not quietly turn "you have not filled this in yet" into "you have". */
@@ -356,6 +372,28 @@ public final class Settings {
      * The three folders: the config value or the built-in default, relative to {@code appDir}.
      * An absolute value is taken as it is.
      */
+    /**
+     * One folder out of config.yaml, read cheaply and silently.
+     *
+     * <p>For the one caller that needs an answer before the configuration has been loaded
+     * and reported: the session log is opened on the first line printed, which is earlier
+     * than the first warning. Reading the file twice is better than a log that cannot
+     * follow the setting that says where logs go.
+     */
+    public static Path folder(Path appDir, String key) {
+        try {
+            Map<String, String> values = parseYaml(readUtf8(appDir.resolve(CONFIG_NAME)), null);
+            String given = values.get(key);
+            if (given != null && !given.isBlank()) {
+                Path path = Path.of(given.strip());
+                return path.isAbsolute() ? path : appDir.resolve(path);
+            }
+        } catch (IOException | RuntimeException noFile) {
+            // the very first run: the file is not there yet
+        }
+        return appDir.resolve(PATH_DEFAULTS.getOrDefault(key, key));
+    }
+
     public static Map<String, Path> configPaths(Config config, Path appDir) {
         Map<String, Path> found = new LinkedHashMap<>();
         for (String key : PATH_KEYS) {

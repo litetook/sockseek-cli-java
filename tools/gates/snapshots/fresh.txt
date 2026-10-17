@@ -1260,6 +1260,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1269,6 +1271,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = ambient-night [cli]
 [time]   dry_run = True [cli]
 [time] === ambient-night
@@ -1287,6 +1290,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1296,6 +1301,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = breaks [cli]
 [time]   dry_run = True [cli]
 [time] === breaks
@@ -1313,6 +1319,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1322,6 +1330,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = chill [cli]
 [time]   dry_run = True [cli]
 [time] === chill
@@ -1340,6 +1349,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1349,6 +1360,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = classics [cli]
 [time]   dry_run = True [cli]
 [time] === classics
@@ -1364,6 +1376,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1373,6 +1387,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = dnb [cli]
 [time]   dry_run = True [cli]
 [time] === dnb
@@ -1390,6 +1405,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1399,6 +1416,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = dubstep-bass [cli]
 [time]   dry_run = True [cli]
 [time] === dubstep-bass
@@ -1419,6 +1437,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1428,6 +1448,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = example [cli]
 [time]   dry_run = True [cli]
 [time] === example
@@ -1441,6 +1462,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1450,6 +1473,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = hip-hop [cli]
 [time]   dry_run = True [cli]
 [time] === hip-hop
@@ -1468,6 +1492,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1477,6 +1503,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = house [cli]
 [time]   dry_run = True [cli]
 [time] === house
@@ -1495,6 +1522,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1504,6 +1533,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = nothing-here [cli]
 [time]   dry_run = True [cli]
 [time] === nothing-here
@@ -1521,6 +1551,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1530,6 +1562,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = one-track [cli]
 [time]   dry_run = True [cli]
 [time] === one-track
@@ -1544,6 +1577,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1553,6 +1588,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = other [cli]
 [time]   dry_run = True [cli]
 [time] === other
@@ -1571,6 +1607,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1580,6 +1618,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = phonk-dark [cli]
 [time]   dry_run = True [cli]
 [time] === phonk-dark
@@ -1596,6 +1635,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1605,6 +1646,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = pop [cli]
 [time]   dry_run = True [cli]
 [time] === pop
@@ -1629,6 +1671,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1638,6 +1682,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = rock-metal [cli]
 [time]   dry_run = True [cli]
 [time] === rock-metal
@@ -1654,6 +1699,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1663,6 +1710,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = techno-acid [cli]
 [time]   dry_run = True [cli]
 [time] === techno-acid
@@ -1681,6 +1729,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1690,6 +1740,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = techno-hard [cli]
 [time]   dry_run = True [cli]
 [time] === techno-hard
@@ -1710,6 +1761,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1719,6 +1772,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = techno-melodic [cli]
 [time]   dry_run = True [cli]
 [time] === techno-melodic
@@ -1736,6 +1790,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1745,6 +1801,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = techno [cli]
 [time]   dry_run = True [cli]
 [time] === techno
@@ -1763,6 +1820,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1772,6 +1831,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = trance [cli]
 [time]   dry_run = True [cli]
 [time] === trance
@@ -1790,6 +1850,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1799,6 +1861,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = ukrainian [cli]
 [time]   dry_run = True [cli]
 [time] === ukrainian
@@ -1835,6 +1898,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1844,6 +1909,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = wanted [cli]
 [time]   dry_run = True [cli]
 [time] === wanted
@@ -1857,6 +1923,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1866,6 +1934,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = weird-edges [cli]
 [time]   dry_run = True [cli]
 [time] === weird-edges
@@ -1880,6 +1949,8 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time] effective configuration of sockseek-cli 1.0.0 (key = value [source: cli | config | default]):
 [time]   playlists_dir = <DIR>\fresh\Playlists [config]
 [time]   output_dir = <DIR>\fresh\output [config]
+[time]   work_dir = <DIR>\fresh\work [config]
+[time]   logs_dir = <DIR>\fresh\logs [config]
 [time]   sockseek_exe = <DIR>\fresh\sockseek.exe [config]
 [time]   config_file = <DIR>\fresh\config.yaml [default]
 [time]   length_tol_s = 45 [config]
@@ -1889,6 +1960,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   skip_not_found_hours = 2 [config]
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
+[time]   searches_renew_s = 220 [config]
 [time]   only = with-links [cli]
 [time]   dry_run = True [cli]
 [time] === with-links

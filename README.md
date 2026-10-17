@@ -117,10 +117,16 @@ it for you.
 | `logs/session_<date>.log` | everything you saw on screen, one file per start |
 | `logs/run_<NNNN>_<date>.log` | one run of one playlist |
 | `work/` | generated lists and the merged config - **holds your login in plain text**; safe to delete |
+| `sockseek.exe` | fetched into the same folder on first use; `paths.sockseek` moves it |
 
 ---
 
 ## Settings
+
+Nothing is hard-coded: every folder, every file and every number below is a setting. Paths
+are relative to the folder you run in — that folder is the installation, and `sockseek.exe`
+lands in it — so an absolute path is only ever needed to send something elsewhere, like
+`output: D:\music`.
 
 Two files, and the split is the whole point: `config.yaml` is what this tool decides,
 `sockseek.conf` is what sockseek decides. Both carry a comment per key, so you can work in
@@ -135,12 +141,15 @@ where it came from, so "why is it this number?" is never a guess.
 | `paths.sockseek` | `sockseek.exe` | the sockseek binary; `.exe` is added or dropped to match what is really there |
 | `paths.playlists` | `Playlists` | folder of playlist `.txt` files |
 | `paths.output` | `output` | where the audio goes, one sub-folder per playlist |
+| `paths.work` | `work` | generated list files and the merged sockseek config; rebuilt every run and safe to delete - but it holds the login in plain text while one is going |
+| `paths.logs` | `logs` | run logs, session logs and the run counter |
 | `length_tol_s` | `45` | **hard filter.** A shared file may differ from your length by this many seconds; `-1` turns it off. sockseek's own 3 rejects the very file you asked for, because playlist lengths run short of the copies people share |
 | `retries` | `1` | attempts per playlist. A second attempt does earn tracks, but it doubles the clock and starts a fresh search budget, which raises the ban risk |
 | `playlist_timeout_min` | `60` | wall clock for **one attempt at one playlist**, in minutes; `0` = none |
 | `stall_timeout_s` | `300` | stop a playlist when nothing has finished **and** nothing has arrived on disk for this long; `0` = never. Not a deadline per track - there is no way to stop one transfer from outside |
 | `skip_not_found_hours` | `2` | do not search again for a track nobody was sharing, if that was within this many hours; `0` = always search. Fractions work |
-| `searches_per_window` | `34` | the brake: all playlists together stay under this many searches per 220 s, by pausing between them; `0` = no pause. The Soulseek server bans an account that goes faster |
+| `searches_per_window` | `34` | the brake: all playlists together stay under this many searches per `searches_renew_s`, by pausing between them; `0` = no pause. The Soulseek server bans an account that goes faster |
+| `searches_renew_s` | `220` | the length of that window, in seconds |
 | `use_cache` | `true` | `false` makes `outcomes.tsv` not exist for the run: nothing read, nothing written |
 
 ### `sockseek.conf`
@@ -170,7 +179,9 @@ more layer for a single run.
 ### On the command line
 
 Anything in the tables above, as a flag: `--length-tol 90`, `--stall-timeout 0`,
-`--skip-not-found-hours 0`, `--no-cache`. And these, which exist only there:
+`--skip-not-found-hours 0`, `--searches-per-window 20`, `--searches-renew-s 300`,
+`--no-cache`, and the folders as `--playlists`, `--output`, `--work`, `--logs`,
+`--sockseek`. And these, which exist only there:
 
 | Flag | What it does |
 |---|---|

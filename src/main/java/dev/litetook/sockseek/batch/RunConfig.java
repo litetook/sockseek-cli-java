@@ -12,7 +12,8 @@ import java.util.List;
  * <p>A builder rather than a constructor with eighteen arguments: at the call site it reads as
  * a list of decisions, and a new option does not renumber the others.
  */
-public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path sockseek,
+public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path workDir,
+                        Path logsDir, Path sockseek,
                         Options options, double timeoutMinutes, int retries, boolean dryRun,
                         String only, boolean verbose, boolean explain, List<String> sockseekArgs,
                         Path conf, Path sockseekConf, int runNo, LocalDateTime stamp,
@@ -28,15 +29,17 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path soc
     }
 
     public RunConfig withRunNo(int number) {
-        return new RunConfig(appDir, playlistsDir, outputDir, sockseek, options, timeoutMinutes,
-                retries, dryRun, only, verbose, explain, sockseekArgs, conf, sockseekConf,
-                number, stamp, stallSeconds, skipNotFoundHours, cache);
+        return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir, sockseek,
+                options, timeoutMinutes, retries, dryRun, only, verbose, explain,
+                sockseekArgs, conf, sockseekConf, number, stamp, stallSeconds,
+                skipNotFoundHours, cache);
     }
 
     public RunConfig withConf(Path merged) {
-        return new RunConfig(appDir, playlistsDir, outputDir, sockseek, options, timeoutMinutes,
-                retries, dryRun, only, verbose, explain, sockseekArgs, merged, sockseekConf,
-                runNo, stamp, stallSeconds, skipNotFoundHours, cache);
+        return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir, sockseek,
+                options, timeoutMinutes, retries, dryRun, only, verbose, explain,
+                sockseekArgs, merged, sockseekConf, runNo, stamp, stallSeconds,
+                skipNotFoundHours, cache);
     }
 
     public static Builder builder(Path appDir) {
@@ -48,6 +51,8 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path soc
         private final Path appDir;
         private Path playlistsDir;
         private Path outputDir;
+        private Path workDir;
+        private Path logsDir;
         private Path sockseek;
         private Options options = Options.defaults();
         private double timeoutMinutes = 40;
@@ -68,6 +73,8 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path soc
             this.appDir = appDir;
             this.playlistsDir = appDir.resolve("Playlists");
             this.outputDir = appDir.resolve("output");
+            this.workDir = appDir.resolve("work");
+            this.logsDir = appDir.resolve("logs");
             this.sockseek = appDir.resolve("sockseek.exe");
         }
 
@@ -78,6 +85,16 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path soc
 
         public Builder outputDir(Path path) {
             this.outputDir = path;
+            return this;
+        }
+
+        public Builder workDir(Path path) {
+            this.workDir = path;
+            return this;
+        }
+
+        public Builder logsDir(Path path) {
+            this.logsDir = path;
             return this;
         }
 
@@ -147,10 +164,10 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path soc
         }
 
         public RunConfig build() {
-            return new RunConfig(appDir, playlistsDir, outputDir, sockseek, options,
-                    timeoutMinutes, retries, dryRun, only, verbose, explain, sockseekArgs, null,
-                    sockseekConf, 0, LocalDateTime.now(), stallSeconds, skipNotFoundHours,
-                    cache);
+            return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir,
+                    sockseek, options, timeoutMinutes, retries, dryRun, only, verbose,
+                    explain, sockseekArgs, null, sockseekConf, 0, LocalDateTime.now(),
+                    stallSeconds, skipNotFoundHours, cache);
         }
     }
 }

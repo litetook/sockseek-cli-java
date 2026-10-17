@@ -53,7 +53,7 @@ def build(into: Path) -> Path:
         "\n".join([f"{name} | 3:00" for name in HERE_TRACKS] + [f"{NOWHERE} | 3:00"]) + "\n",
         encoding="utf-8")
     (into / "sockseek.local.conf").write_text(sandbox.LOCAL_CONF, encoding="utf-8")
-    shutil.copy2(sandbox.TOOL / "sockseek.exe", into / "sockseek.exe")
+    shutil.copy2(sandbox.binary(), into / sandbox.binary().name)
     shutil.copy2(sandbox.FIXTURE / "dependencies.yaml", into / "dependencies.yaml")
     return into
 
@@ -83,8 +83,9 @@ def check(name: str, condition: bool, detail: str = "") -> int:
 def main() -> int:
     if not JAR.is_file():
         sys.exit(f"{JAR} is missing - run: gradlew fatJar")
-    if not (sandbox.TOOL / "sockseek.exe").is_file():
-        sys.exit(f"no sockseek.exe at {sandbox.TOOL} (set SOCKSEEK_HOME)")
+    if not sandbox.binary().is_file():
+        sys.exit(f"no sockseek binary at {sandbox.TOOL} - run the tool once from there so it "
+                 f"fetches one, or set SOCKSEEK_HOME to a folder that has one")
     where = Path(tempfile.mkdtemp(prefix="sockseek-mock-"))
     worst = 0
     try:

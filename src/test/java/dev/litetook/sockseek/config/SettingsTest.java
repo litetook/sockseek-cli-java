@@ -57,7 +57,7 @@ class SettingsTest {
         assertEquals(OptionalInt.of(1), config.integer("retries"));
         assertEquals(60.0, config.decimal("playlist_timeout_min").orElseThrow());
         assertEquals(Map.of("sockseek", "sockseek.exe", "playlists", "Playlists",
-                "output", "output"), config.paths());
+                "output", "output", "work", "work", "logs", "logs"), config.paths());
     }
 
     @Test
@@ -240,6 +240,8 @@ class SettingsTest {
     void foldersFallBackToTheLayoutInsideTheProject(@TempDir Path dir) {
         assertEquals(Map.of("playlists", dir.resolve("Playlists"),
                         "output", dir.resolve("output"),
+                        "work", dir.resolve("work"),
+                        "logs", dir.resolve("logs"),
                         "sockseek", dir.resolve("sockseek.exe")),
                 Settings.configPaths(Config.empty(), dir));
     }

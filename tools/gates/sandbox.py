@@ -21,9 +21,11 @@ from pathlib import Path
 
 FIXTURE = Path(__file__).resolve().parent / "fixture"
 # Only mock.py needs the real sockseek binary, which is 114 MB and has no business in a
-# repository. Point SOCKSEEK_HOME at any folder that has one - an installation of this tool
-# is the obvious candidate - and the gate copies it out rather than running anything there.
-TOOL = Path(os.environ.get("SOCKSEEK_HOME", str(Path.cwd())))
+# repository. It is looked for beside the project, which is where a run of this tool from
+# the project folder puts it, and SOCKSEEK_HOME moves that search somewhere else. Either
+# way the gate COPIES it out and runs the copy; nothing is ever started in that folder.
+REPO = Path(__file__).resolve().parent.parent.parent
+TOOL = Path(os.environ["SOCKSEEK_HOME"]) if os.environ.get("SOCKSEEK_HOME") else REPO
 # the login never leaves the sandbox, and a dry run never signs in anyway
 LOCAL_CONF = "username = gate\npassword = gate\n"
 # sockseek's own meaning: 1 = downloaded, 3 = was already there and skipped
@@ -34,6 +36,15 @@ STATES = {"fresh": (False, False),
           "on-disk": (True, True)}
 # written by a run, so they are wiped between runs of the same sandbox
 WRITTEN = ("logs", "work")
+
+
+def binary() -> Path:
+    """The sockseek binary, by either of its names."""
+    for name in ("sockseek.exe", "sockseek"):
+        if (TOOL / name).is_file():
+            return TOOL / name
+    return TOOL / "sockseek.exe"
+
 
 
 def build(into: Path, index: bool, files: bool) -> Path:

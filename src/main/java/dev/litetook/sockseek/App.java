@@ -227,7 +227,7 @@ public final class App {
         // handles (Runner.inheritIO), so it writes past this stream entirely. Its lines go to
         // logs/sockseek_<run>_<name>.log instead, with --verbose.
         PrintStream out = Session.onlyAsking(args) ? console
-                : Session.tee(console, appDir.resolve("logs"));
+                : Session.tee(console, Settings.folder(appDir, "logs"));
         // the engine prints through a System.out of its own, so that one is pointed at the
         // same file rather than being taught about it. System.err is left alone: the parity
         // harness reads the two streams apart.
@@ -415,7 +415,9 @@ public final class App {
         // the engine answers with an exit code, and by then the yes has been given
         Map<String, Integer> held = heldBack(work, wiring.appDir(), config, front);
         out.accept("");
-        formatPrice(work, held).forEach(out);
+        int perWindow = searchesPerWindow(config, front);
+        int windowSeconds = windowSeconds(config, front);
+        formatPrice(work, held, perWindow, windowSeconds).forEach(out);
         if (!front.yes() && !confirm(ask, wanted(work) - total(held))) {
             out.accept("Skipped.");
             return worst;
@@ -432,7 +434,7 @@ public final class App {
         // and pacing them would make the gates sit still for an hour.
         boolean real = front.extra().stream()
                 .noneMatch(flag -> flag.equals("--dry-run") || flag.equals("--preview"));
-        Pace pace = new Pace(real ? searchesPerWindow(config, front) : 0, out);
+        Pace pace = new Pace(real ? perWindow : 0, windowSeconds, out);
         for (int number = 0; number < work.size(); number++) {
             Info info = work.get(number);
             String step = "[" + (number + 1) + "/" + work.size() + "] ";
@@ -457,7 +459,7 @@ public final class App {
                         + "), going on to the next playlist");
                 code = 1;
             }
-            Path made = wiring.appDir().resolve("work");
+            Path made = folders.get("work");
             pace.spent(Pace.searchesOf(made.resolve(info.name() + ".list.txt"),
                     made.resolve(info.name() + ".events.txt")));
             // counted here rather than asked of the engine, which answers with an exit code
@@ -499,6 +501,19 @@ public final class App {
             }
         }
         return config.integer("searches_per_window").orElse(Pace.DEFAULT_PER_WINDOW);
+    }
+
+    /** The window those searches are counted in; it has to be the one sockseek uses. */
+    static int windowSeconds(Config config, Front front) {
+        String given = flagValue(front, "--searches-renew-s");
+        if (given != null) {
+            try {
+                return Integer.parseInt(given.strip());
+            } catch (NumberFormatException notANumber) {
+                return Pace.DEFAULT_WINDOW_SECONDS;
+            }
+        }
+        return config.integer("searches_renew_s").orElse(Pace.DEFAULT_WINDOW_SECONDS);
     }
 
     /** How many tracks the whole set is missing, before the cache has its say. */
@@ -587,7 +602,8 @@ public final class App {
      * періодично search rate чекати, але це норм". Saying the number up front turns that wait
      * from a hang into a price.
      */
-    public static List<String> formatPrice(List<Info> work, Map<String, Integer> held) {
+    public static List<String> formatPrice(List<Info> work, Map<String, Integer> held,
+                                           int perWindow, int windowSeconds) {
         int missing = wanted(work);
         int tracks = missing - total(held);
         List<String> lines = new ArrayList<>();
@@ -601,28 +617,29 @@ public final class App {
         // twenty playlists of seventeen tracks each wait for nothing at all.
         int minutes = work.stream()
                 .mapToInt(info -> searchMinutes(info.missing().size()
-                        - held.getOrDefault(info.name(), 0)))
+                        - held.getOrDefault(info.name(), 0), perWindow, windowSeconds))
                 .sum();
         lines.add("That is about " + tracks + " search(es); sockseek is allowed "
-                + SEARCHES_PER_WINDOW + " per " + WINDOW_SECONDS + " s and each playlist gets "
+                + perWindow + " per " + windowSeconds + " s and each playlist gets "
                 + "its own budget, so waiting for the limiter adds about " + minutes
                 + " min in all. Searching and downloading themselves come on top.");
         return List.copyOf(lines);
     }
 
-    /** sockseek's own search limiter, which it keeps to in order to avoid a 30-minute ban. */
-    static final int SEARCHES_PER_WINDOW = 34;
-    static final int WINDOW_SECONDS = 220;
+
 
     /**
      * Whole minutes of search for that many tracks, rounded up, never less than one.
      *
-     * <p>The first {@value #SEARCHES_PER_WINDOW} searches cost nothing but their own time; it
-     * is every window after that which has to be waited out.
+     * <p>The first window's worth of searches costs nothing but its own time; it is every
+     * window after that which has to be waited out.
      */
-    static int searchMinutes(int tracks) {
-        int windows = Math.max(0, (tracks - 1) / SEARCHES_PER_WINDOW);
-        return (int) Math.ceil(windows * WINDOW_SECONDS / 60.0);
+    static int searchMinutes(int tracks, int perWindow, int windowSeconds) {
+        if (perWindow <= 0) {
+            return 0;
+        }
+        int windows = Math.max(0, (tracks - 1) / perWindow);
+        return (int) Math.ceil(windows * windowSeconds / 60.0);
     }
 
     /** How many of this playlist's missing tracks are still missing, read from the folder. */

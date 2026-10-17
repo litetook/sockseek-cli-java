@@ -5,6 +5,11 @@ paths:
   playlists: Playlists
   # where the audio goes, one sub-folder per playlist
   output: output
+  # generated list files and the merged sockseek config; rebuilt every run and
+  # safe to delete - but it holds the login in plain text while one is going
+  work: work
+  # run logs, session logs and the run counter
+  logs: logs
 
 search:
   # HARD filter: a shared file may differ from the playlist length by this many
@@ -20,8 +25,13 @@ search:
   # do not search again for a track nobody was sharing, if that was within this
   # many hours; 0 = always search. Fractions are fine
   skip_not_found_hours: 2
-  # the brake across playlists: all of them together stay under this many searches
-  # per 220 s, or the Soulseek server bans the account for 30 minutes
+  # the brake across playlists: all of them together stay under this many
+  # searches per searches_renew_s, or the Soulseek server bans the account for
+  # half an hour. Both must match searches-per-time and searches-renew-time in
+  # sockseek.conf: sockseek keeps to them inside one process, this keeps to them
+  # across all of them
   searches_per_window: 34
+  # and the length of that window, in seconds
+  searches_renew_s: 220
   # remember in outcomes.tsv how each track ended; false ignores the file entirely
   use_cache: true

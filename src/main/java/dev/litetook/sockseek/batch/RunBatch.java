@@ -22,8 +22,8 @@ public final class RunBatch {
      */
     public static int run(RunConfig config, List<String> configReport, List<String> early,
                           Consumer<String> out, ProcessRunner capture) {
-        Path logsDir = config.appDir().resolve("logs");
-        Path workDir = config.appDir().resolve("work");
+        Path logsDir = config.logsDir();
+        Path workDir = config.workDir();
         try {
             Files.createDirectories(logsDir);
             Files.createDirectories(workDir);

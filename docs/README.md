@@ -240,7 +240,12 @@ runs running" counter up and make it look worse than it is.
 ### `searches_per_window` — 34 · `--searches-per-window`
 
 **What it's for.** The brake across playlists. It keeps the searches of **all** of them
-together under this many per 220 seconds, by pausing between playlists. `0` turns it off.
+together under this many per `searches_renew_s` seconds, by pausing between playlists. `0`
+turns it off.
+
+⚠ These two must match `searches-per-time` and `searches-renew-time` in `sockseek.conf`.
+sockseek keeps to them inside one process; this keeps to them across all of them. Change one
+pair and not the other and the brake is pacing to a limit the server does not use.
 
 **Behind the scenes.** sockseek has the same budget, but it lives inside **one process**, and
 this tool runs one process per playlist. Every new playlist therefore starts with a full

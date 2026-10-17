@@ -30,20 +30,20 @@ import java.util.function.Consumer;
  */
 public final class Pace {
 
-    /** sockseek's own window, and the one the server is assumed to use. */
-    public static final int WINDOW_SECONDS = 220;
-
-    /** sockseek's own default, and so ours: the number the server is known to tolerate. */
+    /** sockseek's own defaults, and so ours: the numbers the server is known to tolerate. */
     public static final int DEFAULT_PER_WINDOW = 34;
+    public static final int DEFAULT_WINDOW_SECONDS = 220;
 
     private final int perWindow;
+    private final int windowSeconds;
     private final Consumer<String> say;
     private long allowedAt;
     private long startedAt;
 
     /** {@code perWindow} of 0 or less turns the brake off entirely. */
-    public Pace(int perWindow, Consumer<String> say) {
+    public Pace(int perWindow, int windowSeconds, Consumer<String> say) {
         this.perWindow = perWindow;
+        this.windowSeconds = windowSeconds > 0 ? windowSeconds : DEFAULT_WINDOW_SECONDS;
         this.say = say;
     }
 
@@ -64,7 +64,7 @@ public final class Pace {
         }
         long waitMillis = (allowedAt - startedAt) / 1_000_000;
         say.accept("pausing " + (waitMillis / 1000) + " s so that all playlists together stay "
-                + "under " + perWindow + " searches per " + WINDOW_SECONDS + " s - the "
+                + "under " + perWindow + " searches per " + windowSeconds + " s - the "
                 + "server bans an account that goes faster");
         try {
             Thread.sleep(waitMillis);
@@ -80,7 +80,7 @@ public final class Pace {
             return;
         }
         allowedAt = startedAt
-                + (long) ((double) searches / perWindow * WINDOW_SECONDS * 1_000_000_000L);
+                + (long) ((double) searches / perWindow * windowSeconds * 1_000_000_000L);
     }
 
     /**

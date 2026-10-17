@@ -508,14 +508,18 @@ class AppTest {
                 run.printed().toString());
     }
 
+    private static int searchMinutes0(int tracks) {
+        return App.searchMinutes(tracks, 34, 220);
+    }
+
     @Test
     void theSearchMinutesCountWindowsRatherThanSearches() {
         // the first window is free: a playlist opens with a full budget and waits for nothing
-        assertEquals(0, App.searchMinutes(1));
-        assertEquals(0, App.searchMinutes(34));
-        assertEquals(4, App.searchMinutes(35));     // one window waited out: 220 s
-        assertEquals(4, App.searchMinutes(68));
-        assertEquals(8, App.searchMinutes(69));     // two windows: 440 s
+        assertEquals(0, searchMinutes0(1));
+        assertEquals(0, searchMinutes0(34));
+        assertEquals(4, searchMinutes0(35));     // one window waited out: 220 s
+        assertEquals(4, searchMinutes0(68));
+        assertEquals(8, searchMinutes0(69));     // two windows: 440 s
     }
 
     @Test
@@ -597,7 +601,7 @@ class AppTest {
     @Test
     void theFirstPlaylistNeverWaits() {
         List<String> said = new ArrayList<>();
-        Pace pace = new Pace(34, said::add);
+        Pace pace = new Pace(34, 220, said::add);
         long before = System.nanoTime();
         pace.waitTurn();
         assertTrue((System.nanoTime() - before) / 1_000_000 < 500);
@@ -608,7 +612,7 @@ class AppTest {
     void aPlaylistThatSpentSearchesMakesTheNextOneWait() {
         List<String> said = new ArrayList<>();
         // 2 searches of a 4-per-window budget = half the window, and a window is 220 s
-        Pace pace = new Pace(4, said::add);
+        Pace pace = new Pace(4, 220, said::add);
         pace.waitTurn();
         pace.spent(2);
         Thread.currentThread().interrupt();   // so the wait ends at once instead of in 110 s
@@ -622,7 +626,7 @@ class AppTest {
     @Test
     void zeroTurnsTheBrakeOff() {
         List<String> said = new ArrayList<>();
-        Pace pace = new Pace(0, said::add);
+        Pace pace = new Pace(0, 220, said::add);
         pace.waitTurn();
         pace.spent(1000);
         pace.waitTurn();

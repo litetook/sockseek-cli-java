@@ -93,6 +93,20 @@ public final class Cli implements Callable<Integer> {
                     + "220 s, by pausing between them; 0 = no pause (default 34)")
     Integer searchesPerWindow;
 
+    @Option(names = "--work", paramLabel = "DIR",
+            description = "generated list files and the merged sockseek config "
+                    + "(config: paths.work)")
+    Path work;
+
+    @Option(names = "--logs", paramLabel = "DIR",
+            description = "run logs, session logs and the run counter (config: paths.logs)")
+    Path logs;
+
+    @Option(names = "--searches-renew-s", paramLabel = "SEC",
+            description = "the window searches are counted in, in seconds; must match "
+                    + "sockseek's searches-renew-time (default 220)")
+    Integer searchesRenewS;
+
     @Option(names = "--no-cache",
             description = "ignore outcomes.tsv completely for this run: search everything and "
                     + "write nothing down, as if the file did not exist")
@@ -166,6 +180,8 @@ public final class Cli implements Callable<Integer> {
         }
         for (Folder folder : List.of(new Folder("playlists", "playlists_dir", playlists),
                 new Folder("output", "output_dir", output),
+                new Folder("work", "work_dir", work),
+                new Folder("logs", "logs_dir", logs),
                 new Folder("sockseek", "sockseek_exe", sockseek))) {
             if (folder.given() != null) {
                 values.put(folder.flag(), folder.given());
@@ -207,6 +223,7 @@ public final class Cli implements Callable<Integer> {
             case "stall_timeout_s" -> stallTimeout;
             case "skip_not_found_hours" -> skipNotFoundHours;
             case "searches_per_window" -> searchesPerWindow;
+            case "searches_renew_s" -> searchesRenewS;
             // a flag that is only ever "off": absent means "whatever the file says"
             case "use_cache" -> noCache ? 0 : null;
             default -> null;
@@ -261,6 +278,8 @@ public final class Cli implements Callable<Integer> {
         return RunConfig.builder(appDir)
                 .playlistsDir(path("playlists"))
                 .outputDir(path("output"))
+                .workDir(path("work"))
+                .logsDir(path("logs"))
                 .sockseek(path("sockseek"))
                 .options(new Options(integer("length_tol_s"), preview))
                 .timeoutMinutes(decimal("playlist_timeout_min"))
@@ -284,6 +303,8 @@ public final class Cli implements Callable<Integer> {
                 + " (key = value [source: cli | config | default]):");
         lines.add("  playlists_dir = " + path("playlists") + " [" + sources.get("playlists") + "]");
         lines.add("  output_dir = " + path("output") + " [" + sources.get("output") + "]");
+        lines.add("  work_dir = " + path("work") + " [" + sources.get("work") + "]");
+        lines.add("  logs_dir = " + path("logs") + " [" + sources.get("logs") + "]");
         lines.add("  sockseek_exe = " + path("sockseek") + " [" + sources.get("sockseek") + "]");
         lines.add("  config_file = " + path("config") + " [" + sources.get("config") + "]");
         for (Setting setting : Settings.ALL) {
