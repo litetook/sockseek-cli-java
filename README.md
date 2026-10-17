@@ -11,8 +11,9 @@ a watchdog for a run that has gone quiet, and a memory of what nobody was sharin
 Written with AI, which is worth knowing before running it.
 
 ```bash
-run.cmd          # Windows
-./run.sh         # macOS, Linux
+run.cmd              # Windows: pick a playlist, see what is missing, confirm
+./run.sh             # macOS, Linux
+run.cmd --all --yes  # every playlist, no questions at all - the scheduled run
 ```
 
 Needs a **JDK 21** and nothing else. The launcher builds the jar if it is missing; sockseek and

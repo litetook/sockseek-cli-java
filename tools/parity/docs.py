@@ -70,7 +70,7 @@ FOREIGN = {
     # sockseek's machine-facing surface, named in the manual where the live count is explained
     "--on-complete", "--progress-json", "--skip-not-found",
     # setup.py's own flags, and setup.py is a program of the Python tool, not of its engine
-    "--all", "--check", "--upgrade",
+    "--check", "--upgrade",
 }
 # the differences between the two implementations that are meant to be there
 #
@@ -81,7 +81,7 @@ FOREIGN = {
 # accepting --no-explain as a hidden no-op, which is why its manual names an option its --help
 # does not list.
 EXPECTED = {"--ffprobe-check", "--ffprobe", "--explain", "--no-explain",
-            "--stall-timeout", "--skip-not-found-days"}
+            "--stall-timeout", "--skip-not-found-days", "--all"}
 
 
 def java() -> str:

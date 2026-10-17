@@ -512,6 +512,41 @@ class AppTest {
         assertEquals(8, App.searchMinutes(69));     // two windows: 440 s
     }
 
+    @Test
+    void allAndYesAskNothingAtAll() throws IOException {
+        // the unattended night run: no source menu, no "which one", no confirmation
+        ready();
+        playlist("one", "Artist - A", "Artist - B");
+        playlist("two", "Artist - C");
+        Script script = new Script();   // no answers at all: anything asked would end the run
+        int code = App.run(new String[] {"--all", "--yes"}, script, script.printed::add,
+                wiring());
+        assertEquals(0, code);
+        assertEquals(List.of(List.of("--only", "one"), List.of("--only", "two")), engine.calls);
+        assertEquals(List.of(), script.printed.stream()
+                .filter(line -> line.endsWith(": ")).toList());   // nothing was a prompt
+    }
+
+    @Test
+    void allStillShowsWhatItIsAboutToDo() throws IOException {
+        ready();
+        playlist("one", "Artist - A", "Artist - B");
+        Run run = run(List.of("--all"), "y");
+        assertTrue(run.said("Playlists:"), run.printed().toString());
+        assertTrue(run.said("To download: 1 playlist(s), 2 missing track(s)."),
+                run.printed().toString());
+    }
+
+    @Test
+    void onlyWinsOverAllAndSaysSo() throws IOException {
+        ready();
+        playlist("one", "Artist - A");
+        playlist("two", "Artist - C");
+        Run run = run(List.of("--all", "--only", "two", "--yes"));
+        assertEquals(List.of(List.of("--only", "two")), engine.calls);
+        assertTrue(run.said("--only wins"), run.printed().toString());
+    }
+
     private static Status empty() {
         return new Status(List.of(), List.of(), Map.of());
     }

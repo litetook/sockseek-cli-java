@@ -479,9 +479,15 @@ Kept here on purpose, so nobody goes looking for a switch that does not exist.
 
 ## Options
 
-Front end: `--only NAME`, `--yes`, `--import WHAT`, `--as NAME`, `--overwrite`,
+Front end: `--only NAME`, `--all`, `--yes`, `--import WHAT`, `--as NAME`, `--overwrite`,
 `--cookies-from-browser BROWSER`, `--version`, `--help`. Everything else is passed through to
 the engine untouched.
+
+**The unattended run is `--all --yes`.** `--all` takes every playlist in the folder without
+asking which, `--yes` skips the confirmation, and together they ask nothing at all — the run
+still prints the table and the price, it just does not stop for an answer. `--yes` on its own
+still asks which playlists, which is one keystroke too many for a scheduled night. If both
+`--all` and `--only` are given, `--only` wins and the run says so.
 
 Engine: `--playlists DIR`, `--output DIR`, `--sockseek FILE`, `--config FILE`,
 `--sockseek-conf FILE`, `--length-tol SEC`, `--playlist-timeout MIN`, `--stall-timeout SEC`,

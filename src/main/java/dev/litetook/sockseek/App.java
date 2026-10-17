@@ -75,6 +75,8 @@ public final class App {
             Options of this front end:
                 --only <name>     skip the menu and take that playlist (file stem, no .txt)
                 --yes             skip the confirmation (for a scheduled run)
+                --all             take every playlist without asking which; with --yes this
+                                  is the unattended run - no question at all
                 --import <what>   turn an exported list (m3u/m3u8/csv/tsv/txt) or a playlist link
                                   (Spotify, SoundCloud) into a playlist file and exit
                 --as <name>       name for the imported playlist (default: its name at the source)
@@ -181,7 +183,7 @@ public final class App {
     }
 
     /** The front end's own flags; {@code extra} is everything the engine gets untouched. */
-    record Front(String only, boolean yes, String importSource, String cookiesFrom,
+    record Front(String only, boolean yes, boolean all, String importSource, String cookiesFrom,
                  String importName, boolean overwrite, boolean version, boolean help,
                  Path playlists, Path output, Path config, List<String> extra) {
     }
@@ -299,7 +301,11 @@ public final class App {
         // The loop is what makes "b" work: every question below can send the person back here
         // instead of forcing them to quit and start the tool again.
         List<Info> chosen;
-        boolean canGoBack = ask != null && front.only() == null
+        if (front.all() && front.only() != null) {
+            out.accept("Both --all and --only given; --only wins, taking '" + front.only()
+                    + "' alone.");
+        }
+        boolean canGoBack = ask != null && front.only() == null && !front.all()
                 && !front.yes();   // there is a question to go back TO only then
         while (true) {
             Source source = Source.TXT;
@@ -336,6 +342,17 @@ public final class App {
                     out.accept("No playlist named '" + front.only() + "' in " + playlistsDir);
                     return 2;
                 }
+            } else if (front.all()) {
+                // the unattended run: every playlist, no question at all. --yes alone still
+                // asks WHICH ones, which is one keystroke too many for a scheduled night
+                chosen = scan(playlistsDir, outputDir);
+                if (chosen.isEmpty()) {
+                    out.accept("No playlist .txt files in " + playlistsDir);
+                    return 2;
+                }
+                out.accept("Playlists:");
+                out.accept("");
+                formatTable(chosen).forEach(out);
             } else {
                 List<Info> infos = scan(playlistsDir, outputDir);
                 if (infos.isEmpty()) {
@@ -879,6 +896,7 @@ public final class App {
         Path output = null;
         Path config = null;
         boolean yes = false;
+        boolean all = false;
         boolean overwrite = false;
         boolean version = false;
         boolean help = false;
@@ -902,6 +920,7 @@ public final class App {
                 case "--output" -> output = pathValue(flag, inline, rest);
                 case "--config" -> config = pathValue(flag, inline, rest);
                 case "--yes" -> yes = true;
+                case "--all" -> all = true;
                 case "--overwrite" -> overwrite = true;
                 case "--version" -> version = true;
                 case "-h", "--help" -> help = true;
@@ -922,8 +941,8 @@ public final class App {
             extra.add(folder.getKey());
             extra.add(folder.getValue().toString());
         }
-        return new Front(only, yes, importSource, cookiesFrom, importName, overwrite, version,
-                help, playlists, output, config, List.copyOf(extra));
+        return new Front(only, yes, all, importSource, cookiesFrom, importName, overwrite,
+                version, help, playlists, output, config, List.copyOf(extra));
     }
 
     private static String value(String flag, String inline, List<String> rest) {
