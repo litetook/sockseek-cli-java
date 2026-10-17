@@ -57,7 +57,7 @@ PAIRS = {
 #                the configuration block reports it in opposite cases. The owner asked for the
 #                default off because every explained failure costs one more search
 IGNORE = ("ffprobe_path", "is not doubled", "What to download?", "Paste the ", "state=0",
-          "state=4", "explain = ", "stall_timeout_s", "skip_not_found_days")
+          "state=4", "explain = ")
 # The Java front end stopped being a copy on 2026-10-17, by the owner's request: it prices the
 # whole set and asks about it ONCE instead of once per playlist, and prints a numbered line
 # around every playlist it runs. The Python tool is the frozen oracle and has no counterpart.
@@ -107,6 +107,20 @@ def both(name: str, work: Path) -> tuple[str, str]:
 # Python oracle has nothing of the kind, so a dry-run line is compared up to that point and
 # the rest - which no human reads anyway - is cut off rather than making the line differ.
 ON_COMPLETE = " --on-complete "
+# The two keys are dropped rather than ignored as a substring: one of the pairs prints the
+# whole parsed config as a list of tuples on ONE line, so skipping that line would hide the
+# six keys both tools do share.
+NEW_KEY = "(?:stall_timeout_s|skip_not_found_days)"
+NEW_TUPLE = re.compile(r"\('" + NEW_KEY + r"', '[^']*'\)(?:, )?")
+NEW_LINE = re.compile(r"^\s*" + NEW_KEY + r" = ")
+# and the oracle's complaint about them, which is correct: it really does not know them
+NEW_WARN = re.compile('"WARN: config[.]yaml: unknown key \'' + NEW_KEY + '\', ignored"(?:, )?')
+NEW_WARN_LINE = re.compile("^WARN: config[.]yaml: unknown key '" + NEW_KEY + "'")
+
+
+def drop_new_keys(line: str) -> str:
+    """Take the two Java-only settings out of a line, leaving the rest of it comparable."""
+    return NEW_WARN.sub("", NEW_TUPLE.sub("", line)).replace(", ]", "]")
 
 
 def cut_on_complete(line: str) -> str:
@@ -115,8 +129,9 @@ def cut_on_complete(line: str) -> str:
 
 
 def clean(text: str) -> list[str]:
-    return [cut_on_complete(line) for line in text.splitlines()
-            if not any(skip in line for skip in IGNORE) and not NEW_FRONT.match(line)]
+    return [drop_new_keys(cut_on_complete(line)) for line in text.splitlines()
+            if not any(skip in line for skip in IGNORE) and not NEW_FRONT.match(line)
+            and not NEW_LINE.match(line) and not NEW_WARN_LINE.match(line)]
 
 
 def main() -> int:
