@@ -25,6 +25,10 @@ jobs:
         with:
           python-version: '3.12'
 
+      # belt and braces: the mode bit is set in git, but a zip export or a checkout with
+      # core.fileMode off would lose it, and the failure reads as "Permission denied"
+      - run: chmod +x gradlew
+
       - name: Tests
         run: ./gradlew --no-daemon test
 
