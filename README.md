@@ -78,8 +78,40 @@ Cosmic Drift - Pressure Rivet
 ```
 
 A length may be `m:ss`, `h:mm:ss` or plain seconds, and a line without one is searched with
-no length filter. If the playlist exists somewhere else already, import it rather than type
-it:
+no length filter.
+
+<details>
+<summary><b>Just want to see it work? Paste this.</b></summary>
+
+Five tracks that a lot of people are sharing, so something should come down within a minute
+or two. Save as `Playlists/starter.txt`:
+
+```
+Daft Punk - Around the World | 7:09
+Fatboy Slim - Praise You | 5:23
+The Chemical Brothers - Hey Boy Hey Girl | 4:46
+Moby - Porcelain | 4:01
+Massive Attack - Teardrop | 5:29
+```
+
+```bash
+java -jar sockseek-cli.jar --only starter --yes
+```
+
+The lengths above are for the usual album versions, and a remaster or a single edit can be a
+minute off — which the hard length filter will then refuse. If a track comes back as
+`NoSearchResults` and you are sure it exists, that is the first thing to loosen:
+
+```bash
+java -jar sockseek-cli.jar --only starter --yes --length-tol 90   # or -1 for no filter
+```
+
+Files land in `output/starter/`. Run the same command again and it will tell you there is
+nothing left to do.
+
+</details>
+
+If the playlist exists somewhere else already, import it rather than type it:
 
 ```bash
 java -jar sockseek-cli.jar --import "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M"
