@@ -102,8 +102,8 @@ public final class Runs {
     }
 
     /**
-     * The command as a Windows command line, the way Python's subprocess.list2cmdline writes
-     * it - so the dry-run line of both implementations is the same text, down to the quoting.
+     * The command as a Windows command line, quoted the way the Windows C runtime parses
+     * it back - so a dry-run line can be copied off the screen and pasted into a shell.
      */
     public static String commandLine(List<String> command) {
         StringBuilder result = new StringBuilder();

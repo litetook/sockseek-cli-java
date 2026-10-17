@@ -2,6 +2,7 @@ package dev.litetook.sockseek.links;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.litetook.sockseek.process.ProcessRunner;
@@ -258,18 +259,38 @@ class LinkReaderTest {
 
     @Test
     void aTitleWithAccentsSurvivesThePipe() throws Exception {
-        // yt-dlp is a Python program, and on Windows a Python child writes its output in the
-        // console code page unless told otherwise, while we read it as UTF-8. Measured
-        // 2026-10-14 on the Python tool: a SoundCloud title lost every character the code page
-        // could not represent, and the damaged line went into the playlist and then into the
-        // search, where Soulseek wants every word of the query to appear in the file path.
-        // A real child process is run here: the bug lived between two programs, and a mock is
-        // exactly what would have hidden it.
-        String python = System.getProperty("python.exe", "py");
-        ProcessRunner.Output output = ProcessRunner.system().run(List.of(python, "-c",
+        // yt-dlp is written in Python, and on Windows such a child writes its output in the
+        // console code page unless PYTHONIOENCODING says otherwise, while we read it as
+        // UTF-8. Measured 2026-10-14: a SoundCloud title lost every character the code page
+        // could not represent, the damaged line went into the playlist and then into the
+        // search, and Soulseek wants every word of the query to appear in the file path.
+        //
+        // So an interpreter is started here on purpose, and this is the ONLY place in the
+        // project that needs one: the thing under test is an environment variable reaching
+        // a child, the bug lived between two programs, and a mock is exactly what would
+        // have hidden it. Where there is no interpreter there is nothing to prove and the
+        // test stands aside - which is what happens in CI.
+        String interpreter = interpreter();
+        assumeTrue(interpreter != null, "no Python interpreter, and yt-dlp is written in one");
+        ProcessRunner.Output output = ProcessRunner.system().run(List.of(interpreter, "-c",
                 "print('Ti\u00ebsto \u00b7 L\u00f6ffler')"));
         assertEquals(0, output.code());
         assertEquals("Ti\u00ebsto \u00b7 L\u00f6ffler", output.text().strip());
         assertFalse(output.text().contains("\ufffd"), output.text());
     }
-}
+
+    /** Whichever of the usual names answers, or nothing. */
+    private static String interpreter() {
+        for (String name : List.of(System.getProperty("python.exe", "python"), "py",
+                "python3")) {
+            try {
+                if (ProcessRunner.system().run(List.of(name, "--version")).code() == 0) {
+                    return name;
+                }
+            } catch (RuntimeException notThisOne) {
+                continue;
+            }
+        }
+        return null;
+    }
+}

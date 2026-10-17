@@ -14,7 +14,7 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * The sockseek command line and the process around it.
  *
- * <p>Ported from the Python tool's test_runner.py. The rule behind most of it: this tool puts
+ * <p>The rule behind most of it: this tool puts
  * only the length window on the command line. Every quality knob lives in sockseek.conf, and a
  * value passed here would silently beat that file - which is how pref-min-bitrate in the conf
  * was dead until 2026-10-11.

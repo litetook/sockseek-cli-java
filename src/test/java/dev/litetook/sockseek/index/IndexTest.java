@@ -16,7 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * sockseek's {@code _index.csv}: what is here, what failed, and how it reads.
  *
- * <p>Ported from the Python tool's test_index.py. The two facts worth keeping in mind while
+ * <p>The two facts worth keeping in mind while
  * reading: state 3 means "was already there" and counts as success, and reason 9 does not mean
  * "not on the network" - run #0004 found two 320 kbps files for a row that said 9.
  */

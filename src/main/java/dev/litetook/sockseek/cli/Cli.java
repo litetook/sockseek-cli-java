@@ -35,10 +35,9 @@ public final class Cli implements Callable<Integer> {
     /**
      * The release this binary is.
      *
-     * <p>It mirrored the Python tool's 0.0.4 while that one was the oracle the port was
-     * diffed against. That ended on 2026-10-17, and so did the borrowed version: this is a
-     * tool in its own right now, and 1.0.0 says the thing people actually want to know -
-     * that it is finished enough to use, not a preview of something.
+     * <p>1.0.0 since 2026-10-17, and it says the thing people actually want to know: that
+     * this is finished enough to use, not a preview of something. The release workflow
+     * refuses to publish a tag whose name disagrees with this.
      */
     public static final String VERSION = "1.0.0";
 
@@ -243,8 +242,8 @@ public final class Cli implements Callable<Integer> {
     }
 
     public List<String> splitSockseekArgs() {
-        // the Python tool splits with shlex(posix=False), which keeps Windows backslashes and
-        // leaves the quotes on a token; stripping them here gives the same list
+        // split on spaces, honour quotes, and keep backslashes as they are: a Windows path
+        // inside this string is a path, not an escape sequence
         List<String> parts = new ArrayList<>();
         StringBuilder current = new StringBuilder();
         boolean inQuotes = false;
@@ -310,7 +309,7 @@ public final class Cli implements Callable<Integer> {
         for (Setting setting : Settings.ALL) {
             Object value = values.get(setting.key());
             String shown = setting.kind() == Setting.Kind.BOOLEAN
-                    ? python(((Number) value).intValue() != 0) : plain(value);
+                    ? trueFalse(((Number) value).intValue() != 0) : plain(value);
             lines.add("  " + setting.key() + " = " + shown
                     + " [" + sources.get(setting.key()) + "]");
         }
@@ -324,14 +323,14 @@ public final class Cli implements Callable<Integer> {
                 new Extra("sockseek_conf", sockseekConf),
                 new Extra("sockseek_args", sockseekArgs.isEmpty() ? null : sockseekArgs))) {
             if (extra.value() != null) {
-                lines.add("  " + extra.key() + " = " + python(extra.value()) + " [cli]");
+                lines.add("  " + extra.key() + " = " + trueFalse(extra.value()) + " [cli]");
             }
         }
         return List.copyOf(lines);
     }
 
-    /** True and False as Python prints them, so the two logs read the same. */
-    private static String python(Object value) {
+    /** True and False with a capital, as every other line of the block has always had. */
+    private static String trueFalse(Object value) {
         if (value instanceof Boolean flag) {
             return flag ? "True" : "False";
         }
@@ -349,7 +348,7 @@ public final class Cli implements Callable<Integer> {
     }
 
     /**
-     * The engine on its own, which is what {@code py -m soulseek} is in the Python tool.
+     * The engine on its own, without the menu in front of it.
      *
      * <p>The everyday entry point is {@link dev.litetook.sockseek.App}; this one exists so the
      * engine's own options can be read and a run can be started without the menu:

@@ -3,7 +3,7 @@ plugins {
 }
 
 // Not the `application` plugin: its start scripts collide with the fat jar below, and
-// run.cmd / run.sh already do that job the same way they do for the Python tool.
+// run.cmd / run.sh already do that job.
 val mainClassName = "dev.litetook.sockseek.App"
 
 repositories {
@@ -17,7 +17,7 @@ java {
 }
 
 dependencies {
-    // the flags and --help; the Python tool uses argparse, which has no counterpart here
+    // the flags and --help, which are an interface and not worth hand-rolling
     implementation("info.picocli:picocli:4.7.7")
     // one JSON document: the track list inside Spotify's embed page
     implementation("com.fasterxml.jackson.core:jackson-databind:2.19.0")

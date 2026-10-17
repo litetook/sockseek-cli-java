@@ -238,7 +238,7 @@ class ImporterTest {
     @Test
     void aQuoteInsideAQuotedFieldDoesNotStopTheImport(@TempDir Path dir) throws IOException {
         // exactly what Exportify wrote in the owner's own export (2026-10-16): the label
-        // field carries quotes that are not doubled, which is malformed CSV. The Python
+        // field carries quotes that are not doubled, which is malformed CSV. The
         // tool reads such a file, so this one has to as well - it used to die with an
         // UncheckedIOException from commons-csv instead.
         Imported found = read(dir, "liked.csv",

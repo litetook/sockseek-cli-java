@@ -31,13 +31,13 @@ import java.util.stream.Stream;
  */
 public final class Playlists {
 
-    /** UNICODE_CHARACTER_CLASS because Python's \s and \d cover more than ASCII, and a playlist
+    /** UNICODE_CHARACTER_CLASS because a playlist line is not ASCII, and a playlist
      *  pasted out of a browser really does arrive with non-breaking spaces. */
     private static final Pattern LINE = Pattern.compile(
             "^(?<name>.+?)\\s*\\|\\s*(?<length>[\\d:.]+)\\s*$", Pattern.UNICODE_CHARACTER_CLASS);
     private static final Pattern SPACES = Pattern.compile("\\s+", Pattern.UNICODE_CHARACTER_CLASS);
     /** What a number may be made of. Java's Double.parseDouble would also swallow "4d" and
-     *  "Infinity"; Python's float() takes neither, and neither do we. */
+     *  "Infinity"; neither is a length anybody typed. */
     private static final Pattern NUMBER = Pattern.compile("[0-9.eE+-]+");
     private static final Charset CP1251 = Charset.forName("windows-1251");
     /** cp1251 leaves this byte undefined, and Java's decoder quietly maps it anyway. */
@@ -218,10 +218,10 @@ public final class Playlists {
     public static List<Path> find(Path playlistsDir) throws IOException {
         try (Stream<Path> files = Files.list(playlistsDir)) {
             return files.filter(Files::isRegularFile)
-                    // not endsWith(".txt"): Python globs "*.txt", which Windows answers
-                    // case-insensitively, so a playlist saved as Mix.TXT was listed by the
-                    // Python tool and invisible here - a playlist silently absent from the
-                    // menu (found by an independent review, 2026-10-16)
+                    // not endsWith(".txt"): Windows matches a "*.txt" glob without regard
+                    // to case, so a playlist saved as Mix.TXT is one the person can see in
+                    // the folder and the menu cannot - a playlist silently absent (found by
+                    // an independent review, 2026-10-16)
                     .filter(file -> file.getFileName().toString().toLowerCase(Locale.ROOT)
                             .endsWith(".txt"))
                     .filter(file -> !isGenerated(file))

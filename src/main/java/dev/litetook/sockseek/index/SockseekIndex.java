@@ -118,7 +118,7 @@ public final class SockseekIndex {
      *
      * <p>Dropping the whole file is also worse than it looks: every track it says arrived would
      * read as missing and be searched again. So a malformed quote is retried leniently first,
-     * the way the importer does it and the way Python's csv module reads such a file anyway.
+     * the way the importer does it, because the files people have are written that way.
      */
     private static List<IndexRow> rowsOf(Path path) {
         Optional<String> text = decodeUtf8(path);
@@ -170,7 +170,8 @@ public final class SockseekIndex {
     }
 
     private static String normalise(String text) {
-        // Python casefolds; toLowerCase differs only for oddities like the German sharp s,
+        // toLowerCase rather than a full case fold: the two differ only for oddities like
+        // the German sharp s,
         // which no file name here has yet produced
         return SPACES.matcher(text == null ? "" : text).replaceAll(" ").strip()
                 .toLowerCase(Locale.ROOT);

@@ -126,9 +126,9 @@ public final class Importer {
             headers = parser.getHeaderNames();
         } catch (IOException | RuntimeException notATable) {
             // A real export does this: Exportify writes a label as "ТОВ "Супериор Мьюзик""
-            // - quotes inside a quoted field, not doubled, which is malformed CSV. Python's
-            // csv module reads it anyway, so a file that works with the Python tool has to
-            // work here too; found 2026-10-16 on the owner's own Liked Songs export.
+            // - quotes inside a quoted field, not doubled, which is malformed CSV. A real
+            // Exportify export has them, and a reader that refuses it is a reader that
+            // refuses the files people actually have too; found 2026-10-16 on the owner's own Liked Songs export.
             // RuntimeException and not IllegalArgumentException alone: commons-csv throws
             // CSVException (an IllegalStateException) wrapped in an UncheckedIOException.
             try (CSVParser second = CSVParser.parse(new StringReader(text),

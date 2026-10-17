@@ -18,7 +18,7 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * config.yaml, the sockseek config layers, and the folders.
  *
- * <p>Ported from the Python tool's test_settings.py, minus the parts that belong to the command
+ * <p>What a settings file means, minus the parts that belong to the command
  * line and the run itself - those arrive with phase 4.
  */
 class SettingsTest {

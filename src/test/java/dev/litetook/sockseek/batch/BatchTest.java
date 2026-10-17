@@ -134,7 +134,7 @@ class BatchTest {
     // ------------------------------------------------------------------ the command line
 
     @Test
-    void theCommandLineIsQuotedTheWayPythonQuotesIt() {
+    void theCommandLineIsQuotedTheWayWindowsParsesItBack() {
         // the dry-run line has to be the same text in both tools, down to the quoting
         assertEquals("a b", Runs.commandLine(List.of("a", "b")));
         assertEquals("\"a b\"", Runs.commandLine(List.of("a b")));

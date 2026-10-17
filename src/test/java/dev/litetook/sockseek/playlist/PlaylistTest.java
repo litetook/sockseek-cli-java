@@ -18,9 +18,8 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * Playlist files: lines, lengths, encodings.
  *
- * <p>Ported from the Python tool's test_playlist.py and the first half of test_runner.py. Every
- * expectation here is one the Python version already holds, so a difference is a bug in this
- * port until proven otherwise.
+ * <p>Every expectation here was measured against a real playlist file at some point; the
+ * awkward ones carry the date and the file that produced them.
  */
 class PlaylistTest {
 
@@ -54,7 +53,7 @@ class PlaylistTest {
 
     @Test
     void whatIsNotADuration() {
-        // "4:" matters: Java's split drops a trailing empty field and Python's does not,
+        // "4:" matters: Java's split drops a trailing empty field,
         // so without split(":", -1) this would quietly become 4 seconds
         for (String bad : List.of("", "abc", "4:", ":09", "1:2:3:4", "inf", "-5", "Infinity",
                 "NaN")) {

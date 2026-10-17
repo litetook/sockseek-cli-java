@@ -112,8 +112,7 @@ public final class Settings {
      * only be 24-bit or above 48 kHz, and a wav costs 10 MB a minute where a flac of the same
      * CD quality costs 7. Both still download when nothing cheaper exists. Measured on the
      * owner's own 57 files: the heaviest was a 2722 kbps flac, 102 MB for 5:15, and the six
-     * files above 1411 kbps held 26% of all the bytes. The Python tool keeps the old
-     * {@code 1000000} and {@code flac,wav,mp3}, which is a divergence on purpose.
+     * files above 1411 kbps held 26% of all the bytes.
      */
     public static final String SOCKSEEK_CONF_TEMPLATE = """
             # sockseek's own options, without the leading --. No secrets here: this file is

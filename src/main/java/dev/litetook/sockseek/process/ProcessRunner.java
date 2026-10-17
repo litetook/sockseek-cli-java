@@ -39,9 +39,11 @@ public interface ProcessRunner {
     /**
      * The real thing.
      *
-     * <p>The child is told to print UTF-8. yt-dlp is a Python program, and on Windows a Python
-     * child writes its output in the console code page unless this says otherwise, while we
-     * read it as UTF-8 - which cost the Python tool every accented title until 2026-10-14.
+     * <p>The child is told to print UTF-8. yt-dlp is written in Python, and on Windows such
+     * a child writes its output in the console code page unless this environment variable
+     * says otherwise, while we read it as UTF-8. Measured 2026-10-14: every accented title
+     * came back damaged, and the damaged line went into the playlist and then into the
+     * search.
      */
     static ProcessRunner system() {
         return command -> {
@@ -58,8 +60,7 @@ public interface ProcessRunner {
                 // either, because it was only reached after both reads returned. yt-dlp with
                 // --ignore-errors on a large SoundCloud set writes one ERROR line per failed
                 // item, which is exactly how to fill that buffer (found by an independent
-                // review, 2026-10-16). Python's subprocess.run has always done this for the
-                // Python tool.
+                // review, 2026-10-16).
                 Future<String> out = read(process.getInputStream());
                 Future<String> err = read(process.getErrorStream());
                 if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {

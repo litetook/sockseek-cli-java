@@ -28,9 +28,9 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * The front end: what someone sees and what the engine is handed.
  *
- * <p>The questions, the lines and the engine are injected rather than read from a console,
- * exactly as the Python tool does it: what is tested is the behaviour someone sees, not how it
- * is printed. Nothing here reaches the network - the downloader throws if anything tries.
+ * <p>The questions, the lines and the engine are injected rather than read from a console:
+ * what is tested is the behaviour someone sees, not how it is printed. Nothing here reaches
+ * the network - the downloader throws if anything tries.
  */
 class AppTest {
 
@@ -398,7 +398,7 @@ class AppTest {
     }
 
     @Test
-    void helpNamesThisToolsLauncherNotThePythonOne() {
+    void helpNamesTheLauncherOfThisPlatform() {
         Run run = run(List.of("--help"));
         assertEquals(0, run.code());
         assertEquals("The one command of this tool.", run.printed().get(0));

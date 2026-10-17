@@ -86,7 +86,7 @@ class CliTest {
         assertTrue(!bare.contains("explain"), bare);   // off by default, so nothing to report
         String said = block(parsed(app, "--dry-run", "--only", "mix", "--explain"));
         assertTrue(said.contains("  only = mix [cli]"), said);
-        assertTrue(said.contains("  dry_run = True [cli]"), said);   // True, as Python prints it
+        assertTrue(said.contains("  dry_run = True [cli]"), said);   // True, with a capital
         assertTrue(said.contains("  explain = True [cli]"), said);
     }
 

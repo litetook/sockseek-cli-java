@@ -47,21 +47,21 @@ import java.util.function.Predicate;
  * which one to work on, shows exactly which tracks are missing, and downloads only those after
  * an explicit yes.
  *
- * <p>The Python tool's {@code run.py} is the specification: every line this prints is the line
- * that one prints, except where a line names a Python command this tool does not have - see
- * {@link #LAUNCHER} and {@link #HELP}.
+ * <p>Every line it prints is pinned by a test, and the whole of it by a recording that the
+ * end-to-end check compares against - so the wording below is not decoration, it is the
+ * interface, and changing a line is a change somebody has to agree to.
  */
 public final class App {
 
-    /** How this tool is started, for the "now run" hints. The Python tool says "py run.py". */
+    /** How this tool is started, for the "now run" hints. */
     static final String LAUNCHER =
             System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("win")
                     ? "run.cmd" : "./run.sh";
 
     /**
-     * What {@code --help} prints: the Python front end's docstring, with the three places that
-     * name a Python file changed - the invocation, the {@code --ffprobe-check} example (the
-     * quality module is not ported) and the {@code setup.py} clause (there is no setup step).
+     * What {@code --help} prints. It names {@link #LAUNCHER} rather than a fixed command,
+       * because the same jar is started by {@code run.cmd} on Windows and {@code ./run.sh}
+       * everywhere else, and a help text that names the wrong one is worse than none.
      */
     static final String HELP = """
             The one command of this tool.
@@ -151,9 +151,8 @@ public final class App {
     /**
      * Everything the front end talks to that a test wants to replace.
      *
-     * <p>The Python tool passes {@code engine} and {@code reader} to {@code main()} and reads
-     * {@code APP_DIR} from the module; here they travel together so the signature of
-     * {@link #run} stays short.
+     * <p>They travel together rather than as four arguments so the signature of {@link #run}
+     * stays short, and so a test replaces exactly the pieces it means to.
      */
     public record Wiring(Path appDir, Engine engine, LinkReader reader, Downloader downloader) {
 
@@ -245,11 +244,11 @@ public final class App {
      * Pick, show, confirm, download. Returns the worst exit code of the runs it started:
      * 0 worked, 1 the tool failed, 2 a setup problem.
      *
-     * <p>130 is the Python tool's code for Ctrl+C and nothing here produces it: the JVM takes
+     * <p>130 is the conventional code for Ctrl+C, and nothing here produces it: the JVM takes
      * the signal and dies before any of this runs. The branch below that stops the session on
      * 130 is kept because an engine that does return it must not be mistaken for "skip to the
-     * next playlist" - but do not read the table in the manual as a promise that this tool
-     * exits with 130 (an independent review called the javadoc out on it, 2026-10-16).
+     * next playlist" - but do not read it as a promise that this tool exits with 130 (an
+     * independent review called the javadoc out on it, 2026-10-16).
      */
     public static int run(String[] args, Ask ask, Consumer<String> out) {
         return run(args, ask, out, Wiring.standard(Path.of(".").toAbsolutePath().normalize()));
@@ -722,14 +721,15 @@ public final class App {
                 continue;
             }
             if (!part.chars().allMatch(digit -> digit >= '0' && digit <= '9')) {
-                // "2".isdigit() is true for superscripts too, and Python's int() rejects those
+                // ASCII digits only: a superscript two is a digit to Character.isDigit and
+                // is not a number anybody meant to type
                 return Optional.empty();
             }
             int number;
             try {
                 number = Integer.parseInt(part);
             } catch (NumberFormatException tooBig) {
-                return Optional.empty();   // out of range, exactly as it is in Python
+                return Optional.empty();   // far out of range, which is not a choice
             }
             if (number < 1 || number > count) {
                 return Optional.empty();
@@ -1137,10 +1137,11 @@ public final class App {
     }
 
     /**
-     * Python's {@code str.strip()}, which also removes a NO-BREAK SPACE.
+     * Strip, including the NO-BREAK SPACE.
      *
-     * <p>Java's {@link String#strip()} leaves U+00A0 in place, and the parity work has already
-     * found one of those arriving from Spotify.
+     * <p>Java's {@link String#strip()} leaves U+00A0 in place, and Spotify really does send
+     * them - a title that arrived with one went looking for a track whose name had an
+     * invisible character on the end of it.
      */
     static String strip(String text) {
         int start = 0;

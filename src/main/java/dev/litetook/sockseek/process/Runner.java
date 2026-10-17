@@ -73,8 +73,8 @@ public final class Runner {
         command.addAll(extraArgs);
         // last on the line on purpose: its value is a whole shell command, by far the longest
         // thing here, and keeping it at the end leaves the readable part of a dry-run line
-        // readable - and lets the parity gate cut the line at it, since the Python oracle has
-        // no counterpart for it at all
+        // readable, since its value is a whole shell command and by far the longest thing
+        // on the line
         if (eventsFile != null && !options.preview()) {
             command.addAll(List.of("--on-complete", Events.argument(eventsFile)));
         }
@@ -209,8 +209,8 @@ public final class Runner {
     /**
      * Kill the process and everything it started.
      *
-     * <p>{@code ProcessHandle.descendants()} does on every platform what the Python tool needs
-     * {@code taskkill /F /T} for on Windows.
+     * <p>{@code ProcessHandle.descendants()} does this on every platform, where the usual
+     * answer is a Windows-only {@code taskkill /F /T}.
      */
     public static void killTree(Process process) {
         process.descendants().forEach(ProcessHandle::destroyForcibly);
