@@ -154,9 +154,13 @@ public final class Batch {
         // skip happens HERE, in the open, rather than through sockseek's --skip-not-found,
         // which remembers for ever and cannot tell "nobody had it" from "found and rejected".
         Path cacheFile = cfg.appDir().resolve(Failures.FILE_NAME);
-        List<Failures.Outcome> remembered = Failures.read(cacheFile);
-        Set<String> skip = Failures.skippable(remembered, playlist.name(),
-                cfg.skipNotFoundDays(), LocalDate.now());
+        // --no-cache makes the file not exist for the length of this run: nothing is read
+        // from it and nothing is written back, so a clean sweep leaves no trace either way
+        List<Failures.Outcome> remembered = cfg.cache() ? Failures.read(cacheFile) : List.of();
+        Set<String> skip = cfg.cache()
+                ? Failures.skippable(remembered, playlist.name(), cfg.skipNotFoundDays(),
+                        LocalDate.now())
+                : Set.of();
         List<Entry> wanted = before.missing().stream()
                 .filter(entry -> !skip.contains(entry.original())).toList();
         int skipped = before.missing().size() - wanted.size();
@@ -192,7 +196,9 @@ public final class Batch {
         dev.litetook.sockseek.process.Status status = Runner.runWithRetry(command, cfg.appDir(),
                 client.timeoutSeconds(), cfg.retries(), log, Runner.RETRY_PAUSE_SECONDS,
                 watch, cfg.stallSeconds(), outDir);
-        remember(cacheFile, remembered, playlist.name(), said);
+        if (cfg.cache()) {
+            remember(cacheFile, remembered, playlist.name(), said);
+        }
         if (cfg.options().preview()) {
             log.accept(status == dev.litetook.sockseek.process.Status.OK ? "preview done"
                     : "FAILED");

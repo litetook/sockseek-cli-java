@@ -19,6 +19,8 @@ import os
 import shutil
 from pathlib import Path
 
+FIXTURE = Path(__file__).resolve().parent / "fixture"
+# only mock.py needs the real binary, which is 114 MB and not worth keeping in a repository
 TOOL = Path(os.environ.get("SOCKSEEK_HOME", r"C:\claude_tasks\Soulseek-Batch"))
 # the login never leaves the sandbox, and a dry run never signs in anyway
 LOCAL_CONF = "username = gate\npassword = gate\n"
@@ -35,15 +37,15 @@ WRITTEN = ("logs", "work")
 def build(into: Path, index: bool, files: bool) -> Path:
     into.mkdir(parents=True, exist_ok=True)
     for name in ("config.yaml", "sockseek.conf", "dependencies.yaml"):
-        shutil.copy2(TOOL / name, into / name)
+        shutil.copy2(FIXTURE / name, into / name)
     (into / "sockseek.local.conf").write_text(LOCAL_CONF, encoding="utf-8")
     # a placeholder: --dry-run prints the command line and starts nothing
     (into / "sockseek.exe").write_bytes(b"")
-    shutil.copytree(TOOL / "Playlists", into / "Playlists",
+    shutil.copytree(FIXTURE / "Playlists", into / "Playlists",
                     ignore=shutil.ignore_patterns("*-missing.txt"), dirs_exist_ok=True)
     if not index:
         return into
-    for found in sorted((TOOL / "output").glob("*/_index.csv")):
+    for found in sorted((FIXTURE / "output").glob("*/_index.csv")):
         target = into / "output" / found.parent.name / found.name
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(found, target)

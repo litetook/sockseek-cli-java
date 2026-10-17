@@ -16,7 +16,7 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path soc
                         Options options, double timeoutMinutes, int retries, boolean dryRun,
                         String only, boolean verbose, boolean explain, List<String> sockseekArgs,
                         Path conf, Path sockseekConf, int runNo, LocalDateTime stamp,
-                        double stallSeconds, int skipNotFoundDays) {
+                        double stallSeconds, int skipNotFoundDays, boolean cache) {
 
     public RunConfig {
         sockseekArgs = List.copyOf(sockseekArgs);
@@ -30,13 +30,13 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path soc
     public RunConfig withRunNo(int number) {
         return new RunConfig(appDir, playlistsDir, outputDir, sockseek, options, timeoutMinutes,
                 retries, dryRun, only, verbose, explain, sockseekArgs, conf, sockseekConf,
-                number, stamp, stallSeconds, skipNotFoundDays);
+                number, stamp, stallSeconds, skipNotFoundDays, cache);
     }
 
     public RunConfig withConf(Path merged) {
         return new RunConfig(appDir, playlistsDir, outputDir, sockseek, options, timeoutMinutes,
                 retries, dryRun, only, verbose, explain, sockseekArgs, merged, sockseekConf,
-                runNo, stamp, stallSeconds, skipNotFoundDays);
+                runNo, stamp, stallSeconds, skipNotFoundDays, cache);
     }
 
     public static Builder builder(Path appDir) {
@@ -62,6 +62,7 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path soc
         private Path sockseekConf;
         private double stallSeconds = 300;
         private int skipNotFoundDays = 1;
+        private boolean cache = true;
 
         private Builder(Path appDir) {
             this.appDir = appDir;
@@ -140,10 +141,16 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path soc
             return this;
         }
 
+        public Builder cache(boolean value) {
+            this.cache = value;
+            return this;
+        }
+
         public RunConfig build() {
             return new RunConfig(appDir, playlistsDir, outputDir, sockseek, options,
                     timeoutMinutes, retries, dryRun, only, verbose, explain, sockseekArgs, null,
-                    sockseekConf, 0, LocalDateTime.now(), stallSeconds, skipNotFoundDays);
+                    sockseekConf, 0, LocalDateTime.now(), stallSeconds, skipNotFoundDays,
+                    cache);
         }
     }
 }

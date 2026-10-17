@@ -207,6 +207,17 @@ which is the 220-second search window — waiting for that window is not a hang,
 here tries to shorten it. What this is **not** is a deadline for one track: there is no way to
 cancel a single sockseek job from outside, so the tool does not pretend to have one.
 
+### `use_cache` — true · `--no-cache`
+
+**What it's for.** The master switch for `outcomes.tsv`. `false` makes the file not exist for
+the length of a run: nothing is read from it, nothing is written back. A clean sweep that
+leaves no trace, the way `--dry-run` leaves none.
+
+**Behind the scenes.** Not the same as `skip_not_found_days: 0`, which only stops the
+**skipping** — the run still counts what happened and writes it down. `use_cache: false` also
+stops the counting, so a run you did for a one-off reason cannot push a track's "failed 4
+runs running" counter up and make it look worse than it is.
+
 ### `searches_per_window` — 34 · `--searches-per-window`
 
 **What it's for.** The brake across playlists. It keeps the searches of **all** of them
@@ -251,6 +262,10 @@ search them anyway
 
 One day, not seven, because availability changes by the hour: a track that was nowhere on
 6 October arrived on the 7th as a 893 kbps flac, with no change to anything.
+
+⚠ The window is counted in **calendar days, not hours**: the file stores a date and no time.
+With the default of 1, a track nobody had at 23:50 is searched again ten minutes later, and
+one nobody had at 09:00 is held back for the rest of that day.
 
 This does **not** use sockseek's own `--skip-not-found`, for two measured reasons: it remembers
 for ever rather than for a day, and the index it reads cannot tell the two classes apart —
@@ -557,7 +572,8 @@ still asks which playlists, which is one keystroke too many for a scheduled nigh
 
 Engine: `--playlists DIR`, `--output DIR`, `--sockseek FILE`, `--config FILE`,
 `--sockseek-conf FILE`, `--length-tol SEC`, `--playlist-timeout MIN`, `--stall-timeout SEC`,
-`--skip-not-found-days DAYS`, `--searches-per-window N`, `--retries N`, `--explain`,
+`--skip-not-found-days DAYS`, `--no-cache`, `--searches-per-window N`, `--retries N`,
+`--explain`,
 `--preview`, `--dry-run`,
 `--verbose`, `--sockseek-args "STRING"`.
 

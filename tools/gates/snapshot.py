@@ -3,6 +3,9 @@
     py tools/gates/snapshot.py              check the three states
     py tools/gates/snapshot.py --record     write down what it prints today
 
+The data is a frozen fixture in this repository, not the owner's live folder: a recording
+made from a folder he downloads into goes red every time a track arrives.
+
 This replaced the parity harness on 2026-10-17. Until then the Java tool was checked by
 running the Python tool it was ported from over the same data and diffing every line - the
 Python tool was the oracle. That answered one question, "is the port faithful?", and the
@@ -73,8 +76,8 @@ def main() -> int:
                         help="write down today's answer instead of checking against it")
     args = parser.parse_args()
 
-    if not (sandbox.TOOL / "Playlists").is_dir():
-        sys.exit(f"no playlists at {sandbox.TOOL} (set SOCKSEEK_HOME)")
+    if not (sandbox.FIXTURE / "Playlists").is_dir():
+        sys.exit(f"no fixture at {sandbox.FIXTURE}")
     if not JAR.is_file():
         sys.exit(f"{JAR} is missing - run: gradlew fatJar")
     for state in args.only:
@@ -82,7 +85,7 @@ def main() -> int:
             sys.exit(f"unknown state: {state}; known: {', '.join(sandbox.STATES)}")
 
     RECORDED.mkdir(parents=True, exist_ok=True)
-    playlists = len(list((sandbox.TOOL / "Playlists").glob("*.txt")))
+    playlists = len(list((sandbox.FIXTURE / "Playlists").glob("*.txt")))
     temporary = Path(tempfile.mkdtemp(prefix="sockseek-snap-"))
     worst = 0
     try:

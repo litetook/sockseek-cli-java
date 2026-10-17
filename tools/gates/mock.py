@@ -54,7 +54,7 @@ def build(into: Path) -> Path:
         encoding="utf-8")
     (into / "sockseek.local.conf").write_text(sandbox.LOCAL_CONF, encoding="utf-8")
     shutil.copy2(sandbox.TOOL / "sockseek.exe", into / "sockseek.exe")
-    shutil.copy2(sandbox.TOOL / "dependencies.yaml", into / "dependencies.yaml")
+    shutil.copy2(sandbox.FIXTURE / "dependencies.yaml", into / "dependencies.yaml")
     return into
 
 

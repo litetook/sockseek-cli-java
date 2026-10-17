@@ -17,13 +17,28 @@ public record Setting(String key, String flag, Kind kind, Number fallback, Doubl
         oldKeys = List.copyOf(oldKeys);
     }
 
-    /** All of them are numbers; a boolean one would need its own handling on the command line. */
+    /**
+     * How the value reads in the file.
+     *
+     * <p>A BOOLEAN still travels as a number - 1 or 0 - so everything downstream keeps
+     * working on one map of numbers; only the reading and the printing know the difference.
+     * The owner asked for one on 2026-10-17: a switch that is only a command-line flag is
+     * not a setting, it is something you have to remember every time.
+     */
     public enum Kind {
-        INTEGER, DECIMAL;
+        INTEGER, DECIMAL, BOOLEAN;
 
         /** The text as this kind of number, or empty when it is not one. */
         public Optional<Number> parse(String text) {
             String value = text.strip();
+            if (this == BOOLEAN) {
+                // the words a person actually writes in a config file, either case
+                return switch (value.toLowerCase(java.util.Locale.ROOT)) {
+                    case "true", "yes", "on", "1" -> Optional.of(1);
+                    case "false", "no", "off", "0" -> Optional.of(0);
+                    default -> Optional.empty();
+                };
+            }
             // Double.parseDouble would take "4d" and "Infinity", which no config should mean
             if (!value.matches("[+-]?[0-9]*\\.?[0-9]+([eE][+-]?[0-9]+)?")) {
                 return Optional.empty();

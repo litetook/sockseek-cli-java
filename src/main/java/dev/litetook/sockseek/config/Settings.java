@@ -48,6 +48,7 @@ public final class Settings {
               stall_timeout_s: 300
               skip_not_found_days: 1
               searches_per_window: 34
+              use_cache: true
             """;
 
     /**
@@ -120,6 +121,10 @@ public final class Settings {
             new Setting("skip_not_found_days", "--skip-not-found-days", Setting.Kind.INTEGER, 1,
                     0.0, "do not search again for a track nobody had, if that was within this "
                             + "many days; 0 = always search (default 1)", List.of()),
+            new Setting("use_cache", "--no-cache", Setting.Kind.BOOLEAN, 1, 0.0,
+                    "remember what happened to a track and act on it; false ignores "
+                            + "outcomes.tsv completely - searches everything and writes "
+                            + "nothing down (default true)", List.of()),
             new Setting("searches_per_window", "--searches-per-window", Setting.Kind.INTEGER,
                     34, 0.0, "keep the searches of ALL playlists together under this many per "
                             + "220 s, by pausing between them; 0 = no pause (default 34)",

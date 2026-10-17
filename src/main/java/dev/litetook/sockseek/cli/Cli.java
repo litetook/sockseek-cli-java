@@ -86,6 +86,11 @@ public final class Cli implements Callable<Integer> {
                     + "220 s, by pausing between them; 0 = no pause (default 34)")
     Integer searchesPerWindow;
 
+    @Option(names = "--no-cache",
+            description = "ignore outcomes.tsv completely for this run: search everything and "
+                    + "write nothing down, as if the file did not exist")
+    boolean noCache;
+
     @Option(names = "--dry-run",
             description = "write the list file, print the sockseek command, run nothing")
     boolean dryRun;
@@ -195,6 +200,8 @@ public final class Cli implements Callable<Integer> {
             case "stall_timeout_s" -> stallTimeout;
             case "skip_not_found_days" -> skipNotFoundDays;
             case "searches_per_window" -> searchesPerWindow;
+            // a flag that is only ever "off": absent means "whatever the file says"
+            case "use_cache" -> noCache ? 0 : null;
             default -> null;
         };
     }
@@ -259,6 +266,7 @@ public final class Cli implements Callable<Integer> {
                 .sockseekConf(sockseekConf)
                 .stallSeconds(decimal("stall_timeout_s"))
                 .skipNotFoundDays(integer("skip_not_found_days"))
+                .cache(integer("use_cache") != 0)
                 .build();
     }
 
@@ -272,7 +280,10 @@ public final class Cli implements Callable<Integer> {
         lines.add("  sockseek_exe = " + path("sockseek") + " [" + sources.get("sockseek") + "]");
         lines.add("  config_file = " + path("config") + " [" + sources.get("config") + "]");
         for (Setting setting : Settings.ALL) {
-            lines.add("  " + setting.key() + " = " + plain(values.get(setting.key()))
+            Object value = values.get(setting.key());
+            String shown = setting.kind() == Setting.Kind.BOOLEAN
+                    ? python(((Number) value).intValue() != 0) : plain(value);
+            lines.add("  " + setting.key() + " = " + shown
                     + " [" + sources.get(setting.key()) + "]");
         }
         record Extra(String key, Object value) {
