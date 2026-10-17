@@ -1,0 +1,47 @@
+name: check
+
+# Everything here is offline: no Soulseek account, no network beyond fetching the build's
+# own dependencies. The fourth gate, tools/gates/mock.py, is deliberately absent - it drives
+# the real sockseek binary, which is 114 MB and is not kept in the repository.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Tests
+        run: ./gradlew --no-daemon test
+
+      - name: Build the jar
+        run: ./gradlew --no-daemon fatJar
+
+      - name: The manuals match the options
+        run: python tools/gates/docs.py
+
+      # The recording was made on Windows, where a path is C:\... and a line ends with CRLF,
+      # so the lines cannot match on Linux. What CAN be checked anywhere is that the gate
+      # runs at all and the tool survives all 24 playlists in three states - a crash, an
+      # unhandled exception or an exit code of 2 fails the step.
+      - name: The whole tool over every playlist
+        run: python tools/gates/snapshot.py --record
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sockseek-cli.jar
+          path: build/libs/sockseek-cli.jar

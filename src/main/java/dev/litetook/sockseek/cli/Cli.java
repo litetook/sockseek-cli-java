@@ -32,8 +32,15 @@ import picocli.CommandLine.ParseResult;
                 + "flat output.")
 public final class Cli implements Callable<Integer> {
 
-    /** Mirrors the Python tool's version while the two are compared against each other. */
-    public static final String VERSION = "0.0.4";
+    /**
+     * The release this binary is.
+     *
+     * <p>It mirrored the Python tool's 0.0.4 while that one was the oracle the port was
+     * diffed against. That ended on 2026-10-17, and so did the borrowed version: this is a
+     * tool in its own right now, and 1.0.0 says the thing people actually want to know -
+     * that it is finished enough to use, not a preview of something.
+     */
+    public static final String VERSION = "1.0.0";
 
     @Option(names = "--version", versionHelp = true, description = "print the version and exit")
     boolean version;

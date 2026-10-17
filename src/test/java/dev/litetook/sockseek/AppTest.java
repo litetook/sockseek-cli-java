@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.litetook.sockseek.cli.Cli;
 import dev.litetook.sockseek.config.Settings;
 import dev.litetook.sockseek.deps.Downloader;
 import dev.litetook.sockseek.index.Failures;
@@ -392,7 +393,7 @@ class AppTest {
     void versionIsPrintedAndNothingElseHappens() {
         Run run = run(List.of("--version"));
         assertEquals(0, run.code());
-        assertEquals(List.of("sockseek-cli 0.0.4"), run.printed());
+        assertEquals(List.of("sockseek-cli " + Cli.VERSION), run.printed());
         assertFalse(Files.exists(home.resolve(Settings.CONFIG_NAME)));
     }
 
