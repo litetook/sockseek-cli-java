@@ -21,7 +21,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -158,16 +158,16 @@ public final class Batch {
         // from it and nothing is written back, so a clean sweep leaves no trace either way
         List<Failures.Outcome> remembered = cfg.cache() ? Failures.read(cacheFile) : List.of();
         Set<String> skip = cfg.cache()
-                ? Failures.skippable(remembered, playlist.name(), cfg.skipNotFoundDays(),
-                        LocalDate.now())
+                ? Failures.skippable(remembered, playlist.name(), cfg.skipNotFoundHours(),
+                        LocalDateTime.now())
                 : Set.of();
         List<Entry> wanted = before.missing().stream()
                 .filter(entry -> !skip.contains(entry.original())).toList();
         int skipped = before.missing().size() - wanted.size();
         if (skipped > 0) {
             log.accept("skipping " + skipped + " track(s) nobody had within the last "
-                    + cfg.skipNotFoundDays() + " day(s); set skip_not_found_days: 0 to search "
-                    + "them anyway");
+                    + plainHours(cfg.skipNotFoundHours()) + " hour(s); set "
+                    + "skip_not_found_hours: 0 to search them anyway");
         }
         if (wanted.isEmpty()) {
             log.accept("nothing left to search: every missing track was searched for recently "
@@ -268,6 +268,11 @@ public final class Batch {
         return new Result(entries.size(), still.size(), broke);
     }
 
+    /** 2 rather than 2.0, so the line reads like a person wrote it. */
+    private static String plainHours(double hours) {
+        return hours == Math.rint(hours) ? Long.toString((long) hours) : Double.toString(hours);
+    }
+
     /**
      * One finished track, as sockseek reported it the moment it ended.
      *
@@ -294,7 +299,7 @@ public final class Batch {
             return;   // no events at all: say nothing rather than forget what was known
         }
         List<Failures.Outcome> after = Failures.after(existing, playlist, said,
-                LocalDate.now());
+                LocalDateTime.now());
         if (!Failures.write(cacheFile, after)) {
             log.accept("WARN cannot write " + cacheFile + ", what happened to these tracks "
                     + "will not be remembered");

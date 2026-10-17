@@ -147,7 +147,7 @@ search:
   retries: 1
   playlist_timeout_min: 10
   stall_timeout_s: 300
-  skip_not_found_days: 1
+  skip_not_found_hours: 2
 ```
 
 ### `paths.sockseek`, `paths.playlists`, `paths.output`
@@ -213,7 +213,7 @@ cancel a single sockseek job from outside, so the tool does not pretend to have 
 the length of a run: nothing is read from it, nothing is written back. A clean sweep that
 leaves no trace, the way `--dry-run` leaves none.
 
-**Behind the scenes.** Not the same as `skip_not_found_days: 0`, which only stops the
+**Behind the scenes.** Not the same as `skip_not_found_hours: 0`, which only stops the
 **skipping** — the run still counts what happened and writes it down. `use_cache: false` also
 stops the counting, so a run you did for a one-off reason cannot push a track's "failed 4
 runs running" counter up and make it look worse than it is.
@@ -244,10 +244,10 @@ was never speed — it was borrowing against a ban.
 
 A dry run and a `--preview` ask the server for nothing, so neither is paced.
 
-### `skip_not_found_days` — 1 day · `--skip-not-found-days`
+### `skip_not_found_hours` — 2 hours · `--skip-not-found-hours`
 
-**What it's for.** Do not spend today's searches on a track that nobody had today. `0` searches
-everything again, every time.
+**What it's for.** Do not spend this hour's searches on a track nobody had an hour ago. `0`
+searches everything again, every time. Fractions work: `0.5` is half an hour.
 
 **Behind the scenes.** Searching is the scarce thing, not bandwidth: sockseek is allowed 34
 searches per 220 s, so a 107-track playlist spends most of its night waiting for that window.
@@ -256,16 +256,16 @@ Only **one** class of failure is ever **skipped** — `NoSearchResults`, nobody 
 ones that arrive next time. A run that skips anything says so out loud:
 
 ```
-skipping 4 track(s) nobody had within the last 1 day(s); set skip_not_found_days: 0 to
+skipping 4 track(s) nobody had within the last 2 hour(s); set skip_not_found_hours: 0 to
 search them anyway
 ```
 
-One day, not seven, because availability changes by the hour: a track that was nowhere on
-6 October arrived on the 7th as a 893 kbps flac, with no change to anything.
-
-⚠ The window is counted in **calendar days, not hours**: the file stores a date and no time.
-With the default of 1, a track nobody had at 23:50 is searched again ten minutes later, and
-one nobody had at 09:00 is held back for the rest of that day.
+**Two hours, and why not a day.** It was a day until 2026-10-17, counted in calendar dates,
+and the owner found the hole by using the tool: "деякі треки просто з'явились у пошуку коли я
+в інший час додаток запустив". Who is sharing changes through the day — a track that was
+nowhere on 6 October arrived on the 7th as a 893 kbps flac — so a morning miss must not
+silence a track until midnight. Two hours is still enough that a re-run five minutes later
+does not spend the search budget on the same hopeless lines.
 
 This does **not** use sockseek's own `--skip-not-found`, for two measured reasons: it remembers
 for ever rather than for a day, and the index it reads cannot tell the two classes apart —
@@ -279,14 +279,14 @@ Every failure is written down; only one class is ever acted on. The file sits ne
 config, one tab-separated line per track:
 
 ```
-2026-10-17  AllDownloadsFailed  4  liked-techno-hard  Artist - Title | 4:09
-2026-10-17  NoSearchResults     1  liked-chill        Other - Track | 3:12
-     date         class       runs      playlist           playlist line
+2026-10-17T12:24:31  AllDownloadsFailed  4  liked-techno-hard  Artist - Title | 4:09
+2026-10-17T18:02:10  NoSearchResults     1  liked-chill        Other - Track | 3:12
+       when               class       runs      playlist           playlist line
 ```
 
 **What it's for.** Two jobs that must not be confused:
 
-- **Skipping** — `NoSearchResults` only, and only within `skip_not_found_days`. That is the
+- **Skipping** — `NoSearchResults` only, and only within `skip_not_found_hours`. That is the
   one above.
 - **Counting** — everything else is remembered and **never** skipped, so a track that has
   been failing the same way for three runs can say so:
@@ -519,7 +519,7 @@ fixes that; another hour of the day might.
 |---|---|
 | `output/<name>/` | the audio, flat, named `Artist - Title.ext` |
 | `output/<name>/_index.csv` | sockseek's index: the only link between a playlist line and a file |
-| `outcomes.tsv` | how each track ended last time, with the date and a run counter |
+| `outcomes.tsv` | how each track ended last time, with the time and a run counter |
 | `logs/session_<stamp>.log` | **everything you saw on screen**, one file per start of the command |
 | `logs/run_<NNNN>_<stamp>.log` | one run of one playlist; opens with `run #NNNN` and the effective config |
 | `logs/sockseek_<NNNN>_<name>.log` | sockseek's own verbose log (only with `--verbose`) |
@@ -572,7 +572,7 @@ still asks which playlists, which is one keystroke too many for a scheduled nigh
 
 Engine: `--playlists DIR`, `--output DIR`, `--sockseek FILE`, `--config FILE`,
 `--sockseek-conf FILE`, `--length-tol SEC`, `--playlist-timeout MIN`, `--stall-timeout SEC`,
-`--skip-not-found-days DAYS`, `--no-cache`, `--searches-per-window N`, `--retries N`,
+`--skip-not-found-hours HOURS`, `--no-cache`, `--searches-per-window N`, `--retries N`,
 `--explain`,
 `--preview`, `--dry-run`,
 `--verbose`, `--sockseek-args "STRING"`.

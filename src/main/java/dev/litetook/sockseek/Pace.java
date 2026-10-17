@@ -84,18 +84,34 @@ public final class Pace {
     }
 
     /**
-     * How many searches a playlist issued: the lines of the list file the engine wrote.
+     * How many searches a playlist really made.
      *
-     * <p>Not the number of missing tracks - the cache holds some of them back, and counting
-     * those would make the tool wait for searches it never made. The file is what was really
-     * handed to sockseek.
+     * <p>The events file holds one line per track that reached an end, and a track reaches an
+     * end only after it has been searched for - so counting those lines counts the searches
+     * that actually went to the server.
+     *
+     * <p>The list file is NOT the answer, which cost the owner ten minutes of staring at a
+     * still screen on the first night this existed. He cancelled a 146-track playlist a third
+     * of the way through; the list said 146, so the brake charged for 146 searches and asked
+     * the next playlist to wait 581 seconds for queries that were never sent. A run that is
+     * cut short - cancelled, stalled, out of time - leaves most of its list unsearched, and
+     * the brake must only ever hold back what was really spent.
+     *
+     * <p>No events file at all means the watcher never got going, and then the list is the
+     * only estimate there is. Erring high there is the safe direction: it waits too long
+     * rather than risking the ban.
      */
-    public static int searchesOf(Path listFile) {
+    public static int searchesOf(Path listFile, Path eventsFile) {
+        int made = lines(eventsFile);
+        return made > 0 ? made : lines(listFile);
+    }
+
+    private static int lines(Path file) {
         try {
-            return (int) Files.readAllLines(listFile, StandardCharsets.UTF_8).stream()
+            return (int) Files.readAllLines(file, StandardCharsets.UTF_8).stream()
                     .filter(line -> !line.isBlank()).count();
         } catch (IOException | RuntimeException noFile) {
-            return 0;   // nothing was written, so nothing was searched
+            return 0;
         }
     }
 }

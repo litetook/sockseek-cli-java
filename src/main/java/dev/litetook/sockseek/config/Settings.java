@@ -46,7 +46,7 @@ public final class Settings {
               retries: 1
               playlist_timeout_min: 10
               stall_timeout_s: 300
-              skip_not_found_days: 1
+              skip_not_found_hours: 2
               searches_per_window: 34
               use_cache: true
             """;
@@ -118,9 +118,11 @@ public final class Settings {
             new Setting("stall_timeout_s", "--stall-timeout", Setting.Kind.DECIMAL, 300.0, 0.0,
                     "stop a playlist when no track has finished for this many seconds, "
                             + "0 = never (default 300)", List.of()),
-            new Setting("skip_not_found_days", "--skip-not-found-days", Setting.Kind.INTEGER, 1,
-                    0.0, "do not search again for a track nobody had, if that was within this "
-                            + "many days; 0 = always search (default 1)", List.of()),
+            new Setting("skip_not_found_hours", "--skip-not-found-hours",
+                    Setting.Kind.DECIMAL, 2.0, 0.0,
+                    "do not search again for a track nobody had, if that was within this many "
+                            + "hours; 0 = always search (default 2). Fractions are fine: 0.5 "
+                            + "is half an hour", List.of()),
             new Setting("use_cache", "--no-cache", Setting.Kind.BOOLEAN, 1, 0.0,
                     "remember what happened to a track and act on it; false ignores "
                             + "outcomes.tsv completely - searches everything and writes "

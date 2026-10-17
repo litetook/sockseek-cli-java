@@ -76,10 +76,10 @@ public final class Cli implements Callable<Integer> {
                     + "0 = never (default 300)")
     Double stallTimeout;
 
-    @Option(names = "--skip-not-found-days", paramLabel = "DAYS",
+    @Option(names = "--skip-not-found-hours", paramLabel = "HOURS",
             description = "do not search again for a track nobody had, if that was within this "
-                    + "many days; 0 = always search (default 1)")
-    Integer skipNotFoundDays;
+                    + "many hours; 0 = always search (default 2). Fractions are fine")
+    Double skipNotFoundHours;
 
     @Option(names = "--searches-per-window", paramLabel = "N",
             description = "keep the searches of ALL playlists together under this many per "
@@ -198,7 +198,7 @@ public final class Cli implements Callable<Integer> {
             case "playlist_timeout_min" -> playlistTimeout;
             case "retries" -> retries;
             case "stall_timeout_s" -> stallTimeout;
-            case "skip_not_found_days" -> skipNotFoundDays;
+            case "skip_not_found_hours" -> skipNotFoundHours;
             case "searches_per_window" -> searchesPerWindow;
             // a flag that is only ever "off": absent means "whatever the file says"
             case "use_cache" -> noCache ? 0 : null;
@@ -265,7 +265,7 @@ public final class Cli implements Callable<Integer> {
                 .sockseekArgs(splitSockseekArgs())
                 .sockseekConf(sockseekConf)
                 .stallSeconds(decimal("stall_timeout_s"))
-                .skipNotFoundDays(integer("skip_not_found_days"))
+                .skipNotFoundHours(decimal("skip_not_found_hours"))
                 .cache(integer("use_cache") != 0)
                 .build();
     }

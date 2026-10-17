@@ -588,17 +588,27 @@ class AppTest {
     }
 
     @Test
-    void theSearchesCountedAreTheOnesActuallyHandedOver(@TempDir Path dir) throws IOException {
-        // not the missing tracks: the cache holds some of them back, and waiting for searches
-        // that were never made would be waiting for nothing
+    void theSearchesCountedAreTheOnesThatReallyHappened(@TempDir Path dir) throws IOException {
+        // the owner cancelled a 146-track playlist a third of the way through and the brake
+        // charged him 581 s for queries that were never sent. What was asked for is the list;
+        // what was spent is the events, one line per track that reached an end
         Path list = dir.resolve("mix.list.txt");
+        Path events = dir.resolve("mix.events.txt");
         Files.writeString(list, """
                 s:"title=A"
                 s:"title=B"
+                s:"title=C"
 
                 """);
-        assertEquals(2, Pace.searchesOf(list));
-        assertEquals(0, Pace.searchesOf(dir.resolve("not-there.txt")));
+        Files.writeString(events, """
+                1;Succeeded;None
+                2;Failed;NoSearchResults
+                """);
+        assertEquals(2, Pace.searchesOf(list, events));
+        // no events at all: the watcher never got going, so the list is the only estimate,
+        // and erring high waits too long rather than risking the ban
+        assertEquals(3, Pace.searchesOf(list, dir.resolve("none.txt")));
+        assertEquals(0, Pace.searchesOf(dir.resolve("gone.txt"), dir.resolve("none.txt")));
     }
 
     private static Status empty() {

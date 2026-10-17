@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -22,7 +23,7 @@ import java.util.Set;
  * <ol>
  *   <li><b>Skipping.</b> A track nobody on the network had is not worth one of today's 34
  *       searches per 220 s. Only that one class is ever skipped, and only for
- *       {@code skip_not_found_days}.
+ *       {@code skip_not_found_hours}.
  *   <li><b>Counting.</b> Everything else is remembered but never skipped, purely so a track
  *       that has been failing to download for five runs running can say so. Without this the
  *       fact was unrecoverable: it lives in the text of a run log, and in {@code _index.csv},
@@ -42,7 +43,7 @@ import java.util.Set;
  *   <caption>what the word means</caption>
  *   <tr><th>word</th><th>index row</th><th>meaning</th><th>skipped?</th></tr>
  *   <tr><td>{@code NoSearchResults}</td><td>state=2 reason=9</td><td>nobody had it</td>
- *       <td>yes, for skip_not_found_days</td></tr>
+ *       <td>yes, for skip_not_found_hours</td></tr>
  *   <tr><td>{@code AllDownloadsFailed}</td><td>state=2 reason=4</td>
  *       <td>found, the upload died</td><td>never</td></tr>
  * </table>
@@ -52,7 +53,7 @@ import java.util.Set;
  * a track whose row said 9, rejected on length. The word can.
  *
  * <p>The file is tab-separated, in the tool's own folder, one line per track:
- * <pre>{@code 2026-10-17<TAB>AllDownloadsFailed<TAB>4<TAB>liked-techno<TAB>Artist - Title | 4:09}</pre>
+ * <pre>{@code 2026-10-17T12:24:31<TAB>AllDownloadsFailed<TAB>4<TAB>liked-techno<TAB>Artist - Title}</pre>
  * Tabs, because a playlist line may hold anything else, commas included.
  */
 public final class Failures {
@@ -67,7 +68,8 @@ public final class Failures {
     }
 
     /** How one track ended, when that was, and how many runs in a row it has ended that way. */
-    public record Outcome(LocalDate when, String reason, int runs, String playlist, String line) {
+    public record Outcome(LocalDateTime when, String reason, int runs, String playlist,
+                          String line) {
 
         String toLine() {
             return when + "\t" + reason + "\t" + runs + "\t" + playlist + "\t" + line;
@@ -94,13 +96,26 @@ public final class Failures {
                 continue;   // a half-written or hand-edited line is skipped, never fatal
             }
             try {
-                found.add(new Outcome(LocalDate.parse(fields[0].strip()), fields[1].strip(),
+                found.add(new Outcome(when(fields[0].strip()), fields[1].strip(),
                         Integer.parseInt(fields[2].strip()), fields[3].strip(), fields[4]));
             } catch (DateTimeParseException | NumberFormatException notThisLine) {
                 continue;
             }
         }
         return List.copyOf(found);
+    }
+
+    /**
+     * The stamp, tolerating the date-only form this file used until 2026-10-17.
+     *
+     * <p>A day's worth of real records already existed when the unit changed, and throwing
+     * them away would have made the tool search two hundred hopeless lines again for nothing.
+     * A date with no time counts as that day's midnight, which is the safe reading: it can
+     * only make a row look older than it is, never younger.
+     */
+    private static LocalDateTime when(String text) {
+        return text.length() <= 10 ? LocalDate.parse(text).atStartOfDay()
+                : LocalDateTime.parse(text);
     }
 
     /** Write the table back. A record that cannot be written is not worth failing a run for. */
@@ -118,21 +133,28 @@ public final class Failures {
     /**
      * The playlist lines worth not searching for again today.
      *
-     * <p>{@code days} of 0 means the skipping is off and nothing is held back - the counting
-     * goes on either way. One day means "not again today": a miss from yesterday is already
-     * old enough to be worth another look, because who is online changes by the hour.
+     * <p>{@code hours} of 0 means the skipping is off and nothing is held back - the counting
+     * goes on either way.
+     *
+     * <p>Hours, not days, since 2026-10-17, and two of them by default. It was a day until the
+     * owner noticed the obvious thing a day cannot express: "деякі треки просто з'явились у
+     * пошуку коли я в інший час додаток запустив". Who is sharing changes through the day, so
+     * a morning miss must not silence a track until midnight - and an hour of rest is still
+     * enough to stop a re-run five minutes later from spending the search budget on the same
+     * hopeless lines.
      */
-    public static Set<String> skippable(List<Outcome> all, String playlist, int days,
-                                        LocalDate today) {
+    public static Set<String> skippable(List<Outcome> all, String playlist, double hours,
+                                        LocalDateTime now) {
         Set<String> lines = new LinkedHashSet<>();
-        if (days <= 0) {
+        if (hours <= 0) {
             return lines;
         }
+        long minutes = Math.round(hours * 60);
         for (Outcome seen : all) {
             if (!seen.playlist().equals(playlist) || !seen.notOnNetwork()) {
                 continue;
             }
-            if (!seen.when().plusDays(days).isAfter(today)) {
+            if (!seen.when().plusMinutes(minutes).isAfter(now)) {
                 continue;   // old enough to be worth asking again
             }
             lines.add(seen.line());
@@ -149,7 +171,7 @@ public final class Failures {
      * cause is a different story. Other playlists are left untouched.
      */
     public static List<Outcome> after(List<Outcome> existing, String playlist,
-                                      Map<String, Events.Event> byLine, LocalDate today) {
+                                      Map<String, Events.Event> byLine, LocalDateTime now) {
         Map<String, Outcome> kept = new LinkedHashMap<>();
         Map<String, Outcome> before = new LinkedHashMap<>();
         for (Outcome seen : existing) {
@@ -167,7 +189,7 @@ public final class Failures {
             Outcome was = before.get(said.getKey());
             int runs = was != null && was.reason().equals(event.reason()) ? was.runs() + 1 : 1;
             kept.put(playlist + "\t" + said.getKey(),
-                    new Outcome(today, event.reason(), runs, playlist, said.getKey()));
+                    new Outcome(now, event.reason(), runs, playlist, said.getKey()));
         }
         return List.copyOf(kept.values());
     }

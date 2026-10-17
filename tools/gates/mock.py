@@ -106,20 +106,20 @@ def main() -> int:
         worst |= check("the next run skips it instead of searching again",
                        "skipping 1 track(s)" in said, said[-400:])
         worst |= check("and says so rather than going quiet",
-                       "skip_not_found_days: 0 to search them anyway" in said, said[-400:])
+                       "skip_not_found_hours: 0 to search them anyway" in said, said[-400:])
 
-        said = run(folder, "--skip-not-found-days", "0")
-        worst |= check("zero days searches it again",
+        said = run(folder, "--skip-not-found-hours", "0")
+        worst |= check("zero hours searches it again",
                        "skipping" not in said and ">> 1 of 1 done" in said, said[-400:])
 
         # a found track whose upload dies is a different class, and is never skipped
         shutil.rmtree(folder / "output", ignore_errors=True)
-        run(folder, "--skip-not-found-days", "0", fail=9)
+        run(folder, "--skip-not-found-hours", "0", fail=9)
         written = outcomes.read_text(encoding="utf-8")
         worst |= check("a dead upload is recorded as AllDownloadsFailed",
                        "AllDownloadsFailed" in written, written)
 
-        # the default day of memory is in force here: the ghost track is held back, and the
+        # the default two hours of memory are in force here: the ghost track is held back, and the
         # two whose upload died are searched again. That split is the whole point of the file
         said = run(folder, fail=9)
         worst |= check("and is searched again next run, never skipped",

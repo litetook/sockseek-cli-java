@@ -32,7 +32,7 @@ track that will not come down, and an honest list of what this cannot do.
 | **One question** | every missing list first, then the price of the lot — playlists, tracks, and the minutes the 34-per-220-s search limiter alone will cost — then one `y` |
 | **A live count** | `>> 12 of 35 done, 9 downloaded`, while the run is going, across the whole run rather than one playlist |
 | **A silence watchdog** | a playlist that has finished nothing for `stall_timeout_s` is stopped and said to have gone quiet, not left to burn its wall clock |
-| **A memory of last time** | `outcomes.tsv`: how each track ended, with a run counter. A track nobody was sharing is not searched again for `skip_not_found_days`; every other failure is counted and never skipped, so "this one has failed four runs running" is something you can see |
+| **A memory of last time** | `outcomes.tsv`: how each track ended, with a run counter. A track nobody was sharing is not searched again for `skip_not_found_hours`; every other failure is counted and never skipped, so "this one has failed four runs running" is something you can see |
 | **Only what is missing** | a track already on disk is never sent to sockseek, so re-running the same playlist tomorrow is the normal way to pick up the rest |
 | **Reasons in words** | `reason=9` in sockseek's index means both "nobody had it" and "found and rejected"; `--explain` searches again with every condition off and says which |
 | **The screen, kept** | `logs/session_<date>.log` holds everything you saw, including the questions you were asked |

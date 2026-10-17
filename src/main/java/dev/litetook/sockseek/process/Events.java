@@ -54,14 +54,24 @@ public final class Events {
         }
 
         /**
-         * The track ended badly, as opposed to arriving or having been there already.
+         * The track ended badly, as opposed to arriving, being there already, or being
+         * called off by the person watching.
          *
          * <p>Measured states: {@code Succeeded}, {@code AlreadyExists}, {@code Failed}.
          * Anything else sockseek may report is read as a failure, which is the safe way
          * round: a state we do not know is not something to call a success.
+         *
+         * <p>{@code Cancelled} is the exception. sockseek's on-complete selectors name it, so
+         * it can happen when someone presses {@code c} in its console - and then the track
+         * failed at nothing, we simply stopped asking. Writing that down as a failure would
+         * put it in the record and count it towards "failing three runs in a row", which
+         * would be the tool blaming Soulseek for a decision the person made. ⚠ Not measured:
+         * cancelling a 146-track playlist on 2026-10-17 produced no event of this kind at all
+         * for the jobs that were dropped - they simply ended silently.
          */
         public boolean failed() {
-            return !succeeded() && !state.equals("AlreadyExists");
+            return !succeeded() && !state.equals("AlreadyExists")
+                    && !state.equals("Cancelled");
         }
 
         /** The track was searched for and nobody had it - the only class worth remembering. */

@@ -448,8 +448,9 @@ public final class App {
                         + "), going on to the next playlist");
                 code = 1;
             }
-            pace.spent(Pace.searchesOf(
-                    wiring.appDir().resolve("work").resolve(info.name() + ".list.txt")));
+            Path made = wiring.appDir().resolve("work");
+            pace.spent(Pace.searchesOf(made.resolve(info.name() + ".list.txt"),
+                    made.resolve(info.name() + ".events.txt")));
             // counted here rather than asked of the engine, which answers with an exit code
             // only: the folder is the truth either way, and it is the same reading the menu did
             int arrived = info.missing().size() - stillMissing(info, outputDir);
