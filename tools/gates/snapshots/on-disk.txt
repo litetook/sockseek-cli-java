@@ -1,0 +1,1583 @@
+Playlists:
+
+  #  playlist        tracks  here  missing
+  -  --------------  ------  ----  -------
+  1  ambient-night       25     7       18
+  2  breaks              29     8       21
+  3  chill               69    18       51
+  4  classics            10     1        9
+  5  dnb                 38    15       23
+  6  dubstep-bass        45    15       30
+  7  example              3     1        2
+  8  hip-hop             54    14       40
+  9  house               84    22       62
+ 10  nothing-here        17     0       17
+ 11  one-track            1     1        0
+ 12  other               36     9       27
+ 13  phonk-dark          31     6       25
+ 14  pop                 90    30       60
+ 15  rock-metal          43     9       34
+ 16  techno-acid         27     8       19
+ 17  techno-hard        107    32       75
+ 18  techno-melodic      61    18       43
+ 19  techno              40    12       28
+ 20  trance              33    10       23
+ 21  ukrainian          146    47       99
+ 22  wanted               4     2        2
+ 23  weird-edges         12     6        6
+ 24  with-links           8     3        5
+
+ambient-night: 25 tracks, 7 here, 18 missing
+
+Missing:
+   1  Quiet Harbour - Orbit Wharf Pressure (Pavel Zaytsev Remix) | 49:43
+   2  Quiet Harbour - Pressure Quarry | 52:10
+   3  Kettle Drum Jones - Wharf Quarry | 2:46
+   4  Fjord - Pressure | 1:29:52
+   5  Kettle Drum Jones - Kelvin Wharf | 1:29:40
+   6  Kettle Drum Jones - Harbour Jetty | 49:02
+   7  Járn - Wharf Tideline - Original Mix
+   8  Pavel Zaytsev - Xenon Jetty | 35:33
+   9  Kettle Drum Jones - Slipstream - Original Mix | 17:23
+  10  Pavel Zaytsev - Amber (feat. Núria Vega) | 22:07
+  11  Oblique Strategy - Orbit Backroom | 1:22:31
+  12  Rafael's Theory - Acid (Live at the Quarry, 1998)
+  13  Aurora Beltrán - Undertow Northline [FREE DOWNLOAD] | 1:23:14
+  14  Aurora Beltrán - Northline Undertow Fracture | 56:50
+  15  Ясне Поле - Kelvin Xenon | 18:05
+  16  Låpsley Covers - Jetty Lantern Mirage / B-side | 2:12:24
+  17  Aurora Beltrán - Orbit Harbour (Live at the Quarry, 1998) | 2:23:32
+  18  Låpsley Covers - Daylight (Extended Mix) | 1938
+WARN line 9: no valid length, searching without length filter
+WARN line 17: no valid length, searching without length filter
+WARN line 21: no valid length, searching without length filter
+WARN line 28: the tail after | reads as a length of 32:18 - if 1900-2100 was meant as part of the title, the length filter will never match; write it without the | or give a real length
+WARN 1 duplicate line(s) dropped
+
+breaks: 29 tracks, 8 here, 21 missing
+
+Missing:
+   1  Oblique Strategy - Fracture - Original Mix
+   2  Blue Kettle - Acid Lantern - Original Mix | 2:25:53
+   3  Quiet Harbour - Drift (Extended Mix) | 1:53:57
+   4  Oblique Strategy - Slipstream | 1:27:24
+   5  Умовний Рефлекс - Yellowline (Pavel Zaytsev Remix) | 2:10:09
+   6  Hollow Coast - Pressure Tideline Xenon (Live at the Quarry, 1998) | 57:25
+   7  Ясне Поле - Zephyr Kelvin | 1:50:43
+   8  Tölva - Cathedral Pressure | 26:53
+   9  Gábor Szabó Tribute - Yellowline Kelvin (feat. Núria Vega) | 1:41:44
+  10  Ясне Поле - Undertow Tideline
+  11  Döner Kebab Sound System - Quarry - Original Mix | 1:12:51
+  12  Echo & The Mechanics - Vertigo Zephyr Jetty (Pavel Zaytsev Remix) | 1:48:32
+  13  Járn - Daylight (feat. Núria Vega) | 1:54:09
+  14  Wandering Spoke - Quarry | 1729
+  15  Vølur - Amber Xenon (Extended Mix) | 1:22:49
+  16  Echo & The Mechanics - Undertow Tideline [FREE DOWNLOAD]
+  17  Умовний Рефлекс - Harbour Yellowline Rivet | 1:40:57
+  18  Hollow Coast - Vertigo Mirage (feat. Núria Vega) | 2:07:16
+  19  Quiet Harbour - Yellowline | 2:26:57
+  20  Blue Kettle - Tideline (Extended Mix) | 54:44
+  21  Járn - Zephyr | 1:06:32
+WARN line 1: no valid length, searching without length filter
+WARN line 14: no valid length, searching without length filter
+WARN line 22: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+chill: 69 tracks, 18 here, 51 missing
+
+Missing:
+   1  Rafael's Theory - Cathedral Ember | 1:29:41
+   2  Núria Vega - Northline Fracture Undertow (Pavel Zaytsev Remix) | 37:21
+   3  Kettle Drum Jones - Daylight Amber | 1:29:22
+   4  Låpsley Covers - Lantern Vertigo [FREE DOWNLOAD] | 3662
+   5  Kettle Drum Jones - Iron - Original Mix | 22:28
+   6  Núria Vega - Iron Quarry Acid / B-side | 22:56
+   7  Quiet Harbour - Vertigo | 1:45:19
+   8  Kettle Drum Jones - Tideline Slipstream Undertow / B-side | 1:57:32
+   9  Låpsley Covers - Kelvin | 1:16:10
+  10  Döner Kebab Sound System - Vertigo (feat. Núria Vega)
+  11  Járn - Pressure Xenon Cathedral (feat. Núria Vega) very very very very very very very very very very very very very very very very very very very very long | 18:04
+  12  Döner Kebab Sound System - Acid Glasshouse Jetty (Pavel Zaytsev Remix) | 1:42:40
+  13  Cosmic Drift - Kelvin (Radio Edit) very very very very very very very very very very very very very very very very very very very very long | 1:47:21
+  14  Kettle Drum Jones - Tideline | 38:21
+  15  Núria Vega - Acid (Live at the Quarry, 1998)
+  16  Hollow Coast - Yellowline (Radio Edit) | 32:56
+  17  Quiet Harbour - Rivet Wharf (Extended Mix) | 6025
+  18  Núria Vega - Zephyr Daylight Lantern (Extended Mix) | 27:44
+  19  Tölva - Vertigo Backroom / B-side | 1:54:51
+  20  Cosmic Drift - Drift Harbour Fracture (Extended Mix) | 14:44
+  21  Sunken Chapel - Xenon Iron Amber (Radio Edit) | 42:29
+  22  Aurora Beltrán - Northline (Extended Mix) very very very very very very very very very very very very very very very very very very very very long | 28:57
+  23  Echo & The Mechanics - Slipstream | 1:37:05
+  24  Döner Kebab Sound System - Northline (Live at the Quarry, 1998) | 1:43:40
+  25  Cosmic Drift - Kelvin Pressure (Radio Edit)
+  26  Iris Morningstar - Ember Zephyr | 6391
+  27  Умовний Рефлекс - Quarry Amber (Live at the Quarry, 1998) | 1:57:19
+  28  Echo & The Mechanics - Slipstream (Live at the Quarry, 1998) very very very very very very very very very very very very very very very very very very very very long | 2:27:32
+  29  Blue Kettle - Vertigo Cathedral Zephyr [FREE DOWNLOAD] | 29:31
+  30  Iris Morningstar - Drift Acid (Extended Mix) | 2:14:02
+  31  Sunken Chapel - Amber Quarry (Radio Edit) | 1:56:52
+  32  Wandering Spoke - Vertigo - Original Mix | 39:17
+  33  Sunken Chapel - Wharf (Live at the Quarry, 1998) | 18:32
+  34  Tölva - Harbour (Live at the Quarry, 1998) | 32:16
+  35  Iris Morningstar - Drift (Radio Edit) | 5288
+  36  Умовний Рефлекс - Lantern Glasshouse (Extended Mix) | 44:00
+  37  Sunken Chapel - Zephyr Rivet / B-side | 40:04
+  38  Умовний Рефлекс - Acid Vertigo / B-side | 1:10:21
+  39  Tölva - Northline Pressure [FREE DOWNLOAD] | 6:56
+  40  Járn - Backroom (Radio Edit) | 1:40:16
+  41  Midnight Sorter - Orbit [FREE DOWNLOAD] | 33:56
+  42  Iris Morningstar - Drift Yellowline Quarry (Pavel Zaytsev Remix) | 26:47
+  43  Pavel Zaytsev - Iron Wharf [FREE DOWNLOAD] | 58:43
+  44  Rafael's Theory - Iron (Live at the Quarry, 1998) | 27:00
+  45  Quiet Harbour - Northline Rivet Tideline - Original Mix | 1:27:58
+  46  Oblique Strategy - Acid Pressure Undertow (Live at the Quarry, 1998)
+  47  Hollow Coast - Mirage (Radio Edit) | 39:49
+  48  Echo & The Mechanics - Orbit Yellowline | 2:23:17
+  49  Midnight Sorter - Rivet Pressure (Extended Mix) | 1:03:40
+  50  Iris Morningstar - Orbit (Extended Mix) | 1:01:23
+  51  Aurora Beltrán - Xenon | 7008
+WARN line 12: no valid length, searching without length filter
+WARN line 20: no valid length, searching without length filter
+WARN line 32: no valid length, searching without length filter
+WARN line 63: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+classics: 10 tracks, 1 here, 9 missing
+
+Missing:
+   1  Hollow Coast - Drift Yellowline / B-side | 3525
+   2  Wandering Spoke - Amber Acid Jetty [FREE DOWNLOAD] | 1:34:40
+   3  Vølur - Pressure Orbit | 1:46:36
+   4  Sunken Chapel - Lantern Amber Fracture | 2:08:57
+   5  Fjord - Yellowline (feat. Núria Vega) | 6540
+   6  Pavel Zaytsev - Mirage Jetty [FREE DOWNLOAD] | 1:30:02
+   7  Fjord - Tideline Rivet (Pavel Zaytsev Remix) | 1:14:17
+   8  Echo & The Mechanics - Ember Zephyr Iron | 1:47:51
+   9  Blue Kettle - Wharf
+WARN line 13: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+dnb: 38 tracks, 15 here, 23 missing
+
+Missing:
+   1  Aurora Beltrán - Yellowline (Pavel Zaytsev Remix) | 46:22
+   2  Fjord - Yellowline (Pavel Zaytsev Remix) | 1:08:01
+   3  Midnight Sorter - Amber [FREE DOWNLOAD] | 2:01:41
+   4  Умовний Рефлекс - Glasshouse Orbit (Radio Edit) | 1:11:46
+   5  Fjord - Yellowline / B-side | 2789
+   6  Blue Kettle - Northline (Live at the Quarry, 1998) | 1:17:47
+   7  Iris Morningstar - Tideline Backroom (Live at the Quarry, 1998) | 30:54
+   8  Midnight Sorter - Harbour Iron / B-side | 1:22:40
+   9  Iris Morningstar - Glasshouse [FREE DOWNLOAD]
+  10  Kettle Drum Jones - Amber Harbour (feat. Núria Vega) | 1:29:11
+  11  Iris Morningstar - Undertow Lantern (Pavel Zaytsev Remix) | 2:01:52
+  12  Rafael's Theory - Rivet Slipstream Harbour | 2:19:26
+  13  Midnight Sorter - Xenon Drift Glasshouse (Pavel Zaytsev Remix) | 57:38
+  14  Iris Morningstar - Mirage Ember | 1:27:14
+  15  Kettle Drum Jones - Kelvin Amber Cathedral [FREE DOWNLOAD] | 14:39
+  16  Ясне Поле - Acid Tideline [FREE DOWNLOAD] | 2:28:51
+  17  Quiet Harbour - Kelvin | 1:54:54
+  18  Låpsley Covers - Rivet | 16:20
+  19  Gábor Szabó Tribute - Drift Jetty | 7:35
+  20  Núria Vega - Glasshouse Amber [FREE DOWNLOAD] | 54:21
+  21  Echo & The Mechanics - Backroom Slipstream (Radio Edit) | 1:19:48
+  22  Умовний Рефлекс - Xenon Orbit / B-side | 2:08:07
+  23  Járn - Backroom [FREE DOWNLOAD] | 2:14:03
+WARN line 15: no valid length, searching without length filter
+WARN line 17: no valid length, searching without length filter
+WARN line 23: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+dubstep-bass: 45 tracks, 15 here, 30 missing
+
+Missing:
+   1  Gábor Szabó Tribute - Harbour Tideline (Pavel Zaytsev Remix) | 45:23
+   2  Cosmic Drift - Yellowline Xenon Orbit (Live at the Quarry, 1998) | 2:08:39
+   3  Iris Morningstar - Quarry Zephyr (Extended Mix) very very very very very very very very very very very very very very very very very very very very long | 1:34:39
+   4  Kettle Drum Jones - Backroom Zephyr Glasshouse [FREE DOWNLOAD] | 2:00:33
+   5  Vølur - Harbour Mirage | 20:38
+   6  Gábor Szabó Tribute - Daylight / B-side | 2:21:43
+   7  Wandering Spoke - Zephyr | 36:35
+   8  Midnight Sorter - Zephyr Iron Vertigo / B-side | 1:43:34
+   9  Fjord - Iron Amber Undertow (Extended Mix)
+  10  Quiet Harbour - Orbit Wharf / B-side | 16:53
+  11  Rafael's Theory - Rivet Ember Fracture | 34:25
+  12  Cosmic Drift - Undertow Mirage | 51:37
+  13  Hollow Coast - Ember Cathedral (Pavel Zaytsev Remix) | 2:22:28
+  14  Wandering Spoke - Wharf [FREE DOWNLOAD] | 1:36:49
+  15  Aurora Beltrán - Pressure Slipstream Undertow (Live at the Quarry, 1998) | 1:06:30
+  16  Midnight Sorter - Orbit (Live at the Quarry, 1998) | 36:04
+  17  Járn - Amber Vertigo / B-side | 1:01:22
+  18  Iris Morningstar - Slipstream Ember (feat. Núria Vega) | 28:10
+  19  Pavel Zaytsev - Glasshouse Backroom (Live at the Quarry, 1998) | 1:52:31
+  20  Vølur - Fracture Drift Slipstream (Pavel Zaytsev Remix)
+  21  Oblique Strategy - Mirage Rivet | 1:45:35
+  22  Midnight Sorter - Quarry | 1:27:10
+  23  Járn - Yellowline Harbour | 4:35
+  24  Kettle Drum Jones - Zephyr | 1:48:24
+  25  Blue Kettle - Vertigo Amber Cathedral [FREE DOWNLOAD] | 23:09
+  26  Pavel Zaytsev - Lantern Mirage | 1:00:16
+  27  Pavel Zaytsev - Fracture (Pavel Zaytsev Remix) very very very very very very very very very very very very very very very very very very very very long | 51:14
+  28  Núria Vega - Kelvin Lantern (Live at the Quarry, 1998)
+  29  Wandering Spoke - Glasshouse Zephyr (feat. Núria Vega) | 1:33:38
+  30  Fjord - Undertow (Pavel Zaytsev Remix) | 1:41:00
+WARN line 9: no valid length, searching without length filter
+WARN line 16: no valid length, searching without length filter
+WARN line 29: no valid length, searching without length filter
+WARN line 30: no valid length, searching without length filter
+WARN line 45: no valid length, searching without length filter
+WARN line 46: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+example: 3 tracks, 1 here, 2 missing
+
+Missing:
+   1  Cosmic Drift - Tideline Zephyr - Original Mix | 2:21:50
+   2  Sunken Chapel - Rivet Harbour (Extended Mix) | 43:04
+
+hip-hop: 54 tracks, 14 here, 40 missing
+
+Missing:
+   1  Tölva - Orbit (feat. Núria Vega) | 26:59
+   2  Vølur - Daylight Harbour Acid | 3:24
+   3  Iris Morningstar - Slipstream (Pavel Zaytsev Remix) | 1:15:54
+   4  Oblique Strategy - Orbit (Live at the Quarry, 1998) | 7:44
+   5  Quiet Harbour - Rivet Yellowline Harbour - Original Mix | 1:49:22
+   6  Oblique Strategy - Zephyr | 1:43:44
+   7  Aurora Beltrán - Zephyr | 2:17:46
+   8  Gábor Szabó Tribute - Amber - Original Mix | 50:18
+   9  Aurora Beltrán - Zephyr Northline Mirage (Radio Edit) | 21:22
+  10  Ясне Поле - Mirage / B-side
+  11  Blue Kettle - Cathedral Pressure (Live at the Quarry, 1998) very very very very very very very very very very very very very very very very very very very very long | 59:19
+  12  Wandering Spoke - Acid (Radio Edit) | 1:32:03
+  13  Wandering Spoke - Zephyr Daylight (Extended Mix) | 1:31:00
+  14  Cosmic Drift - Rivet Harbour - Original Mix | 3:35
+  15  Midnight Sorter - Tideline Backroom Drift (Extended Mix) | 30:02
+  16  Járn - Acid | 2677
+  17  Gábor Szabó Tribute - Iron Undertow (Live at the Quarry, 1998) | 2:25:33
+  18  Oblique Strategy - Drift Fracture Lantern (feat. Núria Vega) | 1:44:43
+  19  Midnight Sorter - Yellowline Orbit Mirage | 2:06:59
+  20  Rafael's Theory - Orbit Backroom (Live at the Quarry, 1998) | 1:39:08
+  21  Echo & The Mechanics - Amber Yellowline | 2:18:58
+  22  Fjord - Fracture | 2:27:35
+  23  Wandering Spoke - Ember (Radio Edit) | 2:20:13
+  24  Kettle Drum Jones - Amber | 1:46:50
+  25  Midnight Sorter - Ember Backroom Acid - Original Mix
+  26  Echo & The Mechanics - Kelvin Cathedral Glasshouse (Extended Mix) | 2:07:59
+  27  Oblique Strategy - Harbour Lantern Undertow (Live at the Quarry, 1998) | 2:24:21
+  28  Vølur - Lantern (Pavel Zaytsev Remix) | 1:10:18
+  29  Aurora Beltrán - Cathedral | 1:01:26
+  30  Sunken Chapel - Iron Drift (feat. Núria Vega) | 54:34
+  31  Kettle Drum Jones - Mirage Harbour (Live at the Quarry, 1998) | 10:25
+  32  Oblique Strategy - Glasshouse Slipstream (Extended Mix) | 3981
+  33  Midnight Sorter - Pressure (Pavel Zaytsev Remix) | 54:56
+  34  Tölva - Quarry Lantern (Radio Edit) | 2:29:01
+  35  Midnight Sorter - Rivet Drift (Extended Mix) very very very very very very very very very very very very very very very very very very very very long | 32:15
+  36  Cosmic Drift - Backroom (Live at the Quarry, 1998) | 48:50
+  37  Midnight Sorter - Backroom Rivet (Live at the Quarry, 1998) | 1:38:08
+  38  Kettle Drum Jones - Yellowline Rivet / B-side | 29:35
+  39  Tölva - Vertigo (Extended Mix) | 50:00
+  40  Járn - Iron
+WARN line 13: no valid length, searching without length filter
+WARN line 35: no valid length, searching without length filter
+WARN line 56: no valid length, searching without length filter
+WARN line 57: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+house: 84 tracks, 22 here, 62 missing
+
+Missing:
+   1  Tölva - Rivet | 1218
+   2  Járn - Orbit Ember | 1:58:52
+   3  Oblique Strategy - Slipstream | 8730
+   4  Oblique Strategy - Northline (Pavel Zaytsev Remix) | 6749
+   5  Aurora Beltrán - Xenon Cathedral / B-side | 24:19
+   6  Pavel Zaytsev - Daylight Backroom [FREE DOWNLOAD] | 1:25:26
+   7  Rafael's Theory - Vertigo / B-side | 2:13:25
+   8  Kettle Drum Jones - Quarry Vertigo (Pavel Zaytsev Remix) | 1:08:52
+   9  Умовний Рефлекс - Vertigo / B-side | 1:04:12
+  10  Iris Morningstar - Backroom Ember | 367
+  11  Hollow Coast - Amber Quarry Iron (Live at the Quarry, 1998) | 38:35
+  12  Cosmic Drift - Pressure Yellowline | 1:29:36
+  13  Gábor Szabó Tribute - Wharf Slipstream / B-side
+  14  Járn - Kelvin Undertow [FREE DOWNLOAD] | 37:54
+  15  Låpsley Covers - Iron (Pavel Zaytsev Remix) very very very very very very very very very very very very very very very very very very very very long | 2:00:14
+  16  Oblique Strategy - Backroom Jetty (Radio Edit) | 1:50:46
+  17  Oblique Strategy - Xenon Quarry
+  18  Döner Kebab Sound System - Backroom Lantern [FREE DOWNLOAD] | 1:49:44
+  19  Cosmic Drift - Zephyr Yellowline | 1:38:48
+  20  Hollow Coast - Tideline (Pavel Zaytsev Remix) | 6022
+  21  Iris Morningstar - Pressure Wharf - Original Mix | 1:25:21
+  22  Iris Morningstar - Tideline Backroom (Live at the Quarry, 1998) | 1:43:38
+  23  Pavel Zaytsev - Undertow Glasshouse Zephyr - Original Mix | 5018
+  24  Cosmic Drift - Vertigo | 2:06:47
+  25  Ясне Поле - Yellowline (Radio Edit) | 46:43
+  26  Tölva - Iron Slipstream Rivet (Radio Edit) | 44:00
+  27  Tölva - Kelvin Amber (Live at the Quarry, 1998) | 48:12
+  28  Blue Kettle - Tideline Fracture Iron (feat. Núria Vega) | 1:32:36
+  29  Aurora Beltrán - Cathedral Drift Pressure / B-side | 7735
+  30  Núria Vega - Rivet Glasshouse (Radio Edit) | 2:04:34
+  31  Gábor Szabó Tribute - Vertigo Acid / B-side | 5907
+  32  Умовний Рефлекс - Jetty Ember Slipstream (Extended Mix) | 3:30
+  33  Blue Kettle - Glasshouse Harbour | 3938
+  34  Oblique Strategy - Slipstream Rivet (Pavel Zaytsev Remix) | 1:49:40
+  35  Döner Kebab Sound System - Cathedral | 32:05
+  36  Fjord - Harbour Fracture | 2:12:38
+  37  Ясне Поле - Zephyr (Extended Mix) | 21:39
+  38  Умовний Рефлекс - Ember Zephyr (Radio Edit) | 1:56:10
+  39  Midnight Sorter - Wharf Orbit (Live at the Quarry, 1998) | 1:11:33
+  40  Gábor Szabó Tribute - Zephyr Fracture | 34:49
+  41  Aurora Beltrán - Kelvin Rivet | 23:04
+  42  Iris Morningstar - Rivet (Pavel Zaytsev Remix) | 45:46
+  43  Echo & The Mechanics - Mirage
+  44  Cosmic Drift - Lantern (Extended Mix) | 2:07:09
+  45  Pavel Zaytsev - Cathedral Orbit [FREE DOWNLOAD] | 2:25:47
+  46  Aurora Beltrán - Ember Wharf - Original Mix | 54:37
+  47  Hollow Coast - Vertigo (feat. Núria Vega) | 2:01:34
+  48  Aurora Beltrán - Daylight Slipstream / B-side | 40:19
+  49  Járn - Glasshouse Wharf - Original Mix | 1:01:33
+  50  Rafael's Theory - Ember Mirage Wharf (Radio Edit) | 42:32
+  51  Núria Vega - Glasshouse Northline (Pavel Zaytsev Remix) | 52:26
+  52  Núria Vega - Drift Glasshouse (feat. Núria Vega)
+  53  Fjord - Vertigo Lantern | 20:47
+  54  Pavel Zaytsev - Acid Drift | 1:43:43
+  55  Fjord - Undertow (Live at the Quarry, 1998) very very very very very very very very very very very very very very very very very very very very long | 9:49
+  56  Tölva - Xenon Tideline Yellowline (Radio Edit) | 8515
+  57  Midnight Sorter - Wharf | 54:20
+  58  Aurora Beltrán - Cathedral | 19:05
+  59  Blue Kettle - Kelvin | 24:31
+  60  Járn - Undertow Xenon Zephyr | 1:41:11
+  61  Járn - Rivet [FREE DOWNLOAD] | 1:58:22
+  62  Quiet Harbour - Slipstream (Radio Edit) | 2:17:57
+WARN line 24: no valid length, searching without length filter
+WARN line 28: no valid length, searching without length filter
+WARN line 61: no valid length, searching without length filter
+WARN line 71: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+nothing-here: 17 tracks, 0 here, 17 missing
+
+Missing:
+   1  Járn - Mirage Drift
+   2  Midnight Sorter - Vertigo Tideline - Original Mix | 7:45
+   3  Iris Morningstar - Kelvin / B-side | 1:25:11
+   4  Tölva - Ember (Live at the Quarry, 1998) | 468
+   5  Gábor Szabó Tribute - Zephyr Quarry Drift (Pavel Zaytsev Remix) | 31:58
+   6  Cosmic Drift - Xenon Vertigo | 1:33:14
+   7  Midnight Sorter - Xenon Rivet
+   8  Midnight Sorter - Backroom Undertow Ember (Radio Edit) | 1:13:39
+   9  Quiet Harbour - Acid | 51:08
+  10  Wandering Spoke - Xenon Yellowline Cathedral [FREE DOWNLOAD] | 9:05
+  11  Tölva - Jetty Rivet Yellowline
+  12  Kettle Drum Jones - Ember | 11:27
+  13  Kettle Drum Jones - Wharf | 2:04:09
+  14  Núria Vega - Harbour (feat. Núria Vega) | 17:29
+  15  Oblique Strategy - Zephyr Pressure (Pavel Zaytsev Remix) | 21:56
+  16  Iris Morningstar - Backroom (Live at the Quarry, 1998) | 1:35:23
+  17  Wandering Spoke - Amber Kelvin Glasshouse (Live at the Quarry, 1998) | 13:33
+WARN line 1: no valid length, searching without length filter
+WARN line 8: no valid length, searching without length filter
+WARN line 14: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+one-track: 1 tracks, 1 here, 0 missing
+WARN line 1: no valid length, searching without length filter
+Nothing to do.
+
+other: 36 tracks, 9 here, 27 missing
+
+Missing:
+   1  Vølur - Pressure (Radio Edit) | 26:45
+   2  Kettle Drum Jones - Tideline (Extended Mix)
+   3  Cosmic Drift - Wharf Ember | 2:27:14
+   4  Járn - Harbour Yellowline (Live at the Quarry, 1998) | 1:59:21
+   5  Kettle Drum Jones - Iron | 2:17:06
+   6  Умовний Рефлекс - Backroom Mirage - Original Mix | 2:29:54
+   7  Aurora Beltrán - Fracture (Pavel Zaytsev Remix) | 1:57
+   8  Ясне Поле - Northline Drift | 14:24
+   9  Cosmic Drift - Pressure / B-side | 2:02:53
+  10  Blue Kettle - Mirage Rivet [FREE DOWNLOAD] very very very very very very very very very very very very very very very very very very very very long | 18:41
+  11  Fjord - Pressure (Radio Edit) | 58:50
+  12  Gábor Szabó Tribute - Tideline Harbour (Extended Mix) | 1:13:49
+  13  Echo & The Mechanics - Cathedral Zephyr | 1:33:35
+  14  Gábor Szabó Tribute - Acid (Extended Mix) | 47:32
+  15  Vølur - Northline Orbit Xenon / B-side | 49:26
+  16  Умовний Рефлекс - Acid Vertigo [FREE DOWNLOAD] | 2052
+  17  Döner Kebab Sound System - Pressure
+  18  Sunken Chapel - Undertow Fracture Mirage very very very very very very very very very very very very very very very very very very very very long | 2:02:25
+  19  Aurora Beltrán - Slipstream Mirage Northline | 44:08
+  20  Tölva - Tideline (Pavel Zaytsev Remix) | 28:59
+  21  Quiet Harbour - Vertigo | 44:16
+  22  Echo & The Mechanics - Drift [FREE DOWNLOAD] | 50:34
+  23  Núria Vega - Fracture very very very very very very very very very very very very very very very very very very very very long | 2:10:53
+  24  Låpsley Covers - Quarry (Live at the Quarry, 1998) | 52:43
+  25  Núria Vega - Cathedral Backroom | 35:09
+  26  Kettle Drum Jones - Zephyr (Extended Mix) | 1:09:34
+  27  Wandering Spoke - Fracture Zephyr [FREE DOWNLOAD] | 2:06:28
+WARN line 4: no valid length, searching without length filter
+WARN line 15: the tail after | reads as a length of 34:36 - if 1900-2100 was meant as part of the title, the length filter will never match; write it without the | or give a real length
+WARN line 22: the tail after | reads as a length of 34:12 - if 1900-2100 was meant as part of the title, the length filter will never match; write it without the | or give a real length
+WARN line 23: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+phonk-dark: 31 tracks, 6 here, 25 missing
+
+Missing:
+   1  Echo & The Mechanics - Pressure Xenon Undertow
+   2  Sunken Chapel - Cathedral Harbour Ember | 2:10:32
+   3  Rafael's Theory - Orbit Rivet Slipstream / B-side | 1:44:46
+   4  Tölva - Mirage (Extended Mix) | 1:35:57
+   5  Aurora Beltrán - Zephyr Yellowline Wharf / B-side | 26:35
+   6  Echo & The Mechanics - Northline | 1:21:03
+   7  Döner Kebab Sound System - Tideline (Pavel Zaytsev Remix) | 1:16:57
+   8  Cosmic Drift - Cathedral (feat. Núria Vega) | 2:07:43
+   9  Midnight Sorter - Yellowline Drift Vertigo
+  10  Járn - Drift (Radio Edit) | 2:15
+  11  Vølur - Fracture (Pavel Zaytsev Remix) | 2:03:12
+  12  Hollow Coast - Zephyr - Original Mix | 15:37
+  13  Tölva - Zephyr Daylight (Extended Mix) | 4:42
+  14  Rafael's Theory - Harbour | 21:16
+  15  Echo & The Mechanics - Vertigo Iron (Radio Edit) | 2:17:09
+  16  Quiet Harbour - Vertigo Drift [FREE DOWNLOAD] | 1:22:30
+  17  Умовний Рефлекс - Amber Mirage | 1:58:16
+  18  Låpsley Covers - Orbit Lantern [FREE DOWNLOAD] | 59:41
+  19  Midnight Sorter - Acid Xenon (Live at the Quarry, 1998) | 1:47:08
+  20  Vølur - Zephyr Orbit | 16:58
+  21  Pavel Zaytsev - Yellowline Fracture / B-side | 29:03
+  22  Pavel Zaytsev - Xenon Tideline / B-side | 35:07
+  23  Midnight Sorter - Quarry Zephyr (Live at the Quarry, 1998) very very very very very very very very very very very very very very very very very very very very long | 6:25
+  24  Iris Morningstar - Amber Acid (feat. Núria Vega) | 57:26
+  25  Ясне Поле - Ember (Extended Mix) | 1:27:25
+WARN line 1: no valid length, searching without length filter
+WARN line 10: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+pop: 90 tracks, 30 here, 60 missing
+
+Missing:
+   1  Echo & The Mechanics - Mirage Ember Vertigo | 32:46
+   2  Fjord - Mirage Wharf
+   3  Echo & The Mechanics - Acid Glasshouse [FREE DOWNLOAD] | 1:51:46
+   4  Ясне Поле - Northline | 1:33:35
+   5  Låpsley Covers - Fracture Zephyr Undertow | 2:06:09
+   6  Quiet Harbour - Rivet Fracture Yellowline - Original Mix
+   7  Blue Kettle - Glasshouse Tideline (Live at the Quarry, 1998)
+   8  Núria Vega - Zephyr Iron Slipstream [FREE DOWNLOAD] | 56:45
+   9  Cosmic Drift - Orbit Tideline Quarry / B-side | 2:06:24
+  10  Cosmic Drift - Undertow Yellowline - Original Mix | 2384
+  11  Blue Kettle - Rivet Zephyr (Extended Mix) | 2:25:44
+  12  Gábor Szabó Tribute - Mirage Slipstream (Live at the Quarry, 1998) very very very very very very very very very very very very very very very very very very very very long | 57:10
+  13  Gábor Szabó Tribute - Amber
+  14  Låpsley Covers - Fracture [FREE DOWNLOAD] | 1:16:57
+  15  Blue Kettle - Harbour | 1:35:26
+  16  Döner Kebab Sound System - Slipstream | 1:31:37
+  17  Rafael's Theory - Harbour Iron (feat. Núria Vega) | 1:35:20
+  18  Echo & The Mechanics - Iron Drift (Live at the Quarry, 1998) | 27:15
+  19  Tölva - Ember | 1:44:44
+  20  Tölva - Xenon - Original Mix | 39:47
+  21  Kettle Drum Jones - Vertigo Wharf Xenon - Original Mix | 48:14
+  22  Midnight Sorter - Daylight Amber Kelvin | 46:15
+  23  Blue Kettle - Drift - Original Mix | 1:55:01
+  24  Döner Kebab Sound System - Wharf Kelvin Daylight [FREE DOWNLOAD] | 1:17:57
+  25  Núria Vega - Amber Drift (Live at the Quarry, 1998) | 3:55
+  26  Cosmic Drift - Zephyr Drift (Radio Edit) | 1:35:41
+  27  Blue Kettle - Cathedral Vertigo (feat. Núria Vega) | 4:14
+  28  Умовний Рефлекс - Slipstream Pressure Drift (Pavel Zaytsev Remix)
+  29  Iris Morningstar - Amber Drift Rivet [FREE DOWNLOAD] | 1:29:46
+  30  Echo & The Mechanics - Zephyr | 1:31:23
+  31  Tölva - Amber Drift / B-side | 140
+  32  Låpsley Covers - Cathedral Undertow Glasshouse (Pavel Zaytsev Remix) | 1:17:16
+  33  Quiet Harbour - Orbit Vertigo (Live at the Quarry, 1998) | 26:59
+  34  Rafael's Theory - Fracture - Original Mix | 1:52:47
+  35  Vølur - Orbit Harbour (Live at the Quarry, 1998) | 1:47:04
+  36  Fjord - Iron Amber (Live at the Quarry, 1998) | 1:41:48
+  37  Cosmic Drift - Rivet Pressure (Live at the Quarry, 1998) very very very very very very very very very very very very very very very very very very very very long | 1:32:31
+  38  Tölva - Quarry Jetty Acid [FREE DOWNLOAD] | 1:19:44
+  39  Fjord - Vertigo (feat. Núria Vega) very very very very very very very very very very very very very very very very very very very very long | 2:11:40
+  40  Echo & The Mechanics - Xenon | 1:05:07
+  41  Blue Kettle - Vertigo (feat. Núria Vega) | 4343
+  42  Cosmic Drift - Wharf (Extended Mix) | 2:10:49
+  43  Ясне Поле - Drift (Radio Edit) very very very very very very very very very very very very very very very very very very very very long | 39:26
+  44  Kettle Drum Jones - Ember Northline | 1:04:14
+  45  Echo & The Mechanics - Jetty Kelvin | 1:33:31
+  46  Fjord - Iron Daylight (Extended Mix) | 469
+  47  Echo & The Mechanics - Quarry Daylight (feat. Núria Vega) | 30:05
+  48  Járn - Amber (feat. Núria Vega) | 47:52
+  49  Aurora Beltrán - Harbour Jetty (Live at the Quarry, 1998) | 1:24:15
+  50  Iris Morningstar - Pressure / B-side | 1:36:24
+  51  Quiet Harbour - Ember Backroom | 7151
+  52  Tölva - Ember Fracture | 2:19:02
+  53  Midnight Sorter - Quarry Kelvin (Live at the Quarry, 1998) | 1:00:57
+  54  Quiet Harbour - Daylight Wharf | 34:26
+  55  Aurora Beltrán - Lantern Cathedral | 2:05:57
+  56  Quiet Harbour - Fracture Daylight (feat. Núria Vega) | 2:09:21
+  57  Oblique Strategy - Glasshouse (Live at the Quarry, 1998) | 2:27:34
+  58  Fjord - Xenon | 1:16:56
+  59  Kettle Drum Jones - Drift - Original Mix | 39:04
+  60  Tölva - Ember (Pavel Zaytsev Remix) | 2:28:33
+WARN line 2: no valid length, searching without length filter
+WARN line 7: no valid length, searching without length filter
+WARN line 9: no valid length, searching without length filter
+WARN line 20: no valid length, searching without length filter
+WARN line 30: no valid length, searching without length filter
+WARN line 32: no valid length, searching without length filter
+WARN line 42: no valid length, searching without length filter
+WARN line 61: no valid length, searching without length filter
+WARN line 66: no valid length, searching without length filter
+WARN line 75: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+rock-metal: 43 tracks, 9 here, 34 missing
+
+Missing:
+   1  Умовний Рефлекс - Daylight Xenon (Radio Edit) | 1:23:42
+   2  Quiet Harbour - Vertigo Drift Cathedral | 50:30
+   3  Sunken Chapel - Zephyr Mirage Wharf / B-side
+   4  Sunken Chapel - Xenon Drift (Live at the Quarry, 1998) | 2:17:47
+   5  Iris Morningstar - Cathedral (feat. Núria Vega)
+   6  Låpsley Covers - Tideline Undertow - Original Mix | 1:59:54
+   7  Blue Kettle - Xenon Drift | 38:00
+   8  Gábor Szabó Tribute - Undertow Glasshouse Amber (Extended Mix) | 1:12:04
+   9  Tölva - Fracture Pressure | 56:35
+  10  Ясне Поле - Wharf (Radio Edit) | 1:06:11
+  11  Vølur - Iron Glasshouse Tideline (feat. Núria Vega) | 1:09:44
+  12  Cosmic Drift - Mirage [FREE DOWNLOAD] | 39:14
+  13  Núria Vega - Lantern | 41:58
+  14  Rafael's Theory - Orbit Xenon Backroom (Pavel Zaytsev Remix) very very very very very very very very very very very very very very very very very very very very long | 16:37
+  15  Gábor Szabó Tribute - Acid Backroom Harbour / B-side | 54:15
+  16  Låpsley Covers - Rivet Acid Drift (Live at the Quarry, 1998) | 2:00:30
+  17  Aurora Beltrán - Daylight Vertigo Tideline (feat. Núria Vega) | 1:30:37
+  18  Blue Kettle - Iron Orbit (Radio Edit) | 5:04
+  19  Aurora Beltrán - Jetty (Radio Edit) | 1:19:40
+  20  Tölva - Lantern Northline / B-side very very very very very very very very very very very very very very very very very very very very long | 1:14:39
+  21  Járn - Orbit (feat. Núria Vega) | 6:57
+  22  Pavel Zaytsev - Zephyr Glasshouse Mirage (Radio Edit) | 1:27:18
+  23  Cosmic Drift - Harbour Vertigo Pressure (Pavel Zaytsev Remix) | 2:33
+  24  Hollow Coast - Cathedral (Live at the Quarry, 1998) | 7:45
+  25  Quiet Harbour - Mirage Rivet | 3:54
+  26  Låpsley Covers - Vertigo - Original Mix | 56:34
+  27  Wandering Spoke - Northline Backroom | 35:48
+  28  Fjord - Jetty Zephyr (Live at the Quarry, 1998) | 17:15
+  29  Cosmic Drift - Mirage Zephyr | 1:06:24
+  30  Döner Kebab Sound System - Tideline (feat. Núria Vega) | 46:58
+  31  Núria Vega - Undertow Tideline (Radio Edit) | 1:58:40
+  32  Quiet Harbour - Pressure Harbour Xenon (Live at the Quarry, 1998) | 2:15:02
+  33  Cosmic Drift - Glasshouse Xenon (Radio Edit) | 32:56
+  34  Sunken Chapel - Ember (Radio Edit) | 2:20:44
+WARN line 3: no valid length, searching without length filter
+WARN line 7: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+techno-acid: 27 tracks, 8 here, 19 missing
+
+Missing:
+   1  Aurora Beltrán - Rivet Wharf
+   2  Iris Morningstar - Harbour | 52:17
+   3  Iris Morningstar - Orbit (Live at the Quarry, 1998) | 19:27
+   4  Aurora Beltrán - Amber Daylight Iron / B-side | 23:10
+   5  Iris Morningstar - Lantern | 1:23:50
+   6  Aurora Beltrán - Yellowline Iron (Radio Edit) | 35:26
+   7  Járn - Lantern Slipstream (Pavel Zaytsev Remix) | 2:03:44
+   8  Núria Vega - Orbit Kelvin (Extended Mix) | 1:06:42
+   9  Pavel Zaytsev - Amber Lantern (Pavel Zaytsev Remix) | 2:06:04
+  10  Oblique Strategy - Glasshouse Yellowline Zephyr (feat. Núria Vega) | 2:28:46
+  11  Aurora Beltrán - Undertow
+  12  Fjord - Lantern [FREE DOWNLOAD] | 27:18
+  13  Pavel Zaytsev - Daylight | 1:37:07
+  14  Hollow Coast - Acid Quarry Ember (Extended Mix)
+  15  Fjord - Acid Lantern | 9:15
+  16  Kettle Drum Jones - Amber / B-side | 1732
+  17  Vølur - Vertigo - Original Mix | 49:53
+  18  Hollow Coast - Vertigo Mirage [FREE DOWNLOAD] | 730
+  19  Quiet Harbour - Pressure (Live at the Quarry, 1998) | 1:23:25
+WARN line 1: no valid length, searching without length filter
+WARN line 12: no valid length, searching without length filter
+WARN line 14: no valid length, searching without length filter
+WARN line 21: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+techno-hard: 107 tracks, 32 here, 75 missing
+
+Missing:
+   1  Wandering Spoke - Kelvin (feat. Núria Vega) | 39:34
+   2  Fjord - Quarry Mirage (Radio Edit) | 1:31:10
+   3  Cosmic Drift - Pressure Rivet | 7384
+   4  Cosmic Drift - Daylight | 53:53
+   5  Midnight Sorter - Jetty (feat. Núria Vega) | 8:49
+   6  Oblique Strategy - Zephyr (Extended Mix) | 41:03
+   7  Aurora Beltrán - Wharf Fracture - Original Mix | 1:24:55
+   8  Cosmic Drift - Ember (Extended Mix) | 44:40
+   9  Midnight Sorter - Pressure (Live at the Quarry, 1998) | 32:19
+  10  Wandering Spoke - Jetty / B-side | 59:32
+  11  Quiet Harbour - Tideline (feat. Núria Vega) | 16:55
+  12  Kettle Drum Jones - Jetty Acid / B-side very very very very very very very very very very very very very very very very very very very very long | 23:15
+  13  Oblique Strategy - Pressure [FREE DOWNLOAD] | 2:29:15
+  14  Ясне Поле - Pressure Orbit (Live at the Quarry, 1998) | 5060
+  15  Iris Morningstar - Wharf (Radio Edit) | 2:09:15
+  16  Cosmic Drift - Slipstream Harbour Jetty | 1:30:57
+  17  Núria Vega - Slipstream Fracture (feat. Núria Vega) | 1:10:30
+  18  Låpsley Covers - Mirage Quarry (Live at the Quarry, 1998) | 1:01:40
+  19  Iris Morningstar - Harbour Iron Acid (Extended Mix) | 2:25:21
+  20  Vølur - Orbit Harbour Fracture (Live at the Quarry, 1998) | 54:41
+  21  Умовний Рефлекс - Jetty Mirage (Extended Mix) | 2:09:16
+  22  Sunken Chapel - Glasshouse Vertigo / B-side | 1:22:02
+  23  Умовний Рефлекс - Wharf Drift Iron (Pavel Zaytsev Remix) | 2:01:19
+  24  Blue Kettle - Backroom (Live at the Quarry, 1998) | 1:36:38
+  25  Ясне Поле - Cathedral - Original Mix | 6:50
+  26  Vølur - Kelvin Rivet (Live at the Quarry, 1998)
+  27  Midnight Sorter - Yellowline Northline (Live at the Quarry, 1998) | 41:31
+  28  Fjord - Quarry - Original Mix | 1:17:40
+  29  Rafael's Theory - Mirage Cathedral (Live at the Quarry, 1998) | 2:14:20
+  30  Blue Kettle - Iron (Live at the Quarry, 1998) | 15:20
+  31  Döner Kebab Sound System - Jetty Backroom | 1:24:50
+  32  Iris Morningstar - Slipstream Wharf (Live at the Quarry, 1998) | 58:05
+  33  Aurora Beltrán - Backroom Pressure Wharf - Original Mix | 59:43
+  34  Rafael's Theory - Zephyr Fracture / B-side | 21:42
+  35  Kettle Drum Jones - Daylight Backroom (Extended Mix) | 4:48
+  36  Cosmic Drift - Northline (Live at the Quarry, 1998) | 2:05:40
+  37  Fjord - Orbit Backroom (feat. Núria Vega) | 2:27:52
+  38  Vølur - Drift Slipstream Fracture (Extended Mix) | 31:24
+  39  Quiet Harbour - Slipstream Yellowline Vertigo | 10:18
+  40  Sunken Chapel - Fracture (Live at the Quarry, 1998) | 15:51
+  41  Iris Morningstar - Lantern Yellowline Quarry (feat. Núria Vega) | 1:30:57
+  42  Rafael's Theory - Lantern Yellowline [FREE DOWNLOAD] | 2:18:47
+  43  Iris Morningstar - Drift (feat. Núria Vega) | 1:57:32
+  44  Låpsley Covers - Zephyr Mirage | 2:06:27
+  45  Wandering Spoke - Kelvin (feat. Núria Vega) | 2:01:54
+  46  Gábor Szabó Tribute - Harbour (Radio Edit) | 27:01
+  47  Núria Vega - Iron Orbit (Live at the Quarry, 1998) | 47:12
+  48  Blue Kettle - Slipstream Harbour (Extended Mix) very very very very very very very very very very very very very very very very very very very very long | 40:35
+  49  Cosmic Drift - Iron (Live at the Quarry, 1998) | 3065
+  50  Pavel Zaytsev - Jetty Lantern (Pavel Zaytsev Remix) | 2:23:45
+  51  Quiet Harbour - Acid / B-side | 7:51
+  52  Echo & The Mechanics - Orbit - Original Mix | 1:32:15
+  53  Járn - Pressure [FREE DOWNLOAD] | 19:15
+  54  Blue Kettle - Glasshouse Yellowline (feat. Núria Vega) | 35:02
+  55  Fjord - Ember | 58:12
+  56  Núria Vega - Zephyr Jetty (Radio Edit) very very very very very very very very very very very very very very very very very very very very long | 2:12:35
+  57  Oblique Strategy - Pressure Zephyr Jetty | 1:05:55
+  58  Умовний Рефлекс - Iron - Original Mix | 31:59
+  59  Wandering Spoke - Jetty Amber Wharf | 3022
+  60  Núria Vega - Slipstream Wharf (feat. Núria Vega) | 1:10:13
+  61  Sunken Chapel - Slipstream Cathedral Amber / B-side | 3196
+  62  Hollow Coast - Iron Daylight (Live at the Quarry, 1998) | 1546
+  63  Aurora Beltrán - Fracture Glasshouse Jetty / B-side | 1224
+  64  Tölva - Fracture
+  65  Echo & The Mechanics - Amber Backroom (Live at the Quarry, 1998) | 1286
+  66  Pavel Zaytsev - Acid (Pavel Zaytsev Remix) | 1:54:48
+  67  Hollow Coast - Tideline Amber Iron (Pavel Zaytsev Remix)
+  68  Wandering Spoke - Wharf Mirage Acid | 1:01:07
+  69  Умовний Рефлекс - Pressure Xenon Vertigo - Original Mix | 5141
+  70  Wandering Spoke - Fracture (Extended Mix) | 1:34:38
+  71  Aurora Beltrán - Mirage Iron | 34:08
+  72  Умовний Рефлекс - Wharf - Original Mix | 5:51
+  73  Sunken Chapel - Northline (Pavel Zaytsev Remix) | 26:42
+  74  Gábor Szabó Tribute - Pressure Lantern Northline / B-side very very very very very very very very very very very very very very very very very very very very long | 44:05
+  75  Låpsley Covers - Daylight (Extended Mix) | 46:02
+WARN line 2: no valid length, searching without length filter
+WARN line 38: no valid length, searching without length filter
+WARN line 39: no valid length, searching without length filter
+WARN line 74: no valid length, searching without length filter
+WARN line 96: no valid length, searching without length filter
+WARN line 99: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+techno-melodic: 61 tracks, 18 here, 43 missing
+
+Missing:
+   1  Döner Kebab Sound System - Undertow Zephyr (Live at the Quarry, 1998) | 29:16
+   2  Умовний Рефлекс - Glasshouse Wharf | 1:05:27
+   3  Vølur - Zephyr / B-side | 2:04:57
+   4  Járn - Amber Iron [FREE DOWNLOAD] | 2:05:10
+   5  Gábor Szabó Tribute - Northline Acid Glasshouse | 2:14:16
+   6  Midnight Sorter - Harbour Amber (Live at the Quarry, 1998) | 44:42
+   7  Oblique Strategy - Slipstream Vertigo | 1:44:33
+   8  Vølur - Quarry | 5673
+   9  Quiet Harbour - Zephyr (Pavel Zaytsev Remix) | 1:25:26
+  10  Rafael's Theory - Backroom | 2:19:54
+  11  Iris Morningstar - Wharf Pressure Jetty (Pavel Zaytsev Remix) | 45:06
+  12  Låpsley Covers - Backroom | 41:59
+  13  Aurora Beltrán - Undertow Daylight Mirage (Pavel Zaytsev Remix) very very very very very very very very very very very very very very very very very very very very long | 2:21:29
+  14  Fjord - Daylight | 2:27:53
+  15  Blue Kettle - Vertigo | 2:01:55
+  16  Midnight Sorter - Orbit Yellowline Zephyr (Extended Mix) | 2:25
+  17  Kettle Drum Jones - Drift (Radio Edit) | 1:40:17
+  18  Sunken Chapel - Quarry Rivet / B-side | 1:07:04
+  19  Echo & The Mechanics - Acid [FREE DOWNLOAD] | 39:15
+  20  Midnight Sorter - Xenon (Radio Edit) | 35:54
+  21  Sunken Chapel - Pressure | 1:36:35
+  22  Quiet Harbour - Daylight | 54:31
+  23  Ясне Поле - Kelvin Tideline | 1:56:49
+  24  Kettle Drum Jones - Glasshouse Daylight (Pavel Zaytsev Remix) | 31:56
+  25  Kettle Drum Jones - Quarry Backroom | 1:32:54
+  26  Blue Kettle - Vertigo / B-side | 1:40:04
+  27  Vølur - Rivet (Live at the Quarry, 1998) | 2:17:35
+  28  Låpsley Covers - Slipstream (Extended Mix) | 2:16:23
+  29  Járn - Cathedral Acid (Pavel Zaytsev Remix) | 1:53:32
+  30  Kettle Drum Jones - Xenon Kelvin (Radio Edit) | 1:11:14
+  31  Midnight Sorter - Xenon [FREE DOWNLOAD] | 34:54
+  32  Умовний Рефлекс - Cathedral - Original Mix | 1:18:41
+  33  Oblique Strategy - Lantern Quarry Amber | 1:51:08
+  34  Rafael's Theory - Zephyr (Live at the Quarry, 1998) | 1:42:23
+  35  Ясне Поле - Northline (Extended Mix) | 2:26:41
+  36  Wandering Spoke - Daylight (Pavel Zaytsev Remix) | 7:11
+  37  Pavel Zaytsev - Ember [FREE DOWNLOAD] | 14:15
+  38  Hollow Coast - Ember Zephyr Wharf | 1:51:23
+  39  Járn - Iron Cathedral (Live at the Quarry, 1998) | 37:19
+  40  Wandering Spoke - Northline | 14:56
+  41  Hollow Coast - Amber Cathedral - Original Mix | 4:11
+  42  Vølur - Glasshouse Drift (Radio Edit) | 2:44
+  43  Aurora Beltrán - Tideline Fracture (Live at the Quarry, 1998)
+WARN line 4: no valid length, searching without length filter
+WARN line 48: no valid length, searching without length filter
+WARN line 64: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+techno: 40 tracks, 12 here, 28 missing
+
+Missing:
+   1  Rafael's Theory - Vertigo Lantern Orbit
+   2  Vølur - Pressure Tideline | 2:17:00
+   3  Gábor Szabó Tribute - Vertigo Kelvin | 1:07:12
+   4  Tölva - Yellowline Drift (Live at the Quarry, 1998) | 31:09
+   5  Vølur - Vertigo Wharf | 1:22:41
+   6  Kettle Drum Jones - Vertigo Wharf | 4:02
+   7  Låpsley Covers - Cathedral (Live at the Quarry, 1998) | 2:23:37
+   8  Kettle Drum Jones - Daylight
+   9  Wandering Spoke - Undertow Iron (Radio Edit) | 11:07
+  10  Wandering Spoke - Drift Orbit Slipstream (Live at the Quarry, 1998) | 12:21
+  11  Pavel Zaytsev - Jetty | 7801
+  12  Núria Vega - Pressure Rivet (Live at the Quarry, 1998) | 57:47
+  13  Quiet Harbour - Fracture Yellowline (Extended Mix) | 2:20:43
+  14  Fjord - Backroom Quarry (Live at the Quarry, 1998) | 1:51:52
+  15  Pavel Zaytsev - Iron | 1:33:29
+  16  Echo & The Mechanics - Pressure (Radio Edit) | 1:20:24
+  17  Wandering Spoke - Zephyr Ember | 1:42:23
+  18  Echo & The Mechanics - Fracture Glasshouse [FREE DOWNLOAD] | 1:58:53
+  19  Pavel Zaytsev - Orbit - Original Mix
+  20  Blue Kettle - Cathedral Acid (Extended Mix) | 1:20:41
+  21  Rafael's Theory - Iron / B-side | 2:06:28
+  22  Cosmic Drift - Quarry Northline (feat. Núria Vega) | 2:10:52
+  23  Fjord - Orbit | 1:25:11
+  24  Rafael's Theory - Ember Orbit Glasshouse - Original Mix | 1:48:49
+  25  Cosmic Drift - Yellowline | 33:07
+  26  Sunken Chapel - Northline (Extended Mix) very very very very very very very very very very very very very very very very very very very very long
+  27  Midnight Sorter - Orbit Mirage [FREE DOWNLOAD] | 2:26:14
+  28  Núria Vega - Vertigo Drift (Live at the Quarry, 1998) | 1:52:51
+WARN line 2: no valid length, searching without length filter
+WARN line 13: no valid length, searching without length filter
+WARN line 30: no valid length, searching without length filter
+WARN line 38: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+trance: 33 tracks, 10 here, 23 missing
+
+Missing:
+   1  Echo & The Mechanics - Harbour - Original Mix | 16:52
+   2  Cosmic Drift - Glasshouse Backroom (Radio Edit) | 33:36
+   3  Vølur - Pressure Acid Jetty (Live at the Quarry, 1998) | 1:16:45
+   4  Gábor Szabó Tribute - Backroom Undertow / B-side | 1:43:54
+   5  Sunken Chapel - Rivet Cathedral Iron (feat. Núria Vega) | 46:04
+   6  Rafael's Theory - Kelvin / B-side | 18:21
+   7  Умовний Рефлекс - Pressure Drift Zephyr (Live at the Quarry, 1998) | 1:11:11
+   8  Tölva - Slipstream Ember Daylight (Pavel Zaytsev Remix) | 1:50:14
+   9  Ясне Поле - Cathedral Orbit | 1:25:44
+  10  Cosmic Drift - Lantern - Original Mix
+  11  Fjord - Lantern Fracture (Pavel Zaytsev Remix) | 1:19:27
+  12  Vølur - Lantern Fracture | 2856
+  13  Cosmic Drift - Vertigo Acid Backroom (Extended Mix) | 1:35:57
+  14  Vølur - Iron Tideline (Extended Mix) | 2:26:38
+  15  Tölva - Jetty Kelvin (Radio Edit) | 1:02:21
+  16  Núria Vega - Backroom Glasshouse (Live at the Quarry, 1998) | 2:05:33
+  17  Kettle Drum Jones - Rivet Glasshouse [FREE DOWNLOAD] | 2:07:43
+  18  Oblique Strategy - Acid Harbour (Extended Mix) | 1:25:45
+  19  Döner Kebab Sound System - Zephyr Tideline Iron | 25:33
+  20  Wandering Spoke - Zephyr Harbour | 1:44:18
+  21  Midnight Sorter - Iron Lantern Daylight - Original Mix | 1375
+  22  Oblique Strategy - Daylight Acid Lantern (Live at the Quarry, 1998)
+  23  Gábor Szabó Tribute - Pressure Ember | 1:21:43
+WARN line 4: the tail after | reads as a length of 32:42 - if 1900-2100 was meant as part of the title, the length filter will never match; write it without the | or give a real length
+WARN line 19: no valid length, searching without length filter
+WARN line 32: no valid length, searching without length filter
+WARN line 35: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+ukrainian: 146 tracks, 47 here, 99 missing
+
+Missing:
+   1  Echo & The Mechanics - Glasshouse (feat. Núria Vega) | 1:32:34
+   2  Hollow Coast - Rivet (Extended Mix) | 1:41:55
+   3  Vølur - Orbit
+   4  Aurora Beltrán - Iron (feat. Núria Vega) | 2:13:37
+   5  Döner Kebab Sound System - Iron Mirage Undertow | 1:22:31
+   6  Aurora Beltrán - Wharf Orbit Daylight (Pavel Zaytsev Remix) | 2:41
+   7  Sunken Chapel - Undertow Northline Pressure (feat. Núria Vega) | 1:18:53
+   8  Kettle Drum Jones - Lantern Quarry | 1:43:04
+   9  Kettle Drum Jones - Quarry Slipstream Xenon / B-side | 6:12
+  10  Járn - Cathedral | 7060
+  11  Núria Vega - Undertow (feat. Núria Vega) | 5961
+  12  Pavel Zaytsev - Amber Wharf [FREE DOWNLOAD]
+  13  Hollow Coast - Undertow Zephyr (Live at the Quarry, 1998) | 2:00:38
+  14  Midnight Sorter - Pressure Slipstream - Original Mix | 1:11:13
+  15  Fjord - Acid very very very very very very very very very very very very very very very very very very very very long | 2:03:19
+  16  Rafael's Theory - Undertow Fracture Acid (feat. Núria Vega) very very very very very very very very very very very very very very very very very very very very long | 57:48
+  17  Oblique Strategy - Mirage (Radio Edit) | 1:04:08
+  18  Járn - Tideline | 8542
+  19  Hollow Coast - Orbit Acid | 2:27:11
+  20  Rafael's Theory - Glasshouse (Live at the Quarry, 1998) | 53:00
+  21  Núria Vega - Cathedral Northline [FREE DOWNLOAD]
+  22  Hollow Coast - Vertigo Cathedral | 6632
+  23  Járn - Quarry very very very very very very very very very very very very very very very very very very very very long | 27:45
+  24  Kettle Drum Jones - Drift
+  25  Rafael's Theory - Mirage (Live at the Quarry, 1998) | 2:27:31
+  26  Aurora Beltrán - Quarry Orbit | 1:20:31
+  27  Járn - Fracture Drift (Extended Mix) | 1:25:06
+  28  Vølur - Kelvin Rivet - Original Mix
+  29  Умовний Рефлекс - Undertow Northline Pressure (Radio Edit) | 2:24:17
+  30  Döner Kebab Sound System - Yellowline (Radio Edit) | 2:28:56
+  31  Vølur - Mirage Orbit (Pavel Zaytsev Remix)
+  32  Núria Vega - Northline Quarry Vertigo - Original Mix
+  33  Járn - Pressure Backroom (Pavel Zaytsev Remix) | 3:57
+  34  Tölva - Kelvin [FREE DOWNLOAD] | 36:37
+  35  Vølur - Daylight Rivet (Radio Edit) | 32:10
+  36  Tölva - Daylight Ember Cathedral (Radio Edit)
+  37  Låpsley Covers - Tideline Daylight | 1:18:03
+  38  Midnight Sorter - Fracture Jetty (Pavel Zaytsev Remix) | 2:11:57
+  39  Cosmic Drift - Fracture / B-side | 883
+  40  Cosmic Drift - Amber Ember Quarry (Pavel Zaytsev Remix) | 1:31:13
+  41  Tölva - Wharf Amber | 1:17:06
+  42  Echo & The Mechanics - Lantern Backroom Yellowline - Original Mix | 2:03:04
+  43  Gábor Szabó Tribute - Cathedral Vertigo (Live at the Quarry, 1998) | 7:31
+  44  Tölva - Fracture Drift - Original Mix | 1:04:55
+  45  Midnight Sorter - Harbour Northline Backroom (Extended Mix)
+  46  Cosmic Drift - Iron (Live at the Quarry, 1998)
+  47  Låpsley Covers - Undertow Fracture (feat. Núria Vega) | 49:06
+  48  Midnight Sorter - Quarry | 1:26:20
+  49  Kettle Drum Jones - Daylight | 1:48:26
+  50  Gábor Szabó Tribute - Harbour Northline Yellowline (Pavel Zaytsev Remix)
+  51  Blue Kettle - Backroom (Pavel Zaytsev Remix)
+  52  Ясне Поле - Amber Northline - Original Mix | 1:40:43
+  53  Hollow Coast - Zephyr Orbit Vertigo - Original Mix | 1919
+  54  Låpsley Covers - Glasshouse Rivet | 43:15
+  55  Hollow Coast - Jetty (Pavel Zaytsev Remix) | 2:21:11
+  56  Quiet Harbour - Jetty Harbour
+  57  Ясне Поле - Jetty Iron (Extended Mix) | 2:20:26
+  58  Echo & The Mechanics - Iron Drift Zephyr (Live at the Quarry, 1998) | 1:01:38
+  59  Умовний Рефлекс - Slipstream Vertigo Jetty (feat. Núria Vega) | 33:11
+  60  Ясне Поле - Glasshouse (Pavel Zaytsev Remix) | 2:14:15
+  61  Echo & The Mechanics - Kelvin Orbit (Live at the Quarry, 1998) | 22:41
+  62  Núria Vega - Acid | 1:17:01
+  63  Vølur - Xenon (Radio Edit) | 34:14
+  64  Quiet Harbour - Tideline Wharf (Extended Mix) | 2:28:51
+  65  Núria Vega - Mirage [FREE DOWNLOAD] | 1:55:36
+  66  Sunken Chapel - Lantern Tideline | 2:16:26
+  67  Blue Kettle - Tideline - Original Mix | 20:06
+  68  Gábor Szabó Tribute - Quarry (feat. Núria Vega) | 1:58:37
+  69  Hollow Coast - Slipstream / B-side | 55:12
+  70  Gábor Szabó Tribute - Drift Yellowline Tideline (Pavel Zaytsev Remix) | 59:49
+  71  Járn - Undertow Vertigo (Pavel Zaytsev Remix) | 1:11:29
+  72  Wandering Spoke - Acid / B-side | 1:48:00
+  73  Midnight Sorter - Yellowline Tideline Mirage [FREE DOWNLOAD]
+  74  Låpsley Covers - Daylight Pressure | 49:12
+  75  Ясне Поле - Daylight Northline Quarry (feat. Núria Vega) | 26:44
+  76  Kettle Drum Jones - Northline Vertigo - Original Mix | 1:17:19
+  77  Rafael's Theory - Cathedral / B-side | 1:25:33
+  78  Oblique Strategy - Pressure Daylight | 6221
+  79  Quiet Harbour - Lantern / B-side | 1:04:50
+  80  Wandering Spoke - Harbour (Radio Edit) | 2:06:30
+  81  Vølur - Lantern - Original Mix
+  82  Ясне Поле - Jetty | 1:41:22
+  83  Oblique Strategy - Slipstream (Extended Mix) | 47:35
+  84  Умовний Рефлекс - Quarry Ember Tideline | 2:28:24
+  85  Gábor Szabó Tribute - Yellowline [FREE DOWNLOAD]
+  86  Döner Kebab Sound System - Amber / B-side | 44:58
+  87  Oblique Strategy - Harbour Quarry Acid - Original Mix
+  88  Echo & The Mechanics - Slipstream Mirage Drift | 1:00:38
+  89  Hollow Coast - Rivet Backroom (Live at the Quarry, 1998) | 2:10:58
+  90  Fjord - Zephyr Iron / B-side | 2:11:16
+  91  Blue Kettle - Amber | 4599
+  92  Умовний Рефлекс - Slipstream / B-side
+  93  Tölva - Acid Drift Rivet | 1:43:19
+  94  Fjord - Wharf Daylight (Live at the Quarry, 1998) | 3854
+  95  Rafael's Theory - Fracture (Radio Edit)
+  96  Pavel Zaytsev - Glasshouse Zephyr [FREE DOWNLOAD] | 37:57
+  97  Járn - Iron / B-side | 24:10
+  98  Járn - Mirage Quarry | 45:06
+  99  Núria Vega - Pressure Yellowline Jetty (feat. Núria Vega) | 28:09
+WARN line 4: no valid length, searching without length filter
+WARN line 20: no valid length, searching without length filter
+WARN line 34: no valid length, searching without length filter
+WARN line 38: the tail after | reads as a length of 34:47 - if 1900-2100 was meant as part of the title, the length filter will never match; write it without the | or give a real length
+WARN line 40: no valid length, searching without length filter
+WARN line 45: no valid length, searching without length filter
+WARN line 50: no valid length, searching without length filter
+WARN line 51: no valid length, searching without length filter
+WARN line 54: no valid length, searching without length filter
+WARN line 59: no valid length, searching without length filter
+WARN line 72: no valid length, searching without length filter
+WARN line 74: no valid length, searching without length filter
+WARN line 78: no valid length, searching without length filter
+WARN line 81: no valid length, searching without length filter
+WARN line 83: the tail after | reads as a length of 31:59 - if 1900-2100 was meant as part of the title, the length filter will never match; write it without the | or give a real length
+WARN line 88: no valid length, searching without length filter
+WARN line 116: no valid length, searching without length filter
+WARN line 127: no valid length, searching without length filter
+WARN line 131: no valid length, searching without length filter
+WARN line 133: no valid length, searching without length filter
+WARN line 139: no valid length, searching without length filter
+WARN line 142: no valid length, searching without length filter
+WARN 1 duplicate line(s) dropped
+
+wanted: 4 tracks, 2 here, 2 missing
+
+Missing:
+   1  Ясне Поле - Harbour / B-side | 1:16:09
+   2  Pavel Zaytsev - Wharf Acid Harbour | 36:12
+
+weird-edges: 12 tracks, 6 here, 6 missing
+
+Missing:
+   1  Döner Kebab Sound System - Wharf Kelvin - Original Mix | 1:34:24
+   2  Sunken Chapel - Rivet Orbit Wharf | 28:52
+   3  Aurora Beltrán - Fracture Backroom (feat. Núria Vega) | 26:50
+   4  Pavel Zaytsev - Orbit (Extended Mix) | 33:58
+   5  Vølur - Orbit | 1:23:54
+   6  Fjord - Wharf (Extended Mix) | 1:40:11
+WARN 1 duplicate line(s) dropped
+
+with-links: 8 tracks, 3 here, 5 missing
+
+Missing:
+   1  Járn - Harbour Drift | 1:06:43
+   2  Gábor Szabó Tribute - Zephyr Kelvin Glasshouse | 1:56:34
+   3  Rafael's Theory - Rivet Daylight Amber | 2:17:44
+   4  Умовний Рефлекс - Xenon Northline / B-side | 1:31:27
+   5  Fjord - Tideline Mirage (feat. Núria Vega) | 3745
+WARN 1 duplicate line(s) dropped
+
+To download: 23 playlist(s), 719 missing track(s).
+That is about 719 search(es); sockseek is allowed 34 per 220 s and each playlist gets its own budget, so waiting for the limiter adds about 36 min in all. Searching and downloading themselves come on top.
+
+[1/23] ambient-night: searching 18 missing track(s)
+[time] run #0001
+[time] WARN run_seq.txt is missing or not a number, run counter rebuilt from the log file names in <DIR>\on-disk\logs: highest number found 0
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = ambient-night [cli]
+[time]   dry_run = True [cli]
+[time] === ambient-night
+[time] WARN line 9: no valid length, searching without length filter
+[time] WARN line 17: no valid length, searching without length filter
+[time] WARN line 21: no valid length, searching without length filter
+[time] WARN line 28: the tail after | reads as a length of 32:18 - if 1900-2100 was meant as part of the title, the length filter will never match; write it without the | or give a real length
+[time] WARN 1 duplicate line(s) dropped
+[time] 25 tracks, 7 already here, 18 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\ambient-night.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\ambient-night --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\ambient-night\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\ambient-night.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0001)
+[1/23] ambient-night: 0 of 18 arrived - 0 of 719 in all
+
+[2/23] breaks: searching 21 missing track(s)
+[time] run #0002
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = breaks [cli]
+[time]   dry_run = True [cli]
+[time] === breaks
+[time] WARN line 1: no valid length, searching without length filter
+[time] WARN line 14: no valid length, searching without length filter
+[time] WARN line 22: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 29 tracks, 8 already here, 21 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\breaks.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\breaks --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\breaks\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\breaks.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0002)
+[2/23] breaks: 0 of 21 arrived - 0 of 719 in all
+
+[3/23] chill: searching 51 missing track(s)
+[time] run #0003
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = chill [cli]
+[time]   dry_run = True [cli]
+[time] === chill
+[time] WARN line 12: no valid length, searching without length filter
+[time] WARN line 20: no valid length, searching without length filter
+[time] WARN line 32: no valid length, searching without length filter
+[time] WARN line 63: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 69 tracks, 18 already here, 51 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\chill.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\chill --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\chill\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\chill.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0003)
+[3/23] chill: 0 of 51 arrived - 0 of 719 in all
+
+[4/23] classics: searching 9 missing track(s)
+[time] run #0004
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = classics [cli]
+[time]   dry_run = True [cli]
+[time] === classics
+[time] WARN line 13: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 10 tracks, 1 already here, 9 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\classics.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\classics --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\classics\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\classics.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0004)
+[4/23] classics: 0 of 9 arrived - 0 of 719 in all
+
+[5/23] dnb: searching 23 missing track(s)
+[time] run #0005
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = dnb [cli]
+[time]   dry_run = True [cli]
+[time] === dnb
+[time] WARN line 15: no valid length, searching without length filter
+[time] WARN line 17: no valid length, searching without length filter
+[time] WARN line 23: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 38 tracks, 15 already here, 23 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\dnb.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\dnb --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\dnb\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\dnb.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0005)
+[5/23] dnb: 0 of 23 arrived - 0 of 719 in all
+
+[6/23] dubstep-bass: searching 30 missing track(s)
+[time] run #0006
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = dubstep-bass [cli]
+[time]   dry_run = True [cli]
+[time] === dubstep-bass
+[time] WARN line 9: no valid length, searching without length filter
+[time] WARN line 16: no valid length, searching without length filter
+[time] WARN line 29: no valid length, searching without length filter
+[time] WARN line 30: no valid length, searching without length filter
+[time] WARN line 45: no valid length, searching without length filter
+[time] WARN line 46: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 45 tracks, 15 already here, 30 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\dubstep-bass.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\dubstep-bass --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\dubstep-bass\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\dubstep-bass.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0006)
+[6/23] dubstep-bass: 0 of 30 arrived - 0 of 719 in all
+
+[7/23] example: searching 2 missing track(s)
+[time] run #0007
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = example [cli]
+[time]   dry_run = True [cli]
+[time] === example
+[time] 3 tracks, 1 already here, 2 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\example.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\example --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\example\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\example.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0007)
+[7/23] example: 0 of 2 arrived - 0 of 719 in all
+
+[8/23] hip-hop: searching 40 missing track(s)
+[time] run #0008
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = hip-hop [cli]
+[time]   dry_run = True [cli]
+[time] === hip-hop
+[time] WARN line 13: no valid length, searching without length filter
+[time] WARN line 35: no valid length, searching without length filter
+[time] WARN line 56: no valid length, searching without length filter
+[time] WARN line 57: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 54 tracks, 14 already here, 40 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\hip-hop.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\hip-hop --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\hip-hop\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\hip-hop.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0008)
+[8/23] hip-hop: 0 of 40 arrived - 0 of 719 in all
+
+[9/23] house: searching 62 missing track(s)
+[time] run #0009
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = house [cli]
+[time]   dry_run = True [cli]
+[time] === house
+[time] WARN line 24: no valid length, searching without length filter
+[time] WARN line 28: no valid length, searching without length filter
+[time] WARN line 61: no valid length, searching without length filter
+[time] WARN line 71: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 84 tracks, 22 already here, 62 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\house.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\house --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\house\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\house.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0009)
+[9/23] house: 0 of 62 arrived - 0 of 719 in all
+
+[10/23] nothing-here: searching 17 missing track(s)
+[time] run #0010
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = nothing-here [cli]
+[time]   dry_run = True [cli]
+[time] === nothing-here
+[time] WARN line 1: no valid length, searching without length filter
+[time] WARN line 8: no valid length, searching without length filter
+[time] WARN line 14: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 17 tracks, 0 already here, 17 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\nothing-here.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\nothing-here --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\nothing-here\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\nothing-here.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0010)
+[10/23] nothing-here: 0 of 17 arrived - 0 of 719 in all
+
+[11/23] other: searching 27 missing track(s)
+[time] run #0011
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = other [cli]
+[time]   dry_run = True [cli]
+[time] === other
+[time] WARN line 4: no valid length, searching without length filter
+[time] WARN line 15: the tail after | reads as a length of 34:36 - if 1900-2100 was meant as part of the title, the length filter will never match; write it without the | or give a real length
+[time] WARN line 22: the tail after | reads as a length of 34:12 - if 1900-2100 was meant as part of the title, the length filter will never match; write it without the | or give a real length
+[time] WARN line 23: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 36 tracks, 9 already here, 27 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\other.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\other --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\other\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\other.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0011)
+[11/23] other: 0 of 27 arrived - 0 of 719 in all
+
+[12/23] phonk-dark: searching 25 missing track(s)
+[time] run #0012
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = phonk-dark [cli]
+[time]   dry_run = True [cli]
+[time] === phonk-dark
+[time] WARN line 1: no valid length, searching without length filter
+[time] WARN line 10: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 31 tracks, 6 already here, 25 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\phonk-dark.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\phonk-dark --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\phonk-dark\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\phonk-dark.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0012)
+[12/23] phonk-dark: 0 of 25 arrived - 0 of 719 in all
+
+[13/23] pop: searching 60 missing track(s)
+[time] run #0013
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = pop [cli]
+[time]   dry_run = True [cli]
+[time] === pop
+[time] WARN line 2: no valid length, searching without length filter
+[time] WARN line 7: no valid length, searching without length filter
+[time] WARN line 9: no valid length, searching without length filter
+[time] WARN line 20: no valid length, searching without length filter
+[time] WARN line 30: no valid length, searching without length filter
+[time] WARN line 32: no valid length, searching without length filter
+[time] WARN line 42: no valid length, searching without length filter
+[time] WARN line 61: no valid length, searching without length filter
+[time] WARN line 66: no valid length, searching without length filter
+[time] WARN line 75: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 90 tracks, 30 already here, 60 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\pop.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\pop --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\pop\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\pop.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0013)
+[13/23] pop: 0 of 60 arrived - 0 of 719 in all
+
+[14/23] rock-metal: searching 34 missing track(s)
+[time] run #0014
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = rock-metal [cli]
+[time]   dry_run = True [cli]
+[time] === rock-metal
+[time] WARN line 3: no valid length, searching without length filter
+[time] WARN line 7: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 43 tracks, 9 already here, 34 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\rock-metal.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\rock-metal --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\rock-metal\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\rock-metal.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0014)
+[14/23] rock-metal: 0 of 34 arrived - 0 of 719 in all
+
+[15/23] techno-acid: searching 19 missing track(s)
+[time] run #0015
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = techno-acid [cli]
+[time]   dry_run = True [cli]
+[time] === techno-acid
+[time] WARN line 1: no valid length, searching without length filter
+[time] WARN line 12: no valid length, searching without length filter
+[time] WARN line 14: no valid length, searching without length filter
+[time] WARN line 21: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 27 tracks, 8 already here, 19 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\techno-acid.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\techno-acid --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\techno-acid\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\techno-acid.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0015)
+[15/23] techno-acid: 0 of 19 arrived - 0 of 719 in all
+
+[16/23] techno-hard: searching 75 missing track(s)
+[time] run #0016
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = techno-hard [cli]
+[time]   dry_run = True [cli]
+[time] === techno-hard
+[time] WARN line 2: no valid length, searching without length filter
+[time] WARN line 38: no valid length, searching without length filter
+[time] WARN line 39: no valid length, searching without length filter
+[time] WARN line 74: no valid length, searching without length filter
+[time] WARN line 96: no valid length, searching without length filter
+[time] WARN line 99: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 107 tracks, 32 already here, 75 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\techno-hard.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\techno-hard --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\techno-hard\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\techno-hard.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0016)
+[16/23] techno-hard: 0 of 75 arrived - 0 of 719 in all
+
+[17/23] techno-melodic: searching 43 missing track(s)
+[time] run #0017
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = techno-melodic [cli]
+[time]   dry_run = True [cli]
+[time] === techno-melodic
+[time] WARN line 4: no valid length, searching without length filter
+[time] WARN line 48: no valid length, searching without length filter
+[time] WARN line 64: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 61 tracks, 18 already here, 43 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\techno-melodic.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\techno-melodic --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\techno-melodic\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\techno-melodic.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0017)
+[17/23] techno-melodic: 0 of 43 arrived - 0 of 719 in all
+
+[18/23] techno: searching 28 missing track(s)
+[time] run #0018
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = techno [cli]
+[time]   dry_run = True [cli]
+[time] === techno
+[time] WARN line 2: no valid length, searching without length filter
+[time] WARN line 13: no valid length, searching without length filter
+[time] WARN line 30: no valid length, searching without length filter
+[time] WARN line 38: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 40 tracks, 12 already here, 28 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\techno.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\techno --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\techno\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\techno.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0018)
+[18/23] techno: 0 of 28 arrived - 0 of 719 in all
+
+[19/23] trance: searching 23 missing track(s)
+[time] run #0019
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = trance [cli]
+[time]   dry_run = True [cli]
+[time] === trance
+[time] WARN line 4: the tail after | reads as a length of 32:42 - if 1900-2100 was meant as part of the title, the length filter will never match; write it without the | or give a real length
+[time] WARN line 19: no valid length, searching without length filter
+[time] WARN line 32: no valid length, searching without length filter
+[time] WARN line 35: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 33 tracks, 10 already here, 23 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\trance.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\trance --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\trance\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\trance.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0019)
+[19/23] trance: 0 of 23 arrived - 0 of 719 in all
+
+[20/23] ukrainian: searching 99 missing track(s)
+[time] run #0020
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = ukrainian [cli]
+[time]   dry_run = True [cli]
+[time] === ukrainian
+[time] WARN line 4: no valid length, searching without length filter
+[time] WARN line 20: no valid length, searching without length filter
+[time] WARN line 34: no valid length, searching without length filter
+[time] WARN line 38: the tail after | reads as a length of 34:47 - if 1900-2100 was meant as part of the title, the length filter will never match; write it without the | or give a real length
+[time] WARN line 40: no valid length, searching without length filter
+[time] WARN line 45: no valid length, searching without length filter
+[time] WARN line 50: no valid length, searching without length filter
+[time] WARN line 51: no valid length, searching without length filter
+[time] WARN line 54: no valid length, searching without length filter
+[time] WARN line 59: no valid length, searching without length filter
+[time] WARN line 72: no valid length, searching without length filter
+[time] WARN line 74: no valid length, searching without length filter
+[time] WARN line 78: no valid length, searching without length filter
+[time] WARN line 81: no valid length, searching without length filter
+[time] WARN line 83: the tail after | reads as a length of 31:59 - if 1900-2100 was meant as part of the title, the length filter will never match; write it without the | or give a real length
+[time] WARN line 88: no valid length, searching without length filter
+[time] WARN line 116: no valid length, searching without length filter
+[time] WARN line 127: no valid length, searching without length filter
+[time] WARN line 131: no valid length, searching without length filter
+[time] WARN line 133: no valid length, searching without length filter
+[time] WARN line 139: no valid length, searching without length filter
+[time] WARN line 142: no valid length, searching without length filter
+[time] WARN 1 duplicate line(s) dropped
+[time] 146 tracks, 47 already here, 99 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\ukrainian.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\ukrainian --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\ukrainian\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\ukrainian.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0020)
+[20/23] ukrainian: 0 of 99 arrived - 0 of 719 in all
+
+[21/23] wanted: searching 2 missing track(s)
+[time] run #0021
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = wanted [cli]
+[time]   dry_run = True [cli]
+[time] === wanted
+[time] 4 tracks, 2 already here, 2 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\wanted.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\wanted --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\wanted\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\wanted.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0021)
+[21/23] wanted: 0 of 2 arrived - 0 of 719 in all
+
+[22/23] weird-edges: searching 6 missing track(s)
+[time] run #0022
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = weird-edges [cli]
+[time]   dry_run = True [cli]
+[time] === weird-edges
+[time] WARN 1 duplicate line(s) dropped
+[time] 12 tracks, 6 already here, 6 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\weird-edges.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\weird-edges --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\weird-edges\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\weird-edges.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0022)
+[22/23] weird-edges: 0 of 6 arrived - 0 of 719 in all
+
+[23/23] with-links: searching 5 missing track(s)
+[time] run #0023
+[time] effective configuration of sockseek-cli 0.0.4 (key = value [source: cli | config | default]):
+[time]   playlists_dir = <DIR>\on-disk\Playlists [config]
+[time]   output_dir = <DIR>\on-disk\output [config]
+[time]   sockseek_exe = <DIR>\on-disk\sockseek.exe [config]
+[time]   config_file = <DIR>\on-disk\config.yaml [default]
+[time]   length_tol_s = 45 [config]
+[time]   playlist_timeout_min = 60 [config]
+[time]   retries = 1 [config]
+[time]   stall_timeout_s = 300 [config]
+[time]   skip_not_found_hours = 2 [config]
+[time]   use_cache = True [config]
+[time]   searches_per_window = 34 [config]
+[time]   only = with-links [cli]
+[time]   dry_run = True [cli]
+[time] === with-links
+[time] WARN 1 duplicate line(s) dropped
+[time] 8 tracks, 3 already here, 5 missing, length tolerance +-45 s
+[time] dry run: <DIR>\on-disk\sockseek.exe <DIR>\on-disk\work\with-links.list.txt --input-type list --length-tol=45 -o <DIR>\on-disk\output\with-links --name-format "{artist( - )title|filename}" --index-path <DIR>\on-disk\output\with-links\_index.csv --config <DIR>\on-disk\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\on-disk\work\with-links.events.txt\" echo {row};{state};{failure-reason}"
+[time] all done, nothing downloaded (run #0023)
+[23/23] with-links: 0 of 5 arrived - 0 of 719 in all
+
+[exit 0]

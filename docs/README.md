@@ -44,18 +44,18 @@ Playlists:
 
   #  playlist              tracks  here  missing
   -  --------------------  ------  ----  -------
-  1  liked-techno-hard        107    72       35
-  2  liked-house               84    84        0
+  1  techno-hard        107    72       35
+  2  house               84    84        0
 
 What to download? (1, or 1,2, or all; [b] back, Enter quits): all
 
-liked-techno-hard: 107 tracks, 72 here, 35 missing
+techno-hard: 107 tracks, 72 here, 35 missing
 
 Missing:
-   1  Funk Tribu - Cry For You (Rework) | 5:37
+   1  Cosmic Drift - Pressure Rivet | 5:37
    ...
 
-liked-house: 84 tracks, 84 here, 0 missing
+house: 84 tracks, 84 here, 0 missing
 Nothing to do.
 
 To download: 1 playlist(s), 35 missing track(s).
@@ -64,12 +64,12 @@ about 4 min. Downloads come on top.
 
 Download these 35? [y] yes  [n] no: y
 
-[1/1] liked-techno-hard: searching 35 missing track(s)
+[1/1] techno-hard: searching 35 missing track(s)
 ...
 >> 12 of 35 done, 9 downloaded
 >> 13 of 35 done, 9 downloaded  (NoSearchResults: Some Track (Edit) | 3:12)
 ...
-[1/1] liked-techno-hard: 28 of 35 arrived - 28 of 35 in all
+[1/1] techno-hard: 28 of 35 arrived - 28 of 35 in all
 ```
 
 **One question for the whole set.** You see every missing list first, then the price of the
@@ -298,8 +298,8 @@ Every failure is written down; only one class is ever acted on. The file sits ne
 config, one tab-separated line per track:
 
 ```
-2026-10-17T12:24:31  AllDownloadsFailed  4  liked-techno-hard  Artist - Title | 4:09
-2026-10-17T18:02:10  NoSearchResults     1  liked-chill        Other - Track | 3:12
+2026-10-17T12:24:31  AllDownloadsFailed  4  techno-hard  Artist - Title | 4:09
+2026-10-17T18:02:10  NoSearchResults     1  chill        Other - Track | 3:12
        when               class       runs      playlist           playlist line
 ```
 
@@ -312,7 +312,7 @@ config, one tab-separated line per track:
 
   ```
   3 track(s) have ended the same way 3+ runs in a row - see outcomes.tsv
-    x4  AllDownloadsFailed  Fatboy Slim - Praise You | 5:23
+    x4  AllDownloadsFailed  Blue Kettle - Lantern Drift | 5:23
   ```
 
 **Behind the scenes.** The classes are sockseek's own words as a track ends, through
@@ -348,7 +348,7 @@ tool asks it to append one line per track to `work/<playlist>.events.txt`:
 
 Three machine-safe fields: the **line number in the list file this run wrote**, the state, and
 the reason as a word. The row is what makes the join exact — no matching by title, nothing a
-track called `AC/DC - T.N.T. & more` can break.
+track called `Iron / Tölva - T.N.T. & more` can break.
 
 Two things make this the right mechanism rather than a clever one:
 
@@ -517,7 +517,7 @@ A missing track is news about Soulseek, not a bug: the run still ends with exit 
 names every one of them.
 
 ```
-FAILED  state=2 reason=9 (no candidate passed the name/length/quality conditions)  You Got The Love (Club Calimari Remix) | 5:19
+FAILED  state=2 reason=9 (no candidate passed the name/length/quality conditions)  Quiet Harbour - Amber Jetty (Remix) | 5:19
 ```
 
 **`reason=9` does not mean "not on the network."** It means nothing passed the conditions — run
@@ -546,7 +546,7 @@ difference between a long night and a longer one.
 2. `--sockseek-args="--artist-maybe-wrong"` — free-form titles often put the artist elsewhere.
 3. `--sockseek-args="--remove-brackets --remove-ft"` — drops `[FREE DOWNLOAD]` and `feat. ...`.
    Note that `--remove-brackets` only removes **square** brackets, so it does nothing for
-   `Firework (Serafin Trance Edit)`.
+   `Vertigo (Quarry Trance Edit)`.
 4. `--sockseek-args="--desperate"` — broader, slower, noisier.
 5. `--preview` — runs the search and prints what comes back, downloading nothing.
 6. `--verbose` — sockseek's own log in `logs/sockseek_<run>_<name>.log`, the only place that

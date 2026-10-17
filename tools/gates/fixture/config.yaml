@@ -1,0 +1,27 @@
+paths:
+  # the sockseek binary; .exe is added or dropped to match what is really there
+  sockseek: sockseek.exe
+  # folder of playlist .txt files - this is the input
+  playlists: Playlists
+  # where the audio goes, one sub-folder per playlist
+  output: output
+
+search:
+  # HARD filter: a shared file may differ from the playlist length by this many
+  # seconds, -1 turns it off
+  length_tol_s: 45
+  # how many times to attempt one playlist; each attempt is a fresh sockseek
+  retries: 1
+  # wall clock for ONE attempt at one playlist, in minutes, 0 = no limit
+  playlist_timeout_min: 60
+  # stop a playlist when nothing has finished AND nothing has arrived on disk for
+  # this many seconds, 0 = never stop it
+  stall_timeout_s: 300
+  # do not search again for a track nobody was sharing, if that was within this
+  # many hours; 0 = always search. Fractions are fine
+  skip_not_found_hours: 2
+  # the brake across playlists: all of them together stay under this many searches
+  # per 220 s, or the Soulseek server bans the account for 30 minutes
+  searches_per_window: 34
+  # remember in outcomes.tsv how each track ended; false ignores the file entirely
+  use_cache: true
