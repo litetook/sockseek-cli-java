@@ -191,7 +191,7 @@ public final class Batch {
         Events.Tail watch = new Events.Tail(eventsFile, event -> record(event, wanted, said));
         dev.litetook.sockseek.process.Status status = Runner.runWithRetry(command, cfg.appDir(),
                 client.timeoutSeconds(), cfg.retries(), log, Runner.RETRY_PAUSE_SECONDS,
-                watch, cfg.stallSeconds());
+                watch, cfg.stallSeconds(), outDir);
         remember(cacheFile, remembered, playlist.name(), said);
         if (cfg.options().preview()) {
             log.accept(status == dev.litetook.sockseek.process.Status.OK ? "preview done"

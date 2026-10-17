@@ -104,6 +104,23 @@ public final class Runner {
     public static Status runProcess(List<String> command, Path cwd, double timeoutSeconds,
                                     Consumer<String> log, Events.Tail watch,
                                     double stallSeconds) {
+        return runProcess(command, cwd, timeoutSeconds, log, watch, stallSeconds, null);
+    }
+
+    /**
+     * The same, with the output folder watched as a second sign of life.
+     *
+     * <p>A run is only called silent when BOTH have gone quiet: nothing has finished, and
+     * nothing is arriving on disk. One slow download at the end of a playlist finishes
+     * nothing for half an hour and is perfectly healthy; killing it would be the watchdog
+     * destroying the very thing it was asked to protect.
+     */
+    public static Status runProcess(List<String> command, Path cwd, double timeoutSeconds,
+                                    Consumer<String> log, Events.Tail watch,
+                                    double stallSeconds, Path outDir) {
+        // never sampled more rarely than a quarter of the window it has to answer within
+        Bytes bytes = outDir == null ? null
+                : new Bytes(outDir, Math.min(Bytes.SAMPLE_MILLIS, (long) (stallSeconds * 250)));
         ProcessBuilder builder = new ProcessBuilder(command)
                 .directory(cwd.toFile())
                 .inheritIO();
@@ -126,10 +143,11 @@ public final class Runner {
                     stopped(log, String.format("timeout after %.0f s", timeoutSeconds));
                     return Status.TIMEOUT;
                 }
-                if (watch != null && stallSeconds > 0 && watch.silentSeconds() >= stallSeconds) {
+                if (watch != null && stallSeconds > 0 && silent(watch, bytes, stallSeconds)) {
                     killTree(process);
-                    stopped(log, String.format("nothing finished for %.0f s (%d track(s) had "
-                            + "finished before that)", stallSeconds, watch.seen()));
+                    stopped(log, String.format("nothing finished and nothing arrived on disk "
+                            + "for %.0f s (%d track(s) had finished before that)",
+                            stallSeconds, watch.seen()));
                     return Status.STALLED;
                 }
             }
@@ -147,6 +165,24 @@ public final class Runner {
         }
         log.accept("exit code " + code);
         return Status.FAILED;
+    }
+
+    /**
+     * True when both signs of life have been absent for too long.
+     *
+     * <p>The folder is only looked at once the events have gone quiet for half the window -
+     * before that the answer cannot change anything, and a walk of the folder is not free.
+     */
+    private static boolean silent(Events.Tail watch, Bytes bytes, double stallSeconds) {
+        double quiet = watch.silentSeconds();
+        if (quiet < stallSeconds / 2) {
+            return false;
+        }
+        if (bytes == null) {
+            return quiet >= stallSeconds;
+        }
+        bytes.poll();
+        return Math.min(quiet, bytes.silentSeconds()) >= stallSeconds;
     }
 
     /**
@@ -201,10 +237,18 @@ public final class Runner {
     public static Status runWithRetry(List<String> command, Path cwd, double timeoutSeconds,
                                       int retries, Consumer<String> log, double pauseSeconds,
                                       Events.Tail watch, double stallSeconds) {
+        return runWithRetry(command, cwd, timeoutSeconds, retries, log, pauseSeconds, watch,
+                stallSeconds, null);
+    }
+
+    /** The same, with the output folder watched too. */
+    public static Status runWithRetry(List<String> command, Path cwd, double timeoutSeconds,
+                                      int retries, Consumer<String> log, double pauseSeconds,
+                                      Events.Tail watch, double stallSeconds, Path outDir) {
         Status status = Status.ERROR;
         for (int attempt = 1; attempt <= retries; attempt++) {
             log.accept("attempt " + attempt + "/" + retries);
-            status = runProcess(command, cwd, timeoutSeconds, log, watch, stallSeconds);
+            status = runProcess(command, cwd, timeoutSeconds, log, watch, stallSeconds, outDir);
             if (status == Status.OK || status == Status.ERROR) {
                 return status;
             }

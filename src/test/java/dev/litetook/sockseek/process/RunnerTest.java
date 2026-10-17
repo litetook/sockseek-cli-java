@@ -190,15 +190,43 @@ class RunnerTest {
     }
 
     @Test
-    void aRunThatFinishesNothingForTooLongIsStopped(@TempDir Path work) {
+    void aRunThatFinishesNothingForTooLongIsStopped(@TempDir Path work) throws Exception {
         // the owner's "щоб не завтикував": a playlist that has gone quiet is not waited out
         // to the end of its wall clock, it is stopped and said to have gone quiet
         Events.Tail watch = new Events.Tail(work.resolve("never-written.txt"), event -> { });
+        Path out = Files.createDirectories(work.resolve("out-quiet"));
         Status status = Runner.runProcess(Child.command("sleep", "30000"), Path.of("."),
-                0, logs::add, watch, 1.5);
+                0, logs::add, watch, 1.5, out);
         assertEquals(Status.STALLED, status);
-        assertTrue(logs.stream().anyMatch(line -> line.contains("nothing finished for")),
+        assertTrue(logs.stream().anyMatch(line -> line.contains("nothing arrived on disk")),
                 logs.toString());
+    }
+
+    @Test
+    void aSlowDownloadThatIsStillArrivingIsNotMistakenForASilence(@TempDir Path work)
+            throws Exception {
+        // the case this exists for: one job left, pulling a big file from a slow uploader.
+        // Nothing FINISHES for a long time, and killing it would destroy the very download
+        // the person is waiting for. Bytes on disk are the second sign of life.
+        Path out = Files.createDirectories(work.resolve("out"));
+        Path partial = out.resolve("Artist - Title.mp3.incomplete");
+        Files.writeString(partial, "x");
+        Thread grow = new Thread(() -> {
+            for (int n = 0; n < 40; n++) {
+                try {
+                    Thread.sleep(200);
+                    Files.writeString(partial, "x".repeat(n * 5000));
+                } catch (Exception stop) {
+                    return;
+                }
+            }
+        });
+        grow.setDaemon(true);
+        grow.start();
+        Events.Tail watch = new Events.Tail(work.resolve("never-written.txt"), event -> { });
+        Status status = Runner.runProcess(Child.command("sleep", "4000"), Path.of("."),
+                0, logs::add, watch, 1.5, out);
+        assertEquals(Status.OK, status, logs.toString());
     }
 
     @Test
