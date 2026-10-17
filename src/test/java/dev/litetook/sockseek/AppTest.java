@@ -474,6 +474,8 @@ class AppTest {
         assertTrue(run.said("To download: 2 playlist(s), 3 missing track(s)."),
                 run.printed().toString());
         assertTrue(run.said("34 per 220 s"), run.printed().toString());
+        // three tracks in two playlists: both open with a full budget, so nothing is waited for
+        assertTrue(run.said("adds about 0 min in all"), run.printed().toString());
         assertEquals(List.of(), engine.calls);
     }
 
@@ -504,9 +506,9 @@ class AppTest {
 
     @Test
     void theSearchMinutesCountWindowsRatherThanSearches() {
-        // one window is free: its searches cost only their own time
-        assertEquals(1, App.searchMinutes(1));
-        assertEquals(1, App.searchMinutes(34));
+        // the first window is free: a playlist opens with a full budget and waits for nothing
+        assertEquals(0, App.searchMinutes(1));
+        assertEquals(0, App.searchMinutes(34));
         assertEquals(4, App.searchMinutes(35));     // one window waited out: 220 s
         assertEquals(4, App.searchMinutes(68));
         assertEquals(8, App.searchMinutes(69));     // two windows: 440 s

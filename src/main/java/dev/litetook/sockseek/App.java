@@ -477,9 +477,15 @@ public final class App {
         List<String> lines = new ArrayList<>();
         lines.add("To download: " + work.size() + " playlist(s), " + tracks
                 + " missing track(s).");
+        // summed per playlist, not over the total: the limiter lives inside ONE sockseek
+        // process, and there is one process per playlist, so each playlist opens with a full
+        // budget of its own. Counting the set as a single budget overstated the wait badly -
+        // twenty playlists of seventeen tracks each wait for nothing at all.
+        int minutes = work.stream().mapToInt(info -> searchMinutes(info.missing().size())).sum();
         lines.add("That is about " + tracks + " search(es); sockseek is allowed "
-                + SEARCHES_PER_WINDOW + " per " + WINDOW_SECONDS + " s, so searching alone "
-                + "takes about " + searchMinutes(tracks) + " min. Downloads come on top.");
+                + SEARCHES_PER_WINDOW + " per " + WINDOW_SECONDS + " s and each playlist gets "
+                + "its own budget, so waiting for the limiter adds about " + minutes
+                + " min in all. Searching and downloading themselves come on top.");
         return List.copyOf(lines);
     }
 
@@ -495,7 +501,7 @@ public final class App {
      */
     static int searchMinutes(int tracks) {
         int windows = Math.max(0, (tracks - 1) / SEARCHES_PER_WINDOW);
-        return Math.max(1, (int) Math.ceil(windows * WINDOW_SECONDS / 60.0));
+        return (int) Math.ceil(windows * WINDOW_SECONDS / 60.0);
     }
 
     /** How many of this playlist's missing tracks are still missing, read from the folder. */
