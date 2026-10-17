@@ -1,0 +1,57 @@
+name: release
+
+# Push a tag, get a release. The jar people download is built by GitHub from the tagged
+# commit, not uploaded from somebody's laptop - so what is in the release is what is in the
+# repository, and anyone can check that by building it themselves.
+#
+#   git tag -a v1.2.3 -m "sockseek-cli 1.2.3" && git push origin v1.2.3
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: the existing tag to build a release for
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # a release that fails its own tests is worse than no release
+      - run: ./gradlew --no-daemon test fatJar
+      - run: python tools/gates/docs.py
+      - run: python tools/gates/snapshot.py --record
+
+      - name: The jar says the version the tag does
+        run: |
+          TAG="${{ inputs.tag || github.ref_name }}"
+          SAID=$(java -jar build/libs/sockseek-cli.jar --version)
+          echo "tag $TAG, jar said '$SAID'"
+          test "$SAID" = "sockseek-cli ${TAG#v}"
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          gh release create "$TAG" build/libs/sockseek-cli.jar \
+            --title "sockseek-cli ${TAG#v}" \
+            --generate-notes
