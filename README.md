@@ -20,26 +20,27 @@ the limit that gets accounts banned.
 ```
 Playlists:
 
-  #  playlist          tracks  here  missing
-  -  ----------------  ------  ----  -------
-  1  techno-hard          107    72       35
-  2  house                 84    84        0
+  #  playlist  tracks  here  missing
+  -  --------  ------  ----  -------
+  1  starter        5     0        5
 
-What to download? (1, or 1,2, or all; [b] back, Enter quits): 1
-
-To download: 1 playlist(s), 35 missing track(s). 4 of them were searched for recently
-and nobody had them, so 31 will be searched.
-That is about 31 search(es); sockseek is allowed 34 per 220 s and each playlist gets its
+To download: 1 playlist(s), 5 missing track(s).
+That is about 5 search(es); sockseek is allowed 34 per 220 s and each playlist gets its
 own budget, so waiting for the limiter adds about 0 min in all.
 
-Download these 31? [y] yes  [n] no: y
-
-[1/1] techno-hard: searching 31 missing track(s) (4 held back)
->> 12 of 31 done, 9 downloaded
->> 13 of 31 done, 9 downloaded  (NoSearchResults: Quiet Harbour - Amber Jetty | 3:12)
-...
-[1/1] techno-hard: 24 of 31 arrived - 24 of 31 in all
+[1/1] starter: searching 5 missing track(s)
+>> 1 of 5 done, 1 downloaded
+>> 2 of 5 done, 2 downloaded
+>> 3 of 5 done, 2 downloaded  (NoSearchResults: Moby - Porcelain | 4:01)
+>> 4 of 5 done, 3 downloaded
+>> 5 of 5 done, 4 downloaded
+[time] OK      Daft Punk - Around the World | 7:09
+[time] FAILED  state=2 reason=9 (no candidate passed the name/length/quality conditions)  Moby - Porcelain | 4:01
+[time] run #0001: 4 arrived, 1 still missing, 4 of 5 in the folder
+[1/1] starter: 4 of 5 arrived - 4 of 5 in all
 ```
+
+Five minutes from nothing to that, below.
 
 ## Quick start
 
@@ -68,23 +69,9 @@ password = your-password
 ```
 
 **5. Write a playlist.** One `.txt` file per playlist in `Playlists/`. The file name becomes
-the name of the playlist and of its download folder. One track per line, the length after a
-`|`, lines starting with `#` ignored:
-
-```
-Aurora Beltran - Amber Jetty | 4:09
-Blue Kettle - Lantern Drift (Remix) | 5:37
-Cosmic Drift - Pressure Rivet
-```
-
-A length may be `m:ss`, `h:mm:ss` or plain seconds, and a line without one is searched with
-no length filter.
-
-<details>
-<summary><b>Just want to see it work? Paste this.</b></summary>
-
-Five tracks that a lot of people are sharing, so something should come down within a minute
-or two. Save as `Playlists/starter.txt`:
+the name of the playlist and of its download folder; one track per line, the length after a
+`|`. Save this as `Playlists/starter.txt` — five records a lot of people are sharing, so
+something should come down within a minute or two:
 
 ```
 Daft Punk - Around the World | 7:09
@@ -94,46 +81,50 @@ Moby - Porcelain | 4:01
 Massive Attack - Teardrop | 5:29
 ```
 
+A length may be `m:ss`, `h:mm:ss` or plain seconds, and a line with no length at all is
+searched without a length filter. Lines starting with `#` are ignored.
+
+**6. Run it.**
+
 ```bash
 java -jar sockseek-cli.jar --only starter --yes
 ```
 
+That is the run printed at the top of this page. Files land in `output/starter/`, and
+running the same command again will tell you there is nothing left to do.
+
 The lengths above are for the usual album versions, and a remaster or a single edit can be a
-minute off — which the hard length filter will then refuse. If a track comes back as
-`NoSearchResults` and you are sure it exists, that is the first thing to loosen:
+minute out — which the length filter, the strict one, will then refuse. So if something
+comes back as `NoSearchResults` and you are sure it exists, that is the first thing to
+loosen:
 
 ```bash
 java -jar sockseek-cli.jar --only starter --yes --length-tol 90   # or -1 for no filter
 ```
 
-Files land in `output/starter/`. Run the same command again and it will tell you there is
-nothing left to do.
-
-</details>
-
-If the playlist exists somewhere else already, import it rather than type it:
+**7. Now your own.** Drop more `.txt` files into `Playlists/`, or import them rather than
+typing them out:
 
 ```bash
-java -jar sockseek-cli.jar --import "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M"
-java -jar sockseek-cli.jar --import "https://soundcloud.com/artist/sets/a-set" --as outlier
+java -jar sockseek-cli.jar --import "https://open.spotify.com/playlist/<id>"
+java -jar sockseek-cli.jar --import "https://soundcloud.com/<artist>/sets/<set>" --as chill
 java -jar sockseek-cli.jar --import exported.csv --as techno-2026
 ```
 
-**6. Run it for real.**
+Then take the lot in one go. This asks nothing at all, which is what an overnight run wants:
 
 ```bash
-java -jar sockseek-cli.jar              # pick a playlist, see what is missing, confirm
-java -jar sockseek-cli.jar --all --yes  # every playlist, no questions - the scheduled run
+java -jar sockseek-cli.jar --all --yes
 ```
 
 sockseek itself is fetched the first time it is needed, at the version pinned in
-`dependencies.yaml`, checked against its sha256 before it is put in place. yt-dlp arrives the
-same way if you import from SoundCloud. Nothing is installed system-wide and nothing needs
-admin rights.
+`dependencies.yaml`, checked against its sha256 before it is put in place. yt-dlp arrives
+the same way if you import from SoundCloud. Nothing is installed system-wide and nothing
+needs admin rights.
 
-**7. Run it again tomorrow.** What you can get depends on who is online, so a second run over
-the same playlist is the normal way to pick up the rest. It searches only what is still
-missing.
+**8. Run it again tomorrow.** What you can get depends on who is online, so a second run
+over the same playlist is the normal way to pick up the rest — it searches only what is
+still missing, and skips what nobody was sharing an hour ago.
 
 Building from source instead of downloading: `./gradlew build`, and `run.cmd` / `./run.sh` do
 it for you.
