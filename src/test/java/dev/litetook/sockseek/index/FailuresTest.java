@@ -139,7 +139,7 @@ class FailuresTest {
         Path file = home.resolve(Failures.FILE_NAME);
         // a playlist line holds anything: commas, pipes, brackets, an em dash
         List<Failures.Outcome> all = List.of(
-                new Failures.Outcome(NOW, "NoSearchResults", 1, "liked-techno-hard",
+                new Failures.Outcome(NOW, "NoSearchResults", 1, "techno-hard",
                         "AC/DC, Live - T.N.T. (Remix) [Free DL] | 4:09"));
         assertTrue(Failures.write(file, all));
         assertEquals(all, Failures.read(file));

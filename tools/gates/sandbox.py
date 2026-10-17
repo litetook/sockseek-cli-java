@@ -1,9 +1,9 @@
-"""The owner's folder as a run needs it, built somewhere else.
+"""A folder shaped like a real installation, built somewhere else.
 
-Nothing in the gates ever runs inside C:\\claude_tasks\\Soulseek-Batch. His rule, 2026-10-16:
-"не роби тестів на проді без мого конкретного апруву". Reading his files is fine; running
-there is not. So every gate copies what it needs - the playlists, the index files, the config -
-into a temporary folder and works there.
+No gate ever runs inside one. Reading a file there is one thing; starting a download, moving
+a run counter or rewriting an index is another, and a check that can do either is a check
+nobody will dare run twice. So every gate copies what it needs - the playlists, the index
+files, the config - into a temporary folder and works there.
 
 Three states, because a playlist behaves differently depending on what is already on disk:
 
@@ -20,8 +20,10 @@ import shutil
 from pathlib import Path
 
 FIXTURE = Path(__file__).resolve().parent / "fixture"
-# only mock.py needs the real binary, which is 114 MB and not worth keeping in a repository
-TOOL = Path(os.environ.get("SOCKSEEK_HOME", r"C:\claude_tasks\Soulseek-Batch"))
+# Only mock.py needs the real sockseek binary, which is 114 MB and has no business in a
+# repository. Point SOCKSEEK_HOME at any folder that has one - an installation of this tool
+# is the obvious candidate - and the gate copies it out rather than running anything there.
+TOOL = Path(os.environ.get("SOCKSEEK_HOME", str(Path.cwd())))
 # the login never leaves the sandbox, and a dry run never signs in anyway
 LOCAL_CONF = "username = gate\npassword = gate\n"
 # sockseek's own meaning: 1 = downloaded, 3 = was already there and skipped

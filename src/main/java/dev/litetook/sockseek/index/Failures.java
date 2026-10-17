@@ -53,7 +53,7 @@ import java.util.Set;
  * a track whose row said 9, rejected on length. The word can.
  *
  * <p>The file is tab-separated, in the tool's own folder, one line per track:
- * <pre>{@code 2026-10-17T12:24:31<TAB>AllDownloadsFailed<TAB>4<TAB>liked-techno<TAB>Artist - Title}</pre>
+ * <pre>{@code 2026-10-17T12:24:31<TAB>AllDownloadsFailed<TAB>4<TAB>techno-hard<TAB>Artist - Title}</pre>
  * Tabs, because a playlist line may hold anything else, commas included.
  */
 public final class Failures {
