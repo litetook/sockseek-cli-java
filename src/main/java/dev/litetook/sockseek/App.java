@@ -8,6 +8,7 @@ import dev.litetook.sockseek.deps.Tools;
 import dev.litetook.sockseek.importing.ImportResult;
 import dev.litetook.sockseek.importing.Imported;
 import dev.litetook.sockseek.importing.Imports;
+import dev.litetook.sockseek.index.Failures;
 import dev.litetook.sockseek.index.SockseekIndex;
 import dev.litetook.sockseek.index.Status;
 import dev.litetook.sockseek.links.LinkReader;
@@ -27,12 +28,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -407,9 +410,13 @@ public final class App {
             return worst;
         }
 
+        // what the CACHE will hold back, so the price is the price of this run and not of
+        // a run that ignores it. Reading it here as well as in the engine is the only way:
+        // the engine answers with an exit code, and by then the yes has been given
+        Map<String, Integer> held = heldBack(work, wiring.appDir(), config, front);
         out.accept("");
-        formatPrice(work).forEach(out);
-        if (!front.yes() && !confirm(ask, wanted(work))) {
+        formatPrice(work, held).forEach(out);
+        if (!front.yes() && !confirm(ask, wanted(work) - total(held))) {
             out.accept("Skipped.");
             return worst;
         }
@@ -431,8 +438,10 @@ public final class App {
             String step = "[" + (number + 1) + "/" + work.size() + "] ";
             out.accept("");
             pace.waitTurn();
-            out.accept(step + info.name() + ": searching " + info.missing().size()
-                    + " missing track(s)");
+            int searching = info.missing().size() - held.getOrDefault(info.name(), 0);
+            out.accept(step + info.name() + ": searching " + searching + " missing track(s)"
+                    + (searching < info.missing().size()
+                            ? " (" + (info.missing().size() - searching) + " held back)" : ""));
             List<String> argv = new ArrayList<>(List.of("--only", info.name()));
             argv.addAll(front.extra());
             int code;
@@ -492,9 +501,81 @@ public final class App {
         return config.integer("searches_per_window").orElse(Pace.DEFAULT_PER_WINDOW);
     }
 
-    /** How many tracks the whole set is missing - the number the one question is about. */
+    /** How many tracks the whole set is missing, before the cache has its say. */
     static int wanted(List<Info> work) {
         return work.stream().mapToInt(info -> info.missing().size()).sum();
+    }
+
+    static int total(Map<String, Integer> held) {
+        return held.values().stream().mapToInt(Integer::intValue).sum();
+    }
+
+    /**
+     * Per playlist, how many of its missing tracks the failure cache will hold back.
+     *
+     * <p>The engine decides this for itself when it runs; the front end has to know it
+     * BEFORE the question, or the one number the person approves is a number for a different
+     * run. Reading the same file twice is cheaper than plumbing an answer back out of an
+     * exit code.
+     */
+    static Map<String, Integer> heldBack(List<Info> work, Path appDir, Config config,
+                                         Front front) {
+        Map<String, Integer> held = new LinkedHashMap<>();
+        if (!useCache(config, front)) {
+            return held;
+        }
+        double hours = skipHours(config, front);
+        List<Failures.Outcome> remembered = Failures.read(appDir.resolve(Failures.FILE_NAME));
+        if (remembered.isEmpty() || hours <= 0) {
+            return held;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        for (Info info : work) {
+            Set<String> skip = Failures.skippable(remembered, info.name(), hours, now);
+            long count = info.missing().stream()
+                    .filter(entry -> skip.contains(entry.original())).count();
+            if (count > 0) {
+                held.put(info.name(), (int) count);
+            }
+        }
+        return held;
+    }
+
+    private static boolean useCache(Config config, Front front) {
+        if (front.extra().contains("--no-cache")) {
+            return false;
+        }
+        return config.integer("use_cache").orElse(1) != 0;
+    }
+
+    private static double skipHours(Config config, Front front) {
+        String given = flagValue(front, "--skip-not-found-hours");
+        if (given != null) {
+            try {
+                return Double.parseDouble(given.strip());
+            } catch (NumberFormatException notANumber) {
+                return SKIP_HOURS_DEFAULT;
+            }
+        }
+        return config.decimal("skip_not_found_hours").orElse(SKIP_HOURS_DEFAULT);
+    }
+
+    /** The default of skip_not_found_hours, mirrored here for the price. */
+    static final double SKIP_HOURS_DEFAULT = 2;
+
+    /** The value of a flag among the arguments passed through, in either spelling. */
+    private static String flagValue(Front front, String flag) {
+        List<String> given = front.extra();
+        for (int n = 0; n < given.size(); n++) {
+            String one = given.get(n);
+            if (one.startsWith(flag + "=")) {
+                return one.substring(flag.length() + 1);
+            }
+            if (one.equals(flag) && n + 1 < given.size()) {
+                return given.get(n + 1);
+            }
+        }
+        return null;
     }
 
     /**
@@ -506,16 +587,22 @@ public final class App {
      * періодично search rate чекати, але це норм". Saying the number up front turns that wait
      * from a hang into a price.
      */
-    public static List<String> formatPrice(List<Info> work) {
-        int tracks = wanted(work);
+    public static List<String> formatPrice(List<Info> work, Map<String, Integer> held) {
+        int missing = wanted(work);
+        int tracks = missing - total(held);
         List<String> lines = new ArrayList<>();
-        lines.add("To download: " + work.size() + " playlist(s), " + tracks
-                + " missing track(s).");
+        lines.add("To download: " + work.size() + " playlist(s), " + missing
+                + " missing track(s)."
+                + (total(held) > 0 ? " " + total(held) + " of them were searched for recently "
+                        + "and nobody had them, so " + tracks + " will be searched." : ""));
         // summed per playlist, not over the total: the limiter lives inside ONE sockseek
         // process, and there is one process per playlist, so each playlist opens with a full
         // budget of its own. Counting the set as a single budget overstated the wait badly -
         // twenty playlists of seventeen tracks each wait for nothing at all.
-        int minutes = work.stream().mapToInt(info -> searchMinutes(info.missing().size())).sum();
+        int minutes = work.stream()
+                .mapToInt(info -> searchMinutes(info.missing().size()
+                        - held.getOrDefault(info.name(), 0)))
+                .sum();
         lines.add("That is about " + tracks + " search(es); sockseek is allowed "
                 + SEARCHES_PER_WINDOW + " per " + WINDOW_SECONDS + " s and each playlist gets "
                 + "its own budget, so waiting for the limiter adds about " + minutes

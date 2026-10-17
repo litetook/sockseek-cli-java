@@ -212,6 +212,16 @@ class RunnerTest {
     }
 
     @Test
+    void everyAttemptGetsItsOwnSilenceClock(@TempDir Path work) throws Exception {
+        // a retry used to inherit the previous attempt's clock, which had already run out
+        Events.Tail watch = new Events.Tail(work.resolve("none.txt"), event -> { });
+        Thread.sleep(300);
+        assertTrue(watch.silentSeconds() > 0.2);
+        watch.restart();
+        assertTrue(watch.silentSeconds() < 0.2, "restart should begin the silence again");
+    }
+
+    @Test
     void aSlowDownloadThatIsStillArrivingIsNotMistakenForASilence(@TempDir Path work)
             throws Exception {
         // the case this exists for: one job left, pulling a big file from a slow uploader.

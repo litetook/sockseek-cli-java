@@ -254,7 +254,9 @@ public final class Batch {
         // in one line is the difference between "it did not find them" and "it did not reach
         // them".
         Map<String, IndexRow> byEntry = SockseekIndex.rowsByEntry(entries, rows);
-        long queued = still.stream()
+        // reportable, not still: a track the cache held back was never meant to be searched
+        // this run, and the state=0 its row may still carry is a leftover of an earlier one
+        long queued = reportable.stream()
                 .map(entry -> byEntry.get(entry.original()))
                 .filter(row -> row != null && row.state().strip().equals("0"))
                 .count();
@@ -307,12 +309,21 @@ public final class Batch {
         }
         // the one thing a run log cannot show you, because each log only knows its own run
         List<Failures.Outcome> stuck = Failures.stuck(after, playlist);
-        if (!stuck.isEmpty()) {
-            log.accept(stuck.size() + " track(s) have ended the same way "
-                    + Failures.NAG_AFTER + "+ runs in a row - see " + cacheFile.getFileName());
-            for (Failures.Outcome seen : stuck) {
-                log.accept("  x" + seen.runs() + "  " + seen.reason() + "  " + seen.line());
-            }
+        if (stuck.isEmpty()) {
+            return;
+        }
+        log.accept(stuck.size() + " track(s) have ended the same way " + Failures.NAG_AFTER
+                + "+ runs in a row - all of them are in " + cacheFile.getFileName());
+        // The worst few only. On a set this size a few hundred tracks end up here, and a
+        // report that prints all of them every run buries the live progress it sits next to;
+        // the file has the rest, sorted by nothing in particular but easy to open.
+        stuck.stream()
+                .sorted((a, b) -> Integer.compare(b.runs(), a.runs()))
+                .limit(Failures.NAG_SHOWN)
+                .forEach(seen -> log.accept("  x" + seen.runs() + "  " + seen.reason() + "  "
+                        + seen.line()));
+        if (stuck.size() > Failures.NAG_SHOWN) {
+            log.accept("  ... and " + (stuck.size() - Failures.NAG_SHOWN) + " more");
         }
     }
 

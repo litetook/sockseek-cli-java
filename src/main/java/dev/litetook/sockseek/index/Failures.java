@@ -64,6 +64,9 @@ public final class Failures {
     /** How many runs in a row make a failure worth mentioning in the report. */
     public static final int NAG_AFTER = 3;
 
+    /** How many of them the report names; the rest are counted and left in the file. */
+    public static final int NAG_SHOWN = 10;
+
     private Failures() {
     }
 

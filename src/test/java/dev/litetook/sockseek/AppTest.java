@@ -6,12 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.litetook.sockseek.config.Settings;
 import dev.litetook.sockseek.deps.Downloader;
+import dev.litetook.sockseek.index.Failures;
 import dev.litetook.sockseek.index.Status;
 import dev.litetook.sockseek.links.LinkReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -550,6 +552,45 @@ class AppTest {
         assertTrue(run.said("--only wins"), run.printed().toString());
     }
 
+    @Test
+    void thePriceIsThePriceOfTheRunTheCacheWillActuallyMake() throws IOException {
+        // the one number the person approves must be for the run that happens. The cache is
+        // read by the engine, which answers with an exit code - by then the yes is given
+        ready();
+        playlist("one", "Artist - A", "Artist - B", "Artist - C");
+        Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
+                LocalDateTime.now().toString(), "NoSearchResults", "1", "one", "Artist - A")
+                + NEWLINE);
+        Run run = run(List.of(), "1", "1", "n");
+        assertTrue(run.said("3 missing track(s). 1 of them were searched for recently and "
+                + "nobody had them, so 2 will be searched."), run.printed().toString());
+        assertTrue(run.said("Download these 2?"), run.printed().toString());
+    }
+
+    @Test
+    void anExpiredMemoryDoesNotChangeThePrice() throws IOException {
+        ready();
+        playlist("one", "Artist - A", "Artist - B");
+        Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
+                LocalDateTime.now().minusDays(3).toString(), "NoSearchResults", "1", "one",
+                "Artist - A") + NEWLINE);
+        Run run = run(List.of(), "1", "1", "n");
+        assertTrue(run.said("To download: 1 playlist(s), 2 missing track(s)."),
+                run.printed().toString());
+        assertTrue(!run.said("will be searched"), run.printed().toString());
+    }
+
+    @Test
+    void noCacheMakesThePriceTheWholeThing() throws IOException {
+        ready();
+        playlist("one", "Artist - A", "Artist - B");
+        Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
+                LocalDateTime.now().toString(), "NoSearchResults", "1", "one", "Artist - A")
+                + NEWLINE);
+        Run run = run(List.of("--no-cache"), "1", "1", "n");
+        assertTrue(!run.said("will be searched"), run.printed().toString());
+    }
+
     // ------------------------------------------------------------------ the search brake
 
     @Test
@@ -610,6 +651,9 @@ class AppTest {
         assertEquals(3, Pace.searchesOf(list, dir.resolve("none.txt")));
         assertEquals(0, Pace.searchesOf(dir.resolve("gone.txt"), dir.resolve("none.txt")));
     }
+
+    private static final String TAB = String.valueOf((char) 9);
+    private static final String NEWLINE = System.lineSeparator();
 
     private static Status empty() {
         return new Status(List.of(), List.of(), Map.of());

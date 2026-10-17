@@ -131,6 +131,18 @@ public final class Events {
             this.onEvent = onEvent;
         }
 
+        /**
+         * Begin a new attempt: the silence is measured from now, not from the last track of
+         * the attempt before.
+         *
+         * <p>Without this a retry starts with a clock that already ran out - the previous
+         * attempt's last event could be minutes old - and the watchdog would stop the new
+         * process before it had a chance to finish anything.
+         */
+        public void restart() {
+            lastEventAt = System.nanoTime();
+        }
+
         /** How long since the last finished track, in seconds. Starts counting at birth. */
         public double silentSeconds() {
             return (System.nanoTime() - lastEventAt) / 1_000_000_000.0;
@@ -143,9 +155,13 @@ public final class Events {
         /** Read whatever has been appended since last time. Never throws. */
         public void poll() {
             try (InputStream stream = Files.newInputStream(file)) {
-                long skipped = stream.skip(offset);
-                if (skipped < offset) {
-                    // the file got shorter than it was: something replaced it, start again
+                // skipNBytes, not skip: skip is allowed to move less than asked for on a
+                // perfectly good file, and reading that as "the file was replaced" rewound
+                // to the start and replayed every event already seen
+                try {
+                    stream.skipNBytes(offset);
+                } catch (java.io.EOFException shorterNow) {
+                    // really shorter than it was: something replaced it, start again
                     offset = 0;
                     partial.setLength(0);
                     return;

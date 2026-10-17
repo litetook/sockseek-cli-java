@@ -121,6 +121,9 @@ public final class Runner {
         // never sampled more rarely than a quarter of the window it has to answer within
         Bytes bytes = outDir == null ? null
                 : new Bytes(outDir, Math.min(Bytes.SAMPLE_MILLIS, (long) (stallSeconds * 250)));
+        if (watch != null) {
+            watch.restart();   // this attempt's silence, not the previous attempt's
+        }
         ProcessBuilder builder = new ProcessBuilder(command)
                 .directory(cwd.toFile())
                 .inheritIO();
@@ -174,14 +177,16 @@ public final class Runner {
      * before that the answer cannot change anything, and a walk of the folder is not free.
      */
     private static boolean silent(Events.Tail watch, Bytes bytes, double stallSeconds) {
-        double quiet = watch.silentSeconds();
-        if (quiet < stallSeconds / 2) {
-            return false;
+        if (bytes != null) {
+            // sampled from the first moment, not from half way: it was half way until it
+            // was noticed that the folder's own clock only starts at its first look, which
+            // pushed the real stopping point out to one and a half times the window
+            bytes.poll();
         }
+        double quiet = watch.silentSeconds();
         if (bytes == null) {
             return quiet >= stallSeconds;
         }
-        bytes.poll();
         return Math.min(quiet, bytes.silentSeconds()) >= stallSeconds;
     }
 
