@@ -1,31 +1,73 @@
-# sockseek-cli — Java port
+# sockseek-cli
 
-A port in progress of [sockseek-cli-playlist-downloader](https://github.com/litetook/sockseek-cli-playlist-downloader),
-a batch downloader that drives [sockseek](https://github.com/fiso64/sockseek) to fetch a
-playlist from Soulseek.
+Batch-download playlists from Soulseek. You keep plain text files like
+`Artist - Title | 4:09`; this shows how much of each playlist is already on disk, searches
+**only what is missing** after you say yes, and tells you what did not arrive and why.
 
-**The working tool is the Python one.** This repository is the port to Java 21, built phase by
-phase, and the Python version stays the reference until this one matches it exactly. Phases 0-4
-are done, so it runs a whole playlist from the menu to the report; what nobody has yet done is
-a real download from Soulseek driven by this version - sockseek has only been started from it
-in its mock mode.
+It drives [sockseek](https://github.com/fiso64/sockseek) — one process per playlist — and adds
+the things a batch run needs around it: a single confirmation for the whole set, a live count,
+a watchdog for a run that has gone quiet, and a memory of what nobody was sharing yesterday.
 
 Written with AI, which is worth knowing before running it.
 
-## Where it stands
+```bash
+run.cmd          # Windows
+./run.sh         # macOS, Linux
+```
 
-| Phase | What | State |
-|---|---|---|
-| 0 | JDK 21, Gradle wrapper | done |
-| 1 | build, launchers, the opening menu | done |
-| 2 | the pure logic: playlist, index, settings, importing, links | done |
-| 3 | the process layer: running sockseek, the pinned tools, failure explanations | done |
-| 4 | the run, the flags, the front end, exit codes | **done** — 212 tests |
-| 5 | parity against the Python tool on real playlists | **done** — ten module pairs and the whole tool, in three states |
-| 6 | the reference manual, the launchers, the docs gate | **done** — `docs/README.md`; what becomes of the Python version is the owner's call |
+Needs a **JDK 21** and nothing else. The launcher builds the jar if it is missing; sockseek and
+yt-dlp arrive on demand at pinned versions, each checked against its sha256 first.
 
-The gate that decides the port is done is phase 5, and it is not a test suite: both tools are
-run over the owner's own playlists and every line they print is diffed.
+**[docs/README.md](docs/README.md) is the manual** — the playlist format, the imports, every
+setting explained twice over (what it is for, and what happens behind it), what to do about a
+track that will not come down, and an honest list of what this cannot do.
+
+---
+
+## What it adds to sockseek
+
+| | |
+|---|---|
+| **One question** | every missing list first, then the price of the lot — playlists, tracks, and the minutes the 34-per-220-s search limiter alone will cost — then one `y` |
+| **A live count** | `>> 12 of 35 done, 9 downloaded`, while the run is going, across the whole run rather than one playlist |
+| **A silence watchdog** | a playlist that has finished nothing for `stall_timeout_s` is stopped and said to have gone quiet, not left to burn its wall clock |
+| **A failure cache** | a track nobody was sharing is not searched for again for `skip_not_found_days` — and only that one class of failure is ever remembered |
+| **Only what is missing** | a track already on disk is never sent to sockseek, so re-running the same playlist tomorrow is the normal way to pick up the rest |
+| **Reasons in words** | `reason=9` in sockseek's index means both "nobody had it" and "found and rejected"; `--explain` searches again with every condition off and says which |
+| **The screen, kept** | `logs/session_<date>.log` holds everything you saw, including the questions you were asked |
+
+## How it works
+
+The live count, the watchdog and the cache all rest on one thing: sockseek's `--on-complete`
+runs a command as each track ends, and that command is an ordinary child process — so the
+console stays sockseek's, with its own display and its own keys, while this tool reads a line
+per finished track from a file. The alternative, reading `--progress-json` and typing into
+sockseek's stdin, would have taken the terminal away and does not work anyway; the manual says
+why in detail.
+
+## Build
+
+```bash
+./gradlew build          # compiles, tests, writes build/libs/sockseek-cli.jar
+./gradlew test           # 243 tests
+```
+
+- **Java 21.** Records instead of dataclasses, `ProcessHandle.descendants()` instead of a
+  Windows-only `taskkill` branch.
+- **Four libraries, each for one job it would be silly to hand-write**: picocli for the flags,
+  Jackson for the one JSON document Spotify serves, commons-csv because sockseek's index
+  quotes every field with a comma in it, commons-compress because the JDK unpacks zip and gzip
+  but not tar. The YAML config keeps its own small parser: its warnings are pinned by tests.
+- **A hand-written fat jar task** rather than a shading plugin: ten lines, one less thing to
+  keep in step with Gradle.
+- **Tests on behaviour**: questions and printed lines are injected, so a test reads like what
+  a person would see.
+
+## How it is checked
+
+This is a port of [sockseek-cli-playlist-downloader](https://github.com/litetook/sockseek-cli-playlist-downloader),
+and that Python tool is kept as the **oracle**. The gate is not a test suite: both tools are
+run over the same real playlists and every line they print is diffed.
 
 ```bash
 py tools/parity/run.py --offline     # eight module pairs, no network
@@ -34,43 +76,10 @@ py tools/parity/e2e.py               # both whole tools, three states of the exp
 py tools/parity/docs.py              # the manuals against the options the tools really accept
 ```
 
-`e2e.py` builds a sandbox that looks like the tool's own folder - the Python code, the config,
-the real playlists, and only the `_index.csv` of each export folder - runs both tools in it
-with `--dry-run`, and diffs every line. It never writes to the real folder and never moves the
-run counter. What it does not reach is the report a failed download writes: that needs sockseek
-to actually run.
-
-**[docs/README.md](docs/README.md) is the reference**: the playlist format, both imports, every
-setting, sockseek's own options, what to do about a track that will not come down, and the
-differences between this port and the Python tool. This page is only the short version.
-
-## Build and run
-
-Needs a **JDK 21** and nothing else — Gradle comes from the wrapper, which verifies the
-distribution's sha256 before using it.
-
-```bash
-./gradlew build          # compiles, tests, writes build/libs/sockseek-cli.jar
-./run.sh                 # macOS, Linux
-run.cmd                  # Windows, also by double-click
-```
-
-The launchers find Java the way the Python tool finds Python, build the jar if it is missing,
-and hand over. A double-click with no arguments keeps the window open so a message can be read.
-
-## How it is built
-
-- **Java 21**: records instead of the Python dataclasses, sealed types and pattern matching for
-  the states, `ProcessHandle.descendants()` instead of a Windows-only `taskkill` branch.
-- **Four libraries, each for one job it would be silly to hand-write**: picocli for the flags,
-  Jackson for the one JSON document Spotify serves, commons-csv because sockseek's index quotes
-  every field with a comma in it, commons-compress because the JDK unpacks zip and gzip but not
-  tar. The YAML config keeps its own small parser: its warnings are pinned by tests, and a real
-  YAML library would change them for no gain.
-- **A hand-written fat jar task** rather than a shading plugin: ten lines, and one less thing to
-  keep in step with Gradle.
-- **Tests on behaviour, not on implementation**: questions and printed lines are injected, so a
-  test reads like what a person would see.
+Where the two deliberately differ — the single confirmation, the live lines, `--explain`
+changing sides, the two settings the Python tool never had — the difference is named in the
+gate rather than hidden. The gates work from a sandbox copy and never run anything inside the
+owner's own folder.
 
 ## License
 

@@ -67,6 +67,8 @@ FOREIGN = {
     "--offline", "--tests",
     # sockseek again: the tool adds this one itself when --verbose is given
     "--log-file",
+    # sockseek's machine-facing surface, named in the manual where the live count is explained
+    "--on-complete", "--progress-json", "--skip-not-found",
     # setup.py's own flags, and setup.py is a program of the Python tool, not of its engine
     "--all", "--check", "--upgrade",
 }
