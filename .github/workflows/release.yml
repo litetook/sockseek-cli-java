@@ -5,6 +5,10 @@ name: release
 # repository, and anyone can check that by building it themselves.
 #
 #   git tag -a v1.2.3 -m "sockseek-cli 1.2.3" && git push origin v1.2.3
+#
+# Windows, for the same reason as the check workflow: it is the platform this has been
+# measured on, and the snapshot recording can only be compared there. The jar itself is
+# platform-independent.
 
 on:
   push:
@@ -20,7 +24,10 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,14 +42,10 @@ jobs:
         with:
           python-version: '3.12'
 
-      # belt and braces: the mode bit is set in git, but a zip export or a checkout with
-      # core.fileMode off would lose it, and the failure reads as "Permission denied"
-      - run: chmod +x gradlew
-
-      # a release that fails its own tests is worse than no release
-      - run: ./gradlew --no-daemon test fatJar
+      # a release that fails its own gates is worse than no release
+      - run: ./gradlew.bat --no-daemon test fatJar
       - run: python tools/gates/docs.py
-      - run: python tools/gates/snapshot.py --record
+      - run: python tools/gates/snapshot.py
 
       - name: The jar says the version the tag does
         run: |

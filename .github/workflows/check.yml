@@ -1,8 +1,14 @@
 name: check
 
-# Everything here is offline: no Soulseek account, no network beyond fetching the build's
-# own dependencies. The fourth gate, tools/gates/mock.py, is deliberately absent - it drives
-# the real sockseek binary, which is 114 MB and is not kept in the repository.
+# Windows, because that is the only platform this tool has been measured on - and because
+# the snapshot recording holds Windows paths and CRLF, so only here can the gate COMPARE
+# rather than merely re-record. The pins in dependencies.yaml cover macOS and Linux and the
+# code has no Windows-only branch left in it, but neither has been run, and a workflow that
+# claims otherwise would be the tool lying about itself. A Linux job is worth adding the day
+# somebody wants to support Linux.
+#
+# The fourth gate, tools/gates/mock.py, is deliberately absent: it drives the real sockseek
+# binary, which is 114 MB and is not kept in the repository.
 
 on:
   push:
@@ -12,7 +18,10 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
 
@@ -25,27 +34,20 @@ jobs:
         with:
           python-version: '3.12'
 
-      # belt and braces: the mode bit is set in git, but a zip export or a checkout with
-      # core.fileMode off would lose it, and the failure reads as "Permission denied"
-      - run: chmod +x gradlew
-
       - name: Tests
-        run: ./gradlew --no-daemon test
+        run: ./gradlew.bat --no-daemon test
 
       - name: Build the jar
-        run: ./gradlew --no-daemon fatJar
+        run: ./gradlew.bat --no-daemon fatJar
 
       - name: The manuals match the options
         run: python tools/gates/docs.py
 
-      # The recording was made on Windows, where a path is C:\... and a line ends with CRLF,
-      # so the lines cannot match on Linux. What CAN be checked anywhere is that the gate
-      # runs at all and the tool survives all 24 playlists in three states - a crash, an
-      # unhandled exception or an exit code of 2 fails the step.
-      - name: The whole tool over every playlist
-        run: python tools/gates/snapshot.py --record
+      - name: The whole tool over every playlist, against the recording
+        run: python tools/gates/snapshot.py
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: sockseek-cli.jar
           path: build/libs/sockseek-cli.jar
