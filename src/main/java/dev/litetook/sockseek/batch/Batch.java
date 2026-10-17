@@ -154,7 +154,7 @@ public final class Batch {
         // skip happens HERE, in the open, rather than through sockseek's --skip-not-found,
         // which remembers for ever and cannot tell "nobody had it" from "found and rejected".
         Path cacheFile = cfg.appDir().resolve(Failures.FILE_NAME);
-        List<Failures.Miss> remembered = Failures.read(cacheFile);
+        List<Failures.Outcome> remembered = Failures.read(cacheFile);
         Set<String> skip = Failures.skippable(remembered, playlist.name(),
                 cfg.skipNotFoundDays(), LocalDate.now());
         List<Entry> wanted = before.missing().stream()
@@ -267,15 +267,26 @@ public final class Batch {
     }
 
     /** Write back what this playlist now knows about tracks nobody had. */
-    void remember(Path cacheFile, List<Failures.Miss> existing, String playlist,
+    void remember(Path cacheFile, List<Failures.Outcome> existing, String playlist,
                   Map<String, Events.Event> said) {
         if (said.isEmpty()) {
             return;   // no events at all: say nothing rather than forget what was known
         }
-        List<Failures.Miss> after = Failures.after(existing, playlist, said, LocalDate.now());
+        List<Failures.Outcome> after = Failures.after(existing, playlist, said,
+                LocalDate.now());
         if (!Failures.write(cacheFile, after)) {
-            log.accept("WARN cannot write " + cacheFile + ", tracks nobody had will be "
-                    + "searched for again next time");
+            log.accept("WARN cannot write " + cacheFile + ", what happened to these tracks "
+                    + "will not be remembered");
+            return;
+        }
+        // the one thing a run log cannot show you, because each log only knows its own run
+        List<Failures.Outcome> stuck = Failures.stuck(after, playlist);
+        if (!stuck.isEmpty()) {
+            log.accept(stuck.size() + " track(s) have ended the same way "
+                    + Failures.NAG_AFTER + "+ runs in a row - see " + cacheFile.getFileName());
+            for (Failures.Outcome seen : stuck) {
+                log.accept("  x" + seen.runs() + "  " + seen.reason() + "  " + seen.line());
+            }
         }
     }
 

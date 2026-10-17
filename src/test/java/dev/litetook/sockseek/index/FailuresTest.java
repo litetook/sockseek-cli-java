@@ -34,20 +34,47 @@ class FailuresTest {
     }
 
     @Test
-    void onlyATrackNobodyHadIsRemembered() {
+    void everyFailureIsRemembered_butOnlyOneClassIsEverSkipped() {
         Map<String, Events.Event> byLine = new LinkedHashMap<>();
         byLine.put("A - nobody has this", new Events.Event(1, "Failed", "NoSearchResults"));
-        byLine.put("B - found but not sent", new Events.Event(2, "Failed", "DownloadFailed"));
+        byLine.put("B - upload died", new Events.Event(2, "Failed", "AllDownloadsFailed"));
         byLine.put("C - arrived", new Events.Event(3, "Succeeded", "None"));
-        List<Failures.Miss> after = Failures.after(List.of(), "mix", byLine, TODAY);
-        assertEquals(List.of("A - nobody has this"), after.stream().map(Failures.Miss::line)
-                .toList());
+        byLine.put("D - was already here", new Events.Event(4, "AlreadyExists", "None"));
+        List<Failures.Outcome> after = Failures.after(List.of(), "mix", byLine, TODAY);
+        // both failures are written down; what arrived is forgotten, the folder knows better
+        assertEquals(List.of("A - nobody has this", "B - upload died"),
+                after.stream().map(Failures.Outcome::line).toList());
+        // but only the one class is ever held back from a later search
+        assertEquals(Set.of("A - nobody has this"), Failures.skippable(after, "mix", 1, TODAY));
+    }
+
+    @Test
+    void theSameFailureTwiceRunningCountsUp() {
+        Map<String, Events.Event> byLine = new LinkedHashMap<>();
+        byLine.put("A - one", new Events.Event(1, "Failed", "AllDownloadsFailed"));
+        List<Failures.Outcome> first = Failures.after(List.of(), "mix", byLine, TODAY);
+        assertEquals(1, first.get(0).runs());
+        List<Failures.Outcome> second = Failures.after(first, "mix", byLine, TODAY);
+        assertEquals(2, second.get(0).runs());
+        // a different cause is a different story, so the count starts again
+        byLine.put("A - one", new Events.Event(1, "Failed", "NoSearchResults"));
+        assertEquals(1, Failures.after(second, "mix", byLine, TODAY).get(0).runs());
+    }
+
+    @Test
+    void theOnesFailingTheSameWayForThreeRunsAreNamed() {
+        List<Failures.Outcome> all = List.of(
+                new Failures.Outcome(TODAY, "AllDownloadsFailed", 3, "mix", "A - stuck"),
+                new Failures.Outcome(TODAY, "AllDownloadsFailed", 2, "mix", "B - not yet"),
+                new Failures.Outcome(TODAY, "AllDownloadsFailed", 9, "other", "C - elsewhere"));
+        assertEquals(List.of("A - stuck"),
+                Failures.stuck(all, "mix").stream().map(Failures.Outcome::line).toList());
     }
 
     @Test
     void aTrackThatArrivesIsForgotten() {
-        List<Failures.Miss> before = List.of(
-                new Failures.Miss(TODAY.minusDays(1), "NoSearchResults", "mix", "A - one"));
+        List<Failures.Outcome> before = List.of(
+                new Failures.Outcome(TODAY.minusDays(1), "NoSearchResults", 1, "mix", "A - one"));
         Map<String, Events.Event> byLine = new LinkedHashMap<>();
         byLine.put("A - one", new Events.Event(1, "Succeeded", "None"));
         assertEquals(List.of(), Failures.after(before, "mix", byLine, TODAY));
@@ -55,19 +82,19 @@ class FailuresTest {
 
     @Test
     void anotherPlaylistIsLeftAlone() {
-        List<Failures.Miss> before = List.of(
-                new Failures.Miss(TODAY, "NoSearchResults", "other", "A - one"));
-        List<Failures.Miss> after = Failures.after(before, "mix",
+        List<Failures.Outcome> before = List.of(
+                new Failures.Outcome(TODAY, "NoSearchResults", 1, "other", "A - one"));
+        List<Failures.Outcome> after = Failures.after(before, "mix",
                 said(new Events.Event(1, "Succeeded", "None")), TODAY);
         assertEquals(before, after);
     }
 
     @Test
     void theWindowIsCountedInWholeDays() {
-        List<Failures.Miss> all = List.of(
-                new Failures.Miss(TODAY, "NoSearchResults", "mix", "today"),
-                new Failures.Miss(TODAY.minusDays(1), "NoSearchResults", "mix", "yesterday"),
-                new Failures.Miss(TODAY.minusDays(6), "NoSearchResults", "mix", "last week"));
+        List<Failures.Outcome> all = List.of(
+                new Failures.Outcome(TODAY, "NoSearchResults", 1, "mix", "today"),
+                new Failures.Outcome(TODAY.minusDays(1), "NoSearchResults", 1, "mix", "yesterday"),
+                new Failures.Outcome(TODAY.minusDays(6), "NoSearchResults", 1, "mix", "last week"));
         // one day means "not again today"; yesterday's miss is already worth another look,
         // because a track absent on the 6th arrived on the 7th as a 893 kbps flac
         assertEquals(Set.of("today"), Failures.skippable(all, "mix", 1, TODAY));
@@ -78,16 +105,16 @@ class FailuresTest {
 
     @Test
     void zeroDaysSearchesEverythingAgain() {
-        List<Failures.Miss> all = List.of(
-                new Failures.Miss(TODAY, "NoSearchResults", "mix", "today"));
+        List<Failures.Outcome> all = List.of(
+                new Failures.Outcome(TODAY, "NoSearchResults", 1, "mix", "today"));
         assertEquals(Set.of(), Failures.skippable(all, "mix", 0, TODAY));
     }
 
     @Test
     void aFoundButUndeliveredTrackIsNeverSkipped() {
         // these are the ones that most often arrive next time, so they are always searched
-        List<Failures.Miss> all = List.of(
-                new Failures.Miss(TODAY, "DownloadFailed", "mix", "A - one"));
+        List<Failures.Outcome> all = List.of(
+                new Failures.Outcome(TODAY, "DownloadFailed", 1, "mix", "A - one"));
         assertEquals(Set.of(), Failures.skippable(all, "mix", 7, TODAY));
     }
 
@@ -95,8 +122,8 @@ class FailuresTest {
     void itSurvivesTheRoundTripThroughTheFile(@TempDir Path home) {
         Path file = home.resolve(Failures.FILE_NAME);
         // a playlist line holds anything: commas, pipes, brackets, an em dash
-        List<Failures.Miss> all = List.of(
-                new Failures.Miss(TODAY, "NoSearchResults", "liked-techno-hard",
+        List<Failures.Outcome> all = List.of(
+                new Failures.Outcome(TODAY, "NoSearchResults", 1, "liked-techno-hard",
                         "AC/DC, Live - T.N.T. (Remix) [Free DL] | 4:09"));
         assertTrue(Failures.write(file, all));
         assertEquals(all, Failures.read(file));
@@ -106,7 +133,7 @@ class FailuresTest {
     void aHandEditedLineIsSkippedRatherThanFatal(@TempDir Path home) {
         Path file = home.resolve(Failures.FILE_NAME);
         assertTrue(Failures.write(file, List.of(
-                new Failures.Miss(TODAY, "NoSearchResults", "mix", "A - one"))));
+                new Failures.Outcome(TODAY, "NoSearchResults", 1, "mix", "A - one"))));
         assertEquals(1, Failures.read(file).size());
         assertEquals(List.of(), Failures.read(home.resolve("not-there.tsv")));
     }

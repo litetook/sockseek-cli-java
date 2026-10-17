@@ -53,6 +53,17 @@ public final class Events {
             return state.equals("Succeeded");
         }
 
+        /**
+         * The track ended badly, as opposed to arriving or having been there already.
+         *
+         * <p>Measured states: {@code Succeeded}, {@code AlreadyExists}, {@code Failed}.
+         * Anything else sockseek may report is read as a failure, which is the safe way
+         * round: a state we do not know is not something to call a success.
+         */
+        public boolean failed() {
+            return !succeeded() && !state.equals("AlreadyExists");
+        }
+
         /** The track was searched for and nobody had it - the only class worth remembering. */
         public boolean notOnNetwork() {
             return reason.equals(NOT_FOUND);

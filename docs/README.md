@@ -214,10 +214,9 @@ everything again, every time.
 
 **Behind the scenes.** Searching is the scarce thing, not bandwidth: sockseek is allowed 34
 searches per 220 s, so a 107-track playlist spends most of its night waiting for that window.
-Only **one** class of failure is ever remembered — `NoSearchResults`, nobody shared the file.
-"Found, but the upload never came through" is never remembered, because those are precisely
-the ones that arrive next time. The memory is kept in `not-found.tsv` next to the config, one
-dated line per track, and a run that skips anything says so out loud:
+Only **one** class of failure is ever **skipped** — `NoSearchResults`, nobody shared the file.
+"Found, but the upload never came through" is never skipped, because those are precisely the
+ones that arrive next time. A run that skips anything says so out loud:
 
 ```
 skipping 4 track(s) nobody had within the last 1 day(s); set skip_not_found_days: 0 to
@@ -230,6 +229,47 @@ One day, not seven, because availability changes by the hour: a track that was n
 This does **not** use sockseek's own `--skip-not-found`, for two measured reasons: it remembers
 for ever rather than for a day, and the index it reads cannot tell the two classes apart —
 `reason=9` is written both for "nobody had it" and for "found and rejected by the conditions".
+
+---
+
+## `outcomes.tsv`: what happened last time
+
+Every failure is written down; only one class is ever acted on. The file sits next to the
+config, one tab-separated line per track:
+
+```
+2026-10-17  AllDownloadsFailed  4  liked-techno-hard  Artist - Title | 4:09
+2026-10-17  NoSearchResults     1  liked-chill        Other - Track | 3:12
+     date         class       runs      playlist           playlist line
+```
+
+**What it's for.** Two jobs that must not be confused:
+
+- **Skipping** — `NoSearchResults` only, and only within `skip_not_found_days`. That is the
+  one above.
+- **Counting** — everything else is remembered and **never** skipped, so a track that has
+  been failing the same way for three runs can say so:
+
+  ```
+  3 track(s) have ended the same way 3+ runs in a row - see outcomes.tsv
+    x4  AllDownloadsFailed  Fatboy Slim - Praise You | 5:23
+  ```
+
+**Behind the scenes.** The classes are sockseek's own words as a track ends, through
+`--on-complete`, not codes out of the index — `reason=9` covers both "nobody had it" and
+"found and rejected by the conditions", and cannot be split. Measured pairs:
+
+| word | index row | means |
+|---|---|---|
+| `NoSearchResults` | `state=2 reason=9` | nobody had it |
+| `AllDownloadsFailed` | `state=2 reason=4` | found, the upload died |
+
+A track that arrives is **forgotten outright** — it is on disk now, and the folder is a better
+record than any file of ours. A track that fails in a *new* way starts counting from one,
+because a different cause is a different story.
+
+This record is the only place the history survives at all: a run log knows one run, and
+sockseek rewrites `_index.csv` in place on the next one.
 
 ---
 
@@ -438,7 +478,7 @@ fixes that; another hour of the day might.
 |---|---|
 | `output/<name>/` | the audio, flat, named `Artist - Title.ext` |
 | `output/<name>/_index.csv` | sockseek's index: the only link between a playlist line and a file |
-| `not-found.tsv` | tracks nobody had, with the date — the failure cache |
+| `outcomes.tsv` | how each track ended last time, with the date and a run counter |
 | `logs/session_<stamp>.log` | **everything you saw on screen**, one file per start of the command |
 | `logs/run_<NNNN>_<stamp>.log` | one run of one playlist; opens with `run #NNNN` and the effective config |
 | `logs/sockseek_<NNNN>_<name>.log` | sockseek's own verbose log (only with `--verbose`) |
