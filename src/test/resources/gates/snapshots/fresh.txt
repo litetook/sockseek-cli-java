@@ -1,3 +1,4 @@
+WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 Playlists:
 
   #  playlist        tracks  here  missing
@@ -1250,7 +1251,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [1/24] ambient-night: searching 25 missing track(s)
 [time] run #0001
 [time] WARN run_seq.txt is missing or not a number, run counter rebuilt from the log file names in <DIR>\logs: highest number found 0
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1264,11 +1265,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = ambient-night [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === ambient-night
 [time] WARN line 22: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
@@ -1279,7 +1281,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [2/24] breaks: searching 29 missing track(s)
 [time] run #0002
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1293,11 +1295,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = breaks [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === breaks
 [time] WARN line 10: no valid length, searching without length filter
 [time] WARN line 15: no valid length, searching without length filter
@@ -1309,7 +1312,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [3/24] chill: searching 69 missing track(s)
 [time] run #0003
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1323,11 +1326,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = chill [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === chill
 [time] WARN line 8: no valid length, searching without length filter
 [time] WARN line 18: no valid length, searching without length filter
@@ -1343,7 +1347,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [4/24] classics: searching 10 missing track(s)
 [time] run #0004
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1357,11 +1361,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = classics [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === classics
 [time] WARN line 3: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
@@ -1372,7 +1377,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [5/24] dnb: searching 38 missing track(s)
 [time] run #0005
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1386,11 +1391,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = dnb [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === dnb
 [time] WARN line 38: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
@@ -1401,7 +1407,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [6/24] dubstep-bass: searching 45 missing track(s)
 [time] run #0006
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1415,11 +1421,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = dubstep-bass [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === dubstep-bass
 [time] WARN line 16: no valid length, searching without length filter
 [time] WARN line 36: no valid length, searching without length filter
@@ -1434,7 +1441,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [7/24] example: searching 3 missing track(s)
 [time] run #0007
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1448,11 +1455,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = example [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === example
 [time] WARN line 3: no valid length, searching without length filter
 [time] 3 tracks, 0 already here, 3 missing, length tolerance +-45 s
@@ -1462,7 +1470,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [8/24] hip-hop: searching 54 missing track(s)
 [time] run #0008
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1476,11 +1484,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = hip-hop [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === hip-hop
 [time] WARN line 26: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
@@ -1491,7 +1500,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [9/24] house: searching 84 missing track(s)
 [time] run #0009
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1505,11 +1514,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = house [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === house
 [time] WARN line 5: no valid length, searching without length filter
 [time] WARN line 11: no valid length, searching without length filter
@@ -1530,7 +1540,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [10/24] nothing-here: searching 17 missing track(s)
 [time] run #0010
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1544,11 +1554,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = nothing-here [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === nothing-here
 [time] WARN 1 duplicate line(s) dropped
 [time] 17 tracks, 0 already here, 17 missing, length tolerance +-45 s
@@ -1558,7 +1569,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [11/24] one-track: searching 1 missing track(s)
 [time] run #0011
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1572,11 +1583,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = one-track [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === one-track
 [time] 1 tracks, 0 already here, 1 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\one-track.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\one-track --name-format "{artist( - )title|filename}" --index-path <DIR>\output\one-track\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\one-track.events.txt\" echo {row};{state};{failure-reason}"
@@ -1585,7 +1597,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [12/24] other: searching 36 missing track(s)
 [time] run #0012
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1599,11 +1611,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = other [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === other
 [time] WARN line 11: no valid length, searching without length filter
 [time] WARN line 20: no valid length, searching without length filter
@@ -1616,7 +1629,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [13/24] phonk-dark: searching 31 missing track(s)
 [time] run #0013
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1630,11 +1643,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = phonk-dark [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === phonk-dark
 [time] WARN line 1: no valid length, searching without length filter
 [time] WARN line 3: no valid length, searching without length filter
@@ -1648,7 +1662,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [14/24] pop: searching 90 missing track(s)
 [time] run #0014
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1662,11 +1676,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = pop [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === pop
 [time] WARN line 36: no valid length, searching without length filter
 [time] WARN line 39: no valid length, searching without length filter
@@ -1685,7 +1700,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [15/24] rock-metal: searching 43 missing track(s)
 [time] run #0015
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1699,11 +1714,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = rock-metal [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === rock-metal
 [time] WARN line 14: no valid length, searching without length filter
 [time] WARN line 15: no valid length, searching without length filter
@@ -1716,7 +1732,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [16/24] techno-acid: searching 27 missing track(s)
 [time] run #0016
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1730,11 +1746,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = techno-acid [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === techno-acid
 [time] WARN line 16: no valid length, searching without length filter
 [time] WARN line 18: no valid length, searching without length filter
@@ -1748,7 +1765,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [17/24] techno-hard: searching 107 missing track(s)
 [time] run #0017
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1762,11 +1779,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = techno-hard [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === techno-hard
 [time] WARN line 2: no valid length, searching without length filter
 [time] WARN line 10: no valid length, searching without length filter
@@ -1787,7 +1805,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [18/24] techno-melodic: searching 61 missing track(s)
 [time] run #0018
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1801,11 +1819,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = techno-melodic [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === techno-melodic
 [time] WARN line 32: no valid length, searching without length filter
 [time] WARN line 44: no valid length, searching without length filter
@@ -1819,7 +1838,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [19/24] techno: searching 40 missing track(s)
 [time] run #0019
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1833,11 +1852,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = techno [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === techno
 [time] WARN line 32: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
@@ -1848,7 +1868,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [20/24] trance: searching 33 missing track(s)
 [time] run #0020
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1862,11 +1882,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = trance [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === trance
 [time] WARN line 2: no valid length, searching without length filter
 [time] WARN line 7: no valid length, searching without length filter
@@ -1880,7 +1901,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [21/24] ukrainian: searching 146 missing track(s)
 [time] run #0021
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1894,11 +1915,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = ukrainian [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === ukrainian
 [time] WARN line 3: no valid length, searching without length filter
 [time] WARN line 15: no valid length, searching without length filter
@@ -1921,7 +1943,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [22/24] wanted: searching 4 missing track(s)
 [time] run #0022
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1935,11 +1957,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = wanted [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === wanted
 [time] WARN line 3: no valid length, searching without length filter
 [time] 4 tracks, 0 already here, 4 missing, length tolerance +-45 s
@@ -1949,7 +1972,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [23/24] weird-edges: searching 12 missing track(s)
 [time] run #0023
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1963,11 +1986,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = weird-edges [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === weird-edges
 [time] WARN line 7: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
@@ -1978,7 +2002,7 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 
 [24/24] with-links: searching 8 missing track(s)
 [time] run #0024
-[time] effective configuration of sockseek-cli 1.1.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.2.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1992,11 +2016,12 @@ That is about 1013 search(es); sockseek is allowed 34 per 220 s and each playlis
 [time]   playlist.stall_timeout_s = 300 [config]
 [time]   cache.skip_absent_h = 2 [config]
 [time]   cache.enabled = True [config]
-[time]   cache.explain_per_playlist = 20 [config]
 [time]   rate_limit.searches_per_window = 34 [config]
 [time]   rate_limit.window_s = 220 [config]
 [time]   only = with-links [cli]
 [time]   dry_run = True [cli]
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
+[time] WARN: config.yaml: unknown key 'cache.explain_per_playlist', ignored
 [time] === with-links
 [time] WARN 1 duplicate line(s) dropped
 [time] 8 tracks, 0 already here, 8 missing, length tolerance +-45 s

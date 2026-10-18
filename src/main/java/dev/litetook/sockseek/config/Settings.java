@@ -156,13 +156,10 @@ public final class Settings {
               enabled: true
               # do not search again for a track confirmed absent - nobody on the network had
               # it - if that was within this many hours; 0 = always search. Fractions are
-              # fine. Only a confirmed absence counts, never a track the filters refused
+              # fine. Only a confirmed absence counts: a track refused by a hard condition
+              # is written down WITH that condition and is never skipped, so turning the
+              # condition off makes the tool ask about it again at once
               skip_absent_h: 2
-              # after a run, search again with every condition off for this many failed
-              # tracks IN EACH PLAYLIST. sockseek reports "nobody had it" and "found it and
-              # refused it" with the SAME code, and this is the only way to tell them apart,
-              # which the line above depends on; costs one search each, 0 = none
-              explain_per_playlist: 20
 
             # ======================================================================
             # SOCKSEEK - handed to sockseek untouched. The key names are ITS, not ours,
@@ -264,12 +261,6 @@ public final class Settings {
                     "remember what happened to a track and act on it; false ignores "
                             + "outcomes.tsv completely - searches everything and writes "
                             + "nothing down (default true)", List.of("use_cache")),
-            new Setting("cache", "explain_per_playlist", "--explain-tracks",
-                    Setting.Kind.INTEGER, 20, 0.0,
-                    "after a run, search again with every condition off for this many failed "
-                            + "tracks per playlist, to find out which of them nobody had and "
-                            + "which were refused by the filters; costs one search each, "
-                            + "0 = none (default 20)", List.of("explain_tracks")),
             // ---- the whole run ----
             new Setting("rate_limit", "searches_per_window", "--searches-per-window",
                     Setting.Kind.INTEGER, 34, 0.0,
@@ -741,6 +732,48 @@ public final class Settings {
             say.accept("WARN cannot read " + path.getFileName() + ": " + cannotRead.getMessage());
             return "";
         }
+    }
+
+    /**
+     * The keys of a sockseek config that can REFUSE a file outright, as
+     * {@code min-bitrate=256}, in a fixed order so two runs under the same settings produce
+     * the same string.
+     *
+     * <p>Everything with a {@code pref-} prefix is left out on purpose: those only rank
+     * candidates, so they can never be the reason nothing came back.
+     */
+    public static final List<String> HARD_KEYS = List.of(
+            "min-bitrate", "max-bitrate", "min-samplerate", "max-samplerate",
+            "min-bitdepth", "max-bitdepth", "format", "min-length", "max-length");
+
+    /** The same, from the sockseek block of config.yaml rather than the merged file. */
+    public static List<String> hardConditions(Map<String, String> block) {
+        List<String> on = new ArrayList<>();
+        for (String key : HARD_KEYS) {
+            String value = block.get(key);
+            if (value != null && !value.isBlank()) {
+                on.add(key + "=" + value.strip());
+            }
+        }
+        return List.copyOf(on);
+    }
+
+    /** Which of {@link #HARD_KEYS} this config actually sets, as {@code key=value}. */
+    public static List<String> hardConditions(Path conf) {
+        Map<String, String> values;
+        try {
+            values = parseConf(new String(Files.readAllBytes(conf), StandardCharsets.UTF_8));
+        } catch (IOException | RuntimeException noFile) {
+            return List.of();
+        }
+        List<String> on = new ArrayList<>();
+        for (String key : HARD_KEYS) {
+            String value = values.get(key);
+            if (value != null && !value.isBlank()) {
+                on.add(key + "=" + value.strip());
+            }
+        }
+        return List.copyOf(on);
     }
 
     /**

@@ -565,9 +565,12 @@ class AppTest {
         // read by the engine, which answers with an exit code - by then the yes is given
         ready();
         playlist("one", "Artist - A", "Artist - B", "Artist - C");
+        // "len=45" is what the shipped config asks under, and a row is only acted on by
+        // a run asking the same way - otherwise the price would promise a skip the run
+        // would not make
         Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
-                LocalDateTime.now().toString(), Failures.CONFIRMED_ABSENT, "1", "one",
-                "Artist - A")
+                LocalDateTime.now().toString(), Failures.CONFIRMED_ABSENT, "1", "len=45",
+                "one", "Artist - A")
                 + NEWLINE);
         Run run = run(List.of(), "1", "1", "n");
         assertTrue(run.said("3 missing track(s). 1 of them were searched for recently and "
@@ -576,12 +579,27 @@ class AppTest {
     }
 
     @Test
+    void aMemoryFromOtherConditionsDoesNotChangeThePrice() throws IOException {
+        // the filter that refused it yesterday is off today, so yesterday's "nothing came
+        // back" says nothing about today - and the price must not pretend otherwise
+        ready();
+        playlist("one", "Artist - A", "Artist - B");
+        Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
+                LocalDateTime.now().toString(), Failures.CONFIRMED_ABSENT, "1",
+                "len=45,min-bitrate=256", "one", "Artist - A") + NEWLINE);
+        Run run = run(List.of(), "1", "1", "n");
+        assertTrue(run.said("To download: 1 playlist(s), 2 missing track(s)."),
+                run.printed().toString());
+        assertTrue(!run.said("will be searched"), run.printed().toString());
+    }
+
+    @Test
     void anExpiredMemoryDoesNotChangeThePrice() throws IOException {
         ready();
         playlist("one", "Artist - A", "Artist - B");
         Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
-                LocalDateTime.now().minusDays(3).toString(), Failures.CONFIRMED_ABSENT, "1", "one",
-                "Artist - A") + NEWLINE);
+                LocalDateTime.now().minusDays(3).toString(), Failures.CONFIRMED_ABSENT, "1",
+                "len=45", "one", "Artist - A") + NEWLINE);
         Run run = run(List.of(), "1", "1", "n");
         assertTrue(run.said("To download: 1 playlist(s), 2 missing track(s)."),
                 run.printed().toString());

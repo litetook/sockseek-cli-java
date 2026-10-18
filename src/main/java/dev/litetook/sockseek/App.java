@@ -508,7 +508,7 @@ public final class App {
 
     /** The window those searches are counted in; it has to be the one sockseek uses. */
     static int windowSeconds(Config config, Front front) {
-        String given = flagValue(front, "--searches-renew-s");
+        String given = flagValue(front, "--searches-window", "--searches-renew-s");
         if (given != null) {
             try {
                 return Integer.parseInt(given.strip());
@@ -516,7 +516,7 @@ public final class App {
                 return Pace.DEFAULT_WINDOW_SECONDS;
             }
         }
-        return config.integer("searches_renew_s").orElse(Pace.DEFAULT_WINDOW_SECONDS);
+        return config.integer("window_s").orElse(Pace.DEFAULT_WINDOW_SECONDS);
     }
 
     /** How many tracks the whole set is missing, before the cache has its say. */
@@ -548,8 +548,14 @@ public final class App {
             return held;
         }
         LocalDateTime now = LocalDateTime.now();
+        // the same string the run will write down, so the number the person approves is the
+        // number the run holds back. A --sockseek-conf layer could still add a hard key the
+        // preview cannot see; that is the one case where the two may disagree
+        String conditions = Failures.conditions(lengthTol(config, front),
+                Settings.hardConditions(config.sockseek()));
         for (Info info : work) {
-            Set<String> skip = Failures.skippable(remembered, info.name(), hours, now);
+            Set<String> skip = Failures.skippable(remembered, info.name(), hours, now,
+                    conditions);
             long count = info.missing().stream()
                     .filter(entry -> skip.contains(entry.original())).count();
             if (count > 0) {
@@ -559,15 +565,28 @@ public final class App {
         return held;
     }
 
+    /** The hard length condition this run would use, -1 when it is off. */
+    private static int lengthTol(Config config, Front front) {
+        String given = flagValue(front, "--max-length-diff", "--length-tol");
+        if (given != null) {
+            try {
+                return Integer.parseInt(given.strip());
+            } catch (NumberFormatException notANumber) {
+                return config.integer("max_length_diff_s").orElse(45);
+            }
+        }
+        return config.integer("max_length_diff_s").orElse(45);
+    }
+
     private static boolean useCache(Config config, Front front) {
         if (front.extra().contains("--no-cache")) {
             return false;
         }
-        return config.integer("use_cache").orElse(1) != 0;
+        return config.integer("enabled").orElse(1) != 0;
     }
 
     private static double skipHours(Config config, Front front) {
-        String given = flagValue(front, "--skip-not-found-hours");
+        String given = flagValue(front, "--skip-absent", "--skip-not-found-hours");
         if (given != null) {
             try {
                 return Double.parseDouble(given.strip());
@@ -575,22 +594,25 @@ public final class App {
                 return SKIP_HOURS_DEFAULT;
             }
         }
-        return config.decimal("skip_not_found_hours").orElse(SKIP_HOURS_DEFAULT);
+        return config.decimal("skip_absent_h").orElse(SKIP_HOURS_DEFAULT);
     }
 
     /** The default of skip_not_found_hours, mirrored here for the price. */
     static final double SKIP_HOURS_DEFAULT = 2;
 
     /** The value of a flag among the arguments passed through, in either spelling. */
-    private static String flagValue(Front front, String flag) {
+    /** The value of whichever of these flags was given - a renamed flag keeps its old name. */
+    private static String flagValue(Front front, String... flags) {
         List<String> given = front.extra();
-        for (int n = 0; n < given.size(); n++) {
-            String one = given.get(n);
-            if (one.startsWith(flag + "=")) {
-                return one.substring(flag.length() + 1);
-            }
-            if (one.equals(flag) && n + 1 < given.size()) {
-                return given.get(n + 1);
+        for (String flag : flags) {
+            for (int n = 0; n < given.size(); n++) {
+                String one = given.get(n);
+                if (one.startsWith(flag + "=")) {
+                    return one.substring(flag.length() + 1);
+                }
+                if (one.equals(flag) && n + 1 < given.size()) {
+                    return given.get(n + 1);
+                }
             }
         }
         return null;

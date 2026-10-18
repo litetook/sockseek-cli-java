@@ -60,8 +60,9 @@ class MockTest {
                     + tail(said));
         }
         String written = Files.readString(outcomes, StandardCharsets.UTF_8);
-        // CONFIRMED_ABSENT, not sockseek's NoSearchResults: the explain step searched again
-        // with every condition off, found nothing, and only that verdict may stop a search
+        // CONFIRMED_ABSENT, not sockseek's NoSearchResults: the last pass asked for any
+        // format with nothing able to refuse a file, so "no results" IS "nobody has it" -
+        // decided while the run was going, with no second search anywhere
         assertTrue(written.contains(Failures.CONFIRMED_ABSENT) && written.contains(NOWHERE),
                 "the one nobody has should be written down as confirmed:\n" + written);
         for (String name : SHARED) {
@@ -72,7 +73,7 @@ class MockTest {
         said = run(folder, 0);
         assertTrue(said.contains("skipping 1 track(s)"),
                 "the next run should skip it rather than search again:\n" + tail(said));
-        assertTrue(said.contains("skip_not_found_hours: 0 to search them anyway"),
+        assertTrue(said.contains("cache.skip_absent_h: 0 to search them anyway"),
                 "and should say so rather than going quiet:\n" + tail(said));
 
         said = run(folder, 0, "--skip-not-found-hours", "0");

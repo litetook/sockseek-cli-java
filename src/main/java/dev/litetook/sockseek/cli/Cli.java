@@ -39,7 +39,7 @@ public final class Cli implements Callable<Integer> {
      * this is finished enough to use, not a preview of something. The release workflow
      * refuses to publish a tag whose name disagrees with this.
      */
-    public static final String VERSION = "1.1.0";
+    public static final String VERSION = "1.2.0";
 
     @Option(names = "--version", versionHelp = true, description = "print the version and exit")
     boolean version;
@@ -116,11 +116,11 @@ public final class Cli implements Callable<Integer> {
                     + "up on it this run (default 3)")
     Integer maxSources;
 
-    @Option(names = "--explain-tracks", paramLabel = "N",
-            description = "after a run, search again with every condition off for this many "
-                    + "failed tracks per playlist; costs one search each, 0 = none "
-                    + "(default 20)")
-    Integer explainTracks;
+    @Option(names = "--why", paramLabel = "TEXT",
+            description = "do not download: for every missing track whose line contains TEXT, "
+                    + "search once more with every condition off and say what is really out "
+                    + "there. One search each; an empty TEXT asks about all of them")
+    String why;
 
     @Option(names = "--format-order", paramLabel = "LIST",
             description = "formats to ask for in order, most wanted first, comma separated "
@@ -142,9 +142,12 @@ public final class Cli implements Callable<Integer> {
             description = "print search results instead of downloading")
     boolean preview;
 
-    @Option(names = "--explain",
-            description = "after the run, search once more for every failed track and say why "
-                    + "it was rejected; it costs one query per failure (off by default)")
+    /**
+     * The old name for {@code --why} over everything still missing. Kept because it is in
+     * the owner's fingers and in every note written before 2026-10-18.
+     */
+    @Option(names = "--explain", hidden = true,
+            description = "the old name for --why over every missing track")
     boolean explain;
 
     /**
@@ -248,11 +251,6 @@ public final class Cli implements Callable<Integer> {
             case "searches_per_window" -> searchesPerWindow;
             case "window_s" -> searchesRenewS;
             case "max_sources" -> maxSources;
-            // --explain is the old way of saying "all of them"
-            // Integer.valueOf, not the bare constant: a ternary with an int on one side
-            // unboxes the other, and explainTracks is null whenever the flag is absent
-            case "explain_per_playlist" -> explain && !noExplain
-                    ? Integer.valueOf(Integer.MAX_VALUE) : explainTracks;
             // a flag that is only ever "off": absent means "whatever the file says"
             case "enabled" -> noCache ? 0 : null;
             default -> null;
@@ -333,7 +331,7 @@ public final class Cli implements Callable<Integer> {
                 .dryRun(dryRun)
                 .only(only)
                 .verbose(verbose)
-                .explainTracks(integer("explain_per_playlist"))
+                .why(why != null ? why : explain && !noExplain ? "" : null)
                 .sockseekArgs(splitSockseekArgs())
                 .sockseekConf(sockseekConf)
                 .stallSeconds(decimal("stall_timeout_s"))
@@ -370,6 +368,7 @@ public final class Cli implements Callable<Integer> {
         record Extra(String key, Object value) {
         }
         for (Extra extra : List.of(new Extra("only", only),
+                new Extra("why", why != null ? why : explain && !noExplain ? "" : null),
                 new Extra("dry_run", dryRun ? Boolean.TRUE : null),
                 new Extra("preview", preview ? Boolean.TRUE : null),
                 new Extra("verbose", verbose ? Boolean.TRUE : null),

@@ -152,6 +152,10 @@ public final class Batch {
                 : "+-" + cfg.options().lengthTol() + " s";
         log.accept(entries.size() + " tracks, " + before.have().size() + " already here, "
                 + before.missing().size() + " missing, length tolerance " + tol);
+        if (cfg.why() != null) {
+            why(playlist, entries, before.missing(), outDir);
+            return new Result(entries.size(), before.missing().size(), false);
+        }
         if (before.missing().isEmpty()) {
             log.accept("nothing to search, all " + entries.size()
                     + " track(s) are already in " + outDir);
@@ -165,17 +169,22 @@ public final class Batch {
         // --no-cache makes the file not exist for the length of this run: nothing is read
         // from it and nothing is written back, so a clean sweep leaves no trace either way
         List<Failures.Outcome> remembered = cfg.cache() ? Failures.read(cacheFile) : List.of();
+        // what this run could refuse a file for. A row remembered under other conditions
+        // answers a different question and is not acted on - so turning a filter off takes
+        // effect at once, instead of after the skip window runs out
+        String conditions = conditions();
         Set<String> skip = cfg.cache()
                 ? Failures.skippable(remembered, playlist.name(), cfg.skipNotFoundHours(),
-                        LocalDateTime.now())
+                        LocalDateTime.now(), conditions)
                 : Set.of();
         List<Entry> wanted = before.missing().stream()
                 .filter(entry -> !skip.contains(entry.original())).toList();
         int skipped = before.missing().size() - wanted.size();
         if (skipped > 0) {
             log.accept("skipping " + skipped + " track(s) nobody had within the last "
-                    + plainHours(cfg.skipNotFoundHours()) + " hour(s); set "
-                    + "skip_not_found_hours: 0 to search them anyway");
+                    + plainHours(cfg.skipNotFoundHours()) + " hour(s)"
+                    + (conditions.isEmpty() ? "" : " under " + conditions)
+                    + "; set cache.skip_absent_h: 0 to search them anyway");
         }
         if (wanted.isEmpty()) {
             log.accept("nothing left to search: every missing track was searched for recently "
@@ -196,6 +205,9 @@ public final class Batch {
 
         Path listFile = workDir.resolve(playlist.name() + ".list.txt");
         Map<String, Events.Event> said = new LinkedHashMap<>();
+        // the lines the last pass asked for with no format required. A NoSearchResults from
+        // that pass, with no hard condition set, is already the whole answer
+        Set<String> wideOpen = new LinkedHashSet<>();
         dev.litetook.sockseek.process.Status status =
                 dev.litetook.sockseek.process.Status.OK;
         List<Entry> left = wanted;
@@ -233,6 +245,10 @@ public final class Batch {
                     outDir);
             if (status == dev.litetook.sockseek.process.Status.ERROR || status.cutShort()) {
                 break;   // a pass that was stopped says nothing about the next one either
+            }
+            if (format == null) {
+                // it ran to the end, and it asked for any format at all
+                asked.forEach(entry -> wideOpen.add(entry.original()));
             }
             // what the folder holds now decides what the next pass asks for
             Status between = SockseekIndex.playlistStatus(entries, outDir);
@@ -287,13 +303,11 @@ public final class Batch {
         // about them and the index has nothing to say either; they are counted, not listed
         List<Entry> reportable = still.stream()
                 .filter(entry -> !skip.contains(entry.original())).toList();
-        Set<String> absent = !reportable.isEmpty() && !broke
-                ? report(reportable, entries, rows, listFile, outDir, client)
-                : Set.of();
-        // after the report, not before it: what the report learns is the only thing that
-        // may turn a failure into "do not search for this again"
+        if (!reportable.isEmpty() && !broke) {
+            report(reportable, entries, rows, said, wideOpen, conditions);
+        }
         if (cfg.cache()) {
-            remember(cacheFile, remembered, playlist.name(), said, absent);
+            remember(cacheFile, remembered, playlist.name(), said, wideOpen, conditions);
         }
         // The question the owner kept asking of a cut-short run: how many never got a turn?
         // sockseek leaves state=0 on a row still in the queue, and eleven of them after the
@@ -354,12 +368,12 @@ public final class Batch {
 
     /** Write back what this playlist now knows about tracks nobody had. */
     void remember(Path cacheFile, List<Failures.Outcome> existing, String playlist,
-                  Map<String, Events.Event> said, Set<String> confirmedAbsent) {
+                  Map<String, Events.Event> said, Set<String> wideOpen, String conditions) {
         if (said.isEmpty()) {
             return;   // no events at all: say nothing rather than forget what was known
         }
         List<Failures.Outcome> after = Failures.after(existing, playlist, said,
-                LocalDateTime.now(), confirmedAbsent);
+                LocalDateTime.now(), wideOpen, conditions);
         if (!Failures.write(cacheFile, after)) {
             log.accept("WARN cannot write " + cacheFile + ", what happened to these tracks "
                     + "will not be remembered");
@@ -385,54 +399,91 @@ public final class Batch {
         }
     }
 
-    /** One FAILED line per track still missing, with the reason in words. */
-    Set<String> report(List<Entry> still, List<Entry> entries, List<IndexRow> rows,
-                       Path listFile, Path outDir, Sockseek client) {
+    /**
+     * One FAILED line per track still missing, each with what this run can honestly say
+     * about it - decided from what the run itself asked for, not from a second search.
+     *
+     * <p>Until 2026-10-18 this spent one extra search per failure to tell "nobody had it"
+     * from "the conditions refused it". It no longer does: when nothing could refuse a file
+     * and the last pass asked for any format, the answer is already known. Asking again is
+     * now {@code --why}, on the tracks you ask about, when you ask.
+     */
+    void report(List<Entry> still, List<Entry> entries, List<IndexRow> rows,
+                Map<String, Events.Event> said, Set<String> wideOpen, String conditions) {
         Map<String, IndexRow> byLine = SockseekIndex.rowsByEntry(entries, rows);
-        List<Failure> failures = still.stream()
-                .map(entry -> failureOf(entry.original(), byLine.get(entry.original())))
-                .toList();
-        // a budget, not a switch: one extra search per failed track, and a real run had 135
-        // failures. Twenty is enough to see which kind a playlist is suffering from
-        int budget = Math.min(cfg.explainTracks(), failures.size());
-        List<Failure> asked = failures.subList(0, Math.max(0, budget));
-        Map<String, List<Candidate>> found = asked.isEmpty() ? Map.of()
-                : Explain.explainFailures(asked, entries, listFile, client, outDir, log,
-                        capture);
-        if (budget < failures.size()) {
-            log.accept((failures.size() - budget) + " more failure(s) were not looked into - "
-                    + "raise explain_tracks, or --explain for all of them");
-        }
-        // the merged file is what sockseek was actually given; when the caller took the
-        // config over (--no-config in the tests) there is no floor to report
-        OptionalInt minBitrate = cfg.conf() == null ? OptionalInt.empty()
-                : Settings.readMinBitrate(cfg.conf());
-        Set<String> absent = new LinkedHashSet<>();
-        for (int i = 0; i < still.size(); i++) {
-            Failure failure = failures.get(i);
+        for (Entry entry : still) {
+            String line = entry.original();
+            Failure failure = failureOf(line, byLine.get(line));
             if (SockseekIndex.OK_STATES.contains(failure.state().strip())) {
                 log.accept("WARN the index says this one arrived, but no file is on disk: "
-                        + failure.playlistLine());
+                        + line);
             }
             log.accept(SockseekIndex.format(failure));
-            if (cfg.explainTracks() > 0) {
-                // the search string is what sockseek echoes as "Results for ...", which is the
-                // track title - not the playlist line with its " | 4:09" tail
-                String key = still.get(i).track().title();
-                Optional<List<Candidate>> candidates = found.containsKey(key)
-                        ? Optional.of(found.get(key)) : Optional.empty();
-                // searched again with every condition off and still nothing: this one is
-                // really not out there, and it is the only kind the cache may act on
-                if (candidates.isPresent() && candidates.get().isEmpty()) {
-                    absent.add(failure.playlistLine());
-                }
-                for (String line : Explain.explainFailure(failure, candidates,
-                        cfg.options().lengthTol(), minBitrate)) {
-                    log.accept(line);
-                }
+            Events.Event event = said.get(line);
+            if (event == null) {
+                // no event for it at all: it never finished, so the run knows nothing
+                log.accept("  -> never finished in this run, so nothing is known about it");
+                continue;
+            }
+            String reason = Failures.reasonOf(event, wideOpen.contains(line), conditions);
+            log.accept("  -> " + Failures.explainClass(reason, conditions));
+        }
+    }
+
+    /**
+     * What could have refused a file this run, as {@code len=45,min-bitrate=256}; empty when
+     * nothing could, which is the state in which "nothing came back" means "nobody has it".
+     *
+     * <p>The format passes are not in here on purpose: the last pass asks for any format, so
+     * by the end of a run no format has refused anything.
+     */
+    String conditions() {
+        // the merged file is what sockseek was actually given; when the caller took the
+        // config over (--no-config in the tests) there is nothing of ours in force
+        return Failures.conditions(cfg.options().lengthTol(),
+                cfg.conf() == null ? List.of() : Settings.hardConditions(cfg.conf()));
+    }
+
+    /** {@code --why}: search again with every condition off, for the tracks asked about. */
+    void why(Playlist playlist, List<Entry> entries, List<Entry> missing, Path outDir) {
+        String wanted = cfg.why().strip().toLowerCase(java.util.Locale.ROOT);
+        List<Entry> asked = missing.stream()
+                .filter(entry -> wanted.isEmpty()
+                        || entry.original().toLowerCase(java.util.Locale.ROOT).contains(wanted))
+                .toList();
+        if (asked.isEmpty()) {
+            log.accept(missing.isEmpty() ? "nothing is missing in this playlist"
+                    : "no missing track of this playlist matches '" + cfg.why() + "'");
+            return;
+        }
+        List<IndexRow> rows = SockseekIndex.readWithFolders(
+                SockseekIndex.findIndexFiles(outDir)).stream().map(Located::row).toList();
+        Map<String, IndexRow> byLine = SockseekIndex.rowsByEntry(entries, rows);
+        List<Failure> failures = asked.stream()
+                .map(entry -> failureOf(entry.original(), byLine.get(entry.original())))
+                .toList();
+        Path listFile = workDir.resolve(playlist.name() + ".list.txt");
+        try {
+            Files.createDirectories(workDir);
+        } catch (IOException cannotMake) {
+            log.accept("WARN cannot write to " + workDir + ": " + cannotMake.getMessage());
+            return;
+        }
+        Map<String, List<Candidate>> found = Explain.explainFailures(failures, entries,
+                listFile, cfg.client(), outDir, log, capture);
+        OptionalInt minBitrate = cfg.conf() == null ? OptionalInt.empty()
+                : Settings.readMinBitrate(cfg.conf());
+        for (int i = 0; i < asked.size(); i++) {
+            Failure failure = failures.get(i);
+            log.accept(SockseekIndex.format(failure));
+            String key = asked.get(i).track().title();
+            Optional<List<Candidate>> candidates = found.containsKey(key)
+                    ? Optional.of(found.get(key)) : Optional.empty();
+            for (String line : Explain.explainFailure(failure, candidates,
+                    cfg.options().lengthTol(), minBitrate)) {
+                log.accept(line);
             }
         }
-        return absent;
     }
 
     private static Failure failureOf(String line, IndexRow row) {

@@ -257,4 +257,28 @@ class ToolsTest {
             }
         }
     }
+
+    @Test
+    void thePinsAreInsideTheJarSoAFreshFolderCanFetchSockseek() {
+        // a release is one jar and nothing else. Until 2026-10-18 the pins were only read
+        // from a dependencies.yaml beside it, so a clean install stopped at "sockseek is not
+        // pinned in dependencies.yaml" - measured on a fresh folder that day
+        Map<String, String> pinned = Tools.builtIn();
+        assertFalse(pinned.isEmpty(), "dependencies.yaml is not on the classpath");
+        assertTrue(pinned.containsKey("sockseek.version"), pinned.toString());
+        for (String platform : List.of("windows", "macos-arm64", "macos-x64", "linux-x64")) {
+            assertTrue(pinned.containsKey("sockseek." + platform + ".sha256"), platform);
+        }
+    }
+
+    @Test
+    void aFileBesideTheJarWinsOverThePinsInsideIt(@TempDir Path dir) throws Exception {
+        // so a pin can be changed without rebuilding
+        Path file = dir.resolve(Tools.DEPENDENCIES_NAME);
+        Files.writeString(file, "sockseek.version: 9.9.9\n");
+        assertEquals("9.9.9", Tools.load(file).get("sockseek.version"));
+        // and with no file at all, the built-in copy answers
+        assertEquals(Tools.builtIn().get("sockseek.version"),
+                Tools.load(dir.resolve("not-there.yaml")).get("sockseek.version"));
+    }
 }

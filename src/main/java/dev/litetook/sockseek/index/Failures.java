@@ -71,11 +71,37 @@ public final class Failures {
      * exactly what a track nobody shares reports. On a real run that same code covered 104
      * of 135 failures.
      *
-     * <p>So a track is only written down as absent once the explain step has searched for it
-     * again with every condition off and found nothing at all. Anything less and the cache
-     * would stop looking for tracks that are there, which is the opposite of its job.
+     * <p>Which of the two it was is decided <b>while the run is going</b>, from what the run
+     * itself was asking for. The last pass over a playlist asks for any format, so when no
+     * hard condition is set, a {@code NoSearchResults} from that pass can only mean nobody
+     * had it - no second search can add anything. Until 2026-10-18 a whole extra pass of
+     * searches was spent re-asking at the end of every run, and the owner was right about
+     * what that was worth: on the live run of 15:26 it confirmed the inference for 18
+     * failures out of 18 and changed nothing.
      */
     public static final String CONFIRMED_ABSENT = "NotOnNetwork";
+
+    /**
+     * Nothing came back, but a hard condition was in force, so "nobody had it" is NOT what
+     * this says. The conditions that were in force are written down beside it, and the cache
+     * never skips this class: the copy it refused may be the only one there is.
+     */
+    public static final String REFUSED_OR_ABSENT = "NoMatchUnderConditions";
+
+    /**
+     * The conditions string written beside an outcome: what could have refused a file.
+     *
+     * <p>One place, because the run that writes it and the preview that reads it have to
+     * spell it the same way or the preview promises a skip the run will not make.
+     */
+    public static String conditions(int lengthTol, java.util.List<String> hardKeys) {
+        java.util.List<String> on = new ArrayList<>();
+        if (lengthTol >= 0) {
+            on.add("len=" + lengthTol);
+        }
+        on.addAll(hardKeys);
+        return String.join(",", on);
+    }
 
     /** How many runs in a row make a failure worth mentioning in the report. */
     public static final int NAG_AFTER = 3;
@@ -86,12 +112,22 @@ public final class Failures {
     private Failures() {
     }
 
-    /** How one track ended, when that was, and how many runs in a row it has ended that way. */
-    public record Outcome(LocalDateTime when, String reason, int runs, String playlist,
-                          String line) {
+    /**
+     * How one track ended, when that was, how many runs in a row it has ended that way, and
+     * the hard conditions that were in force when it did.
+     *
+     * @param conditions what could have refused a file that run, as
+     *                   {@code len=45,min-bitrate=256}, empty when nothing could. A row is
+     *                   only ever acted on by a run asking under the SAME conditions:
+     *                   turning a filter off makes yesterday's "nothing matched" worth
+     *                   nothing, and the track is searched for again
+     */
+    public record Outcome(LocalDateTime when, String reason, int runs, String conditions,
+                          String playlist, String line) {
 
         String toLine() {
-            return when + "\t" + reason + "\t" + runs + "\t" + playlist + "\t" + line;
+            return when + "\t" + reason + "\t" + runs + "\t" + conditions + "\t" + playlist
+                    + "\t" + line;
         }
 
         /** Confirmed absent by a search with every condition off - see CONFIRMED_ABSENT. */
@@ -110,13 +146,18 @@ public final class Failures {
             return List.of();
         }
         for (String raw : lines) {
-            String[] fields = raw.split("\t", 5);
-            if (fields.length != 5 || fields[4].isBlank()) {
+            String[] fields = raw.split("\t", 6);
+            // five fields is the shape this file had before 2026-10-18, with no conditions
+            // column. Those rows are read with no conditions, which is the safe way round:
+            // they are all in the old classes, and no old class is ever skipped anyway
+            boolean old = fields.length == 5;
+            if (fields.length < 5 || fields[fields.length - 1].isBlank()) {
                 continue;   // a half-written or hand-edited line is skipped, never fatal
             }
             try {
                 found.add(new Outcome(when(fields[0].strip()), fields[1].strip(),
-                        Integer.parseInt(fields[2].strip()), fields[3].strip(), fields[4]));
+                        Integer.parseInt(fields[2].strip()), old ? "" : fields[3].strip(),
+                        fields[old ? 3 : 4].strip(), fields[old ? 4 : 5]));
             } catch (DateTimeParseException | NumberFormatException notThisLine) {
                 continue;
             }
@@ -163,7 +204,7 @@ public final class Failures {
      * hopeless lines.
      */
     public static Set<String> skippable(List<Outcome> all, String playlist, double hours,
-                                        LocalDateTime now) {
+                                        LocalDateTime now, String conditions) {
         Set<String> lines = new LinkedHashSet<>();
         if (hours <= 0) {
             return lines;
@@ -171,6 +212,12 @@ public final class Failures {
         long minutes = Math.round(hours * 60);
         for (Outcome seen : all) {
             if (!seen.playlist().equals(playlist) || !seen.notOnNetwork()) {
+                continue;
+            }
+            if (!seen.conditions().equals(conditions)) {
+                // asked under different conditions, so it answers a different question.
+                // This is what makes turning a filter off take effect at once instead of
+                // after the window runs out
                 continue;
             }
             if (!seen.when().plusMinutes(minutes).isAfter(now)) {
@@ -191,20 +238,23 @@ public final class Failures {
      */
     public static List<Outcome> after(List<Outcome> existing, String playlist,
                                       Map<String, Events.Event> byLine, LocalDateTime now) {
-        return after(existing, playlist, byLine, now, Set.of());
+        return after(existing, playlist, byLine, now, Set.of(), "");
     }
 
     /**
-     * The same, told which lines a second search has confirmed nobody has.
+     * The same, told which lines the run asked for with nothing in the way, and under which
+     * conditions it asked.
      *
-     * <p>Those are written down as {@link #CONFIRMED_ABSENT} and are the only ones the cache
-     * will ever hold back. A {@code NoSearchResults} nobody looked into is still recorded -
-     * it counts towards "failing the same way three runs running" - but it never stops a
-     * search, because it might mean the filters refused a track that is sitting there.
+     * <p>A {@code NoSearchResults} for a line in {@code askedWideOpen} while
+     * {@code conditions} is empty is written down as {@link #CONFIRMED_ABSENT} - the only
+     * class the cache will ever hold back. With a condition in force it becomes
+     * {@link #REFUSED_OR_ABSENT} instead, which is counted and never skipped, because the
+     * file it refused might be the only copy there is. A line the run never reached that way
+     * - a pass cut short, a track held back - keeps sockseek's own word and decides nothing.
      */
     public static List<Outcome> after(List<Outcome> existing, String playlist,
                                       Map<String, Events.Event> byLine, LocalDateTime now,
-                                      Set<String> confirmedAbsent) {
+                                      Set<String> askedWideOpen, String conditions) {
         Map<String, Outcome> kept = new LinkedHashMap<>();
         Map<String, Outcome> before = new LinkedHashMap<>();
         for (Outcome seen : existing) {
@@ -219,18 +269,51 @@ public final class Failures {
             if (!event.failed()) {
                 continue;   // it is here now; the folder says so better than any file of ours
             }
-            // sockseek's NoSearchResults becomes our CONFIRMED_ABSENT only when a search
-            // with every condition off also came back empty; otherwise it stays its own
-            // word, is counted, and never stops a search
-            String reason = event.reason().equals(Events.Event.NOT_FOUND)
-                    && confirmedAbsent.contains(said.getKey())
-                    ? CONFIRMED_ABSENT : event.reason();
+            String reason = reasonOf(event, askedWideOpen.contains(said.getKey()),
+                    conditions);
             Outcome was = before.get(said.getKey());
             int runs = was != null && was.reason().equals(reason) ? was.runs() + 1 : 1;
             kept.put(playlist + "\t" + said.getKey(),
-                    new Outcome(now, reason, runs, playlist, said.getKey()));
+                    new Outcome(now, reason, runs, conditions, playlist, said.getKey()));
         }
         return List.copyOf(kept.values());
+    }
+
+    /**
+     * What this run may honestly claim about a failed track.
+     *
+     * <p>Only {@code NoSearchResults} is ever reinterpreted, because it is the only word
+     * sockseek uses for two different things. Everything else - the upload that died above
+     * all - is its own answer already.
+     */
+    public static String reasonOf(Events.Event event, boolean askedWideOpen,
+                                  String conditions) {
+        if (!event.reason().equals(Events.Event.NOT_FOUND)) {
+            return event.reason();
+        }
+        if (!conditions.isEmpty()) {
+            return REFUSED_OR_ABSENT;
+        }
+        // nothing could have refused a file, and the last pass asked for any format at all:
+        // there is nothing left for a second search to find out
+        return askedWideOpen ? CONFIRMED_ABSENT : event.reason();
+    }
+
+    /** What the line says about itself in a report: the class, and what it was asked under. */
+    public static String explainClass(String reason, String conditions) {
+        if (reason.equals(CONFIRMED_ABSENT)) {
+            return "nobody on the network has it (searched with nothing in the way)";
+        }
+        if (reason.equals(REFUSED_OR_ABSENT)) {
+            return "nothing matched under " + conditions + " - either nobody has it, or what "
+                    + "they have was refused by those conditions. --why "
+                    + "\"<track>\" searches again with them off";
+        }
+        if (reason.equals(Events.Event.NOT_FOUND)) {
+            return "nothing came back, and this run was cut short before it could ask with "
+                    + "nothing in the way";
+        }
+        return "found, but the download did not come through";
     }
 
     /**

@@ -83,20 +83,27 @@ class CliTest {
     void onlyTheFlagsThatWereGivenAppearAtTheEnd(@TempDir Path app) {
         String bare = block(parsed(app));
         assertTrue(!bare.contains("dry_run"), bare);
-        assertTrue(bare.contains("cache.explain_per_playlist = 20 [config]"), bare);
-        String said = block(parsed(app, "--dry-run", "--only", "mix", "--explain"));
+        assertTrue(!bare.contains("why"), bare);   // nothing asks twice by itself
+        String said = block(parsed(app, "--dry-run", "--only", "mix", "--why", "lantern"));
         assertTrue(said.contains("  only = mix [cli]"), said);
         assertTrue(said.contains("  dry_run = True [cli]"), said);   // True, with a capital
         // --explain is the old way of saying "all of them"
-        assertTrue(said.contains("  cache.explain_per_playlist = 2147483647 [cli]"), said);
+        assertTrue(said.contains("  why = lantern [cli]"), said);
     }
 
     @Test
-    void theOldNoExplainFlagIsStillAccepted(@TempDir Path app) {
-        // it is in the owner's fingers and in every note written before 2026-10-17; a flag that
-        // used to work must not start failing the command line
-        String said = block(parsed(app, "--no-explain"));
-        assertTrue(!said.contains("explain_per_playlist = 2147483647"), said);
+    void theOldExplainFlagsAreStillAccepted(@TempDir Path app) {
+        // both are in the owner's fingers and in every note written before 2026-10-18.
+        // --explain now means --why over everything still missing: the same question, asked
+        // on purpose instead of after every run
+        assertTrue(block(parsed(app, "--explain")).contains("  why =  [cli]"));
+        assertTrue(!block(parsed(app, "--no-explain")).contains("why"));
+    }
+
+    @Test
+    void nothingSearchesTwiceUnlessItIsAsked(@TempDir Path app) {
+        assertEquals(null, parsed(app).runConfig().why());
+        assertEquals("lantern", parsed(app, "--why", "lantern").runConfig().why());
     }
 
     @Test

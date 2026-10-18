@@ -56,6 +56,12 @@ val fatJar by tasks.registering(Jar::class) {
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "module-info.class")
 }
 
+// The pins travel INSIDE the jar, because a release is one file: without them a fresh
+// folder cannot fetch sockseek at all - measured on a clean install 2026-10-18, which
+// stopped at "sockseek is not pinned in dependencies.yaml" with nothing to suggest.
+// Through the resources rather than the jar task, so the tests load the same copy.
+tasks.processResources { from(layout.projectDirectory.file("dependencies.yaml")) }
+
 tasks.build { dependsOn(fatJar) }
 
 // ------------------------------------------------------------------ the gates

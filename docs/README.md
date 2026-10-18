@@ -193,7 +193,6 @@ track:
 cache:
   enabled: true                # remember how each track ended
   skip_absent_h: 2             # skip a track confirmed absent if it was seen this recently
-  explain_per_playlist: 20     # failures re-searched with every condition off, per playlist
 
 sockseek:                      # its options, its names - see the section below
   prefer:
@@ -571,8 +570,21 @@ FAILED  state=2 reason=9 (no candidate passed the name/length/quality conditions
 #0004 found two 320 kbps copies of a track whose row said 9, rejected because their length was
 27 s off.
 
-So you can ask for the real answer with `--explain`, which searches once more per failed track
-with every condition off:
+Which of the two it was is decided **while the run is going**, and written into
+`outcomes.tsv` with the conditions that were in force:
+
+| What the row says | What it means | Skipped next time? |
+|---|---|---|
+| `NotOnNetwork` | the last pass asked for any format, nothing could refuse a file, and nothing came back | yes, for `cache.skip_absent_h`, and only while the conditions are the same |
+| `NoMatchUnderConditions` | nothing came back, but a hard condition was in force, so this is not an absence | never |
+| `AllDownloadsFailed` | found, the upload did not come through | never - these are the ones that most often arrive next time |
+| `NoSearchResults` | the run was cut short before it could ask with nothing in the way | never |
+
+Until 2026-10-18 this was a second pass of searches at the end of every run. It is gone: on
+the live run of 15:26 it spent 18 extra searches to confirm what the run already knew, 18
+times out of 18. What is left is asking on purpose, about the tracks you name, with
+`--why TEXT` - every missing track whose line contains TEXT, searched once more with every
+condition off and nothing downloaded:
 
 ```
   -> nothing on the network: 0 candidates even with every condition off
@@ -583,9 +595,9 @@ with every condition off:
      length and quality are fine, so the uploader did not deliver - try again later
 ```
 
-Three causes, three different things to do. It is **off by default** since 2026-10-17: each
-explanation costs one more search out of the budget above, and on a big playlist that is the
-difference between a long night and a longer one.
+Three causes, three different things to do. It costs one search per track out of the budget
+above, which is why it asks only about what you name: `--why ""` asks about every missing
+track in the playlist, and on a big one that is a long night.
 
 ### Things to try, roughly in order
 
@@ -666,11 +678,12 @@ Engine: `--playlists DIR`, `--music DIR`, `--sockseek FILE`, `--config FILE`,
 `--sockseek-conf FILE`, `--max-length-diff SEC`, `--attempt-timeout MIN`, `--stall-timeout SEC`,
 `--skip-absent HOURS`, `--no-cache`, `--searches-per-window N`, `--attempts N`,
 `--searches-window SEC`,
-`--explain`,
+`--why TEXT`,
 `--preview`, `--dry-run`,
 `--verbose`, `--sockseek-args "STRING"`.
 
-`--no-explain` is still accepted and does nothing: explaining is off unless you ask for it.
+`--explain` is the old name for `--why ""`, and `--no-explain` is still accepted and does
+nothing: nothing asks the network a second time unless you ask it to.
 `--sockseek-args` appends raw arguments to every sockseek command — the way to try a sockseek
 option once without editing the conf. Anything in it reaches sockseek unchecked.
 

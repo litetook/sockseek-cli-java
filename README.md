@@ -42,19 +42,56 @@ own budget, so waiting for the limiter adds about 0 min in all.
 
 Five minutes from nothing to that, below.
 
+## Before you start
+
+| What | Why | Check it |
+|---|---|---|
+| **Java 21 or newer** | the tool is one jar and nothing else | `java -version` says `21` or higher. [Temurin](https://adoptium.net/temurin/releases/?version=21) is the usual build; on Windows the installer is enough, no `JAVA_HOME` needed |
+| **A Soulseek account** | the network only answers to a logged-in user. Make one in the [Soulseek client](https://www.slsknet.org/) if you have none | you can sign in there with the same login you will put in `config.local.yaml` |
+| **About 300 MB free** | 20 MB for the jar and sockseek, the rest is the music | - |
+| **Outgoing internet** | first run fetches sockseek from GitHub; after that only Soulseek itself | a corporate proxy that blocks GitHub means fetching sockseek by hand, below |
+
+**sockseek itself you do NOT install.** On the first run that needs it, the tool downloads the
+version pinned in the jar (3.0.5 today) from
+[its releases](https://github.com/fiso64/sockseek/releases), checks the SHA-256 it was built
+with, and puts `sockseek.exe` in the same folder:
+
+```
+sockseek is not at ...\sockseek.exe
+downloading https://github.com/fiso64/sockseek/releases/download/v3.0.5/sockseek_3.0.5_win-x64.zip
+sha256 ok (sockseek 3.0.5)
+installed sockseek 3.0.5 -> ...\sockseek.exe
+```
+
+It asks first unless you passed `--yes`. To do it by hand instead - no internet on that
+machine, or you want another version - put the `sockseek` binary in the folder yourself, or
+point `paths.sockseek_bin` at it.
+
+Windows is the only platform this has been run on. The jar is platform-independent and the
+pins cover macOS and Linux, but neither has ever been tried.
+
 ## Quick start
 
-**1. Get Java 21.** Nothing else is needed.
-[Temurin](https://adoptium.net/temurin/releases/?version=21) is the usual one; `java -version`
-should say 21 or higher.
+**1. Get Java 21.** Nothing else to install: sockseek comes down on the first run, as above.
+`java -version` should say 21 or higher.
 
 **2. Download the jar** from
 [Releases](https://github.com/litetook/sockseek-cli-java/releases) and put it in a folder of
 its own. That folder becomes the tool's home: playlists, downloads, logs and settings all
 live there.
 
-**3. Run it once.** It writes `config.yaml` and stops, because it cannot download
-anything until it knows who you are.
+**3. Run it once.** It writes `config.yaml` and stops with the message below, because it
+cannot download anything until it knows who you are.
+
+```
+WARN created config.yaml from the built-in template
+
+Put your Soulseek login in ...\config.local.yaml:
+    sockseek:
+      username: your-login
+      password: your-password
+Then run this again. Nothing can be downloaded until then.
+```
 
 ```bash
 java -jar sockseek-cli.jar
@@ -92,8 +129,18 @@ searched without a length filter. Lines starting with `#` are ignored.
 java -jar sockseek-cli.jar --only starter --yes
 ```
 
-That is the run printed at the top of this page. Files land in `output/starter/`, and
-running the same command again will tell you there is nothing left to do.
+That is the run printed at the top of this page. The first time, this is also where
+sockseek is fetched. Files land in `output/starter/`, and running the same command again will
+tell you there is nothing left to do.
+
+If the login is wrong, sockseek says so in the middle of the run and the tool stops with
+exit 1:
+
+```
+[soulseek] Logging in as your-login..
+[error] [cli] Soulseek login failed: The server rejected login attempt: INVALIDPASS
+ERROR sockseek exited with an error and wrote no index: nothing was searched
+```
 
 The lengths above are for the usual album versions, and a remaster or a single edit can be a
 minute out — which the length filter, the strict one, will then refuse. So if something
@@ -186,16 +233,18 @@ flags are still accepted, with a warning naming the new one.
 | `rate_limit.window_s` | `220` | the length of that window, in seconds |
 | `track.max_sources` | `3` | how many different uploaders to try for one track before giving up on it this run. sockseek calls this `max-retries`, which sounds like trying the same one again; what it counts is different people |
 | `track.format_order` | *(empty)* | formats you want, most wanted first, comma separated — `mp3,flac,wav`. Each is a separate pass over whatever is still missing with that format **required**, and a last pass takes anything. The only way to order them: sockseek's own `pref-format` is unordered by its documentation. It costs searches — a track nobody has goes through every pass |
-| `cache.explain_per_playlist` | `20` | after a run, search again with every condition off for this many failed tracks per playlist, to find out which nobody had and which the filters refused. One search each; `0` turns it off |
 | `cache.enabled` | `true` | `false` makes `outcomes.tsv` not exist for the run: nothing read, nothing written |
 
-> **Why `cache.explain_per_playlist` is not zero.** sockseek reports "nobody on the network had it" and
-> "several people had it and every copy was refused by your filters" with the **same** code.
-> Measured: a file sitting in the mock folder, rejected on length, reported exactly what a
-> track nobody shares reports — and on a real run that one code covered 104 of 135 failures.
-> A second search with every condition off is the only way to tell them apart, so it is also
-> the only thing `cache.skip_absent_h` is allowed to act on: a failure nobody looked into is
-> counted, but never stops a later search.
+> **How a failure knows what it is.** sockseek reports "nobody on the network had it" and
+> "several people had it and every copy was refused by your filters" with the **same** code —
+> on a real run that one code covered 104 of 135 failures. The run tells them apart from what
+> it was asking for, while it is going and without a single extra search: the last pass asks
+> for any format, so if nothing could refuse a file either, "no results" can only mean nobody
+> has it, and the row says `NotOnNetwork`. With a hard condition in force the row says
+> `NoMatchUnderConditions` instead and names them, and that class is never skipped. Each row
+> carries the conditions it was written under, so turning a filter off makes the tool ask
+> again at once instead of waiting out `cache.skip_absent_h`. To ask the network about one
+> track on purpose: `--why "Artist - Title"`.
 
 ### the `sockseek:` block
 
@@ -226,7 +275,7 @@ overrides any key above as well - so it is also the place for a machine-specific
 
 Anything in the tables above, as a flag: `--max-length-diff 90`, `--stall-timeout 0`,
 `--skip-absent 0`, `--searches-per-window 20`, `--searches-window 300`,
-`--max-sources 5`, `--explain-tracks 0`, `--format-order mp3,flac`,
+`--max-sources 5`, `--format-order mp3,flac`,
 `--no-cache`, and the folders as `--playlists`, `--output`, `--work`, `--logs`,
 `--sockseek`. And these, which exist only there:
 
@@ -238,7 +287,7 @@ Anything in the tables above, as a flag: `--max-length-diff 90`, `--stall-timeou
 | `--import WHAT` | turn a link or an exported file into a playlist, and stop |
 | `--as NAME`, `--overwrite` | the name for that import, and permission to replace |
 | `--cookies-from-browser B` | read a private SoundCloud set with your browser's own login |
-| `--explain` | after the run, search once more for every failed track and say why it was rejected - one extra search each |
+| `--why TEXT` | download nothing: search once more with every condition off for each missing track whose line contains TEXT, and say what is really out there. An empty TEXT asks about all of them (`--explain` is the old name for that) |
 | `--preview` | print what the search returns, download nothing |
 | `--dry-run` | print the sockseek command, run nothing |
 | `--verbose` | sockseek's own log, in `logs/sockseek_<run>_<name>.log` |
@@ -261,7 +310,7 @@ about a track that will not come down, and an honest list of what this cannot do
 | **A memory of last time** | `outcomes.tsv`: how each track ended, with a run counter. A track nobody was sharing is not searched again for `cache.skip_absent_h`; every other failure is counted and never skipped, so "this one has failed four runs running" is something you can see |
 | **A brake on searching** | the Soulseek server bans an account that searches too fast, and sockseek's own budget only covers one process. This keeps every playlist together under the limit |
 | **Only what is missing** | a track already on disk is never sent to sockseek |
-| **Reasons in words** | `reason=9` in sockseek's index means both "nobody had it" and "found and rejected"; `--explain` searches again with every condition off and says which |
+| **Reasons in words** | `reason=9` in sockseek's index means both "nobody had it" and "found and rejected". Every failure is written down the moment it happens with which of the two it was, worked out from what the run itself was asking, and with those conditions beside it. `--why` asks the network again about the tracks you name |
 | **The screen, kept** | `logs/session_<date>.log` holds everything you saw, including the questions you were asked |
 
 ## How it works

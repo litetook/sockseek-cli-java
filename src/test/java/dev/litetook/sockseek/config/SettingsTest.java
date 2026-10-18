@@ -192,7 +192,7 @@ class SettingsTest {
         // the file as it stood before 2026-10-18, flat "search:" block and all
         write(path, "search:\n  tol: 2\n  timeout: 180\n  retries: 3\n"
                 + "  skip_not_found_hours: 5\n  use_cache: false\n  searches_renew_s: 99\n"
-                + "  explain_tracks: 7\npaths:\n  output: D:\\music\n");
+                + "paths:\n  output: D:\\music\n");
         Config config = load(path);
         assertEquals(OptionalInt.of(2), config.integer("max_length_diff_s"));
         assertEquals(180.0, config.decimal("attempt_timeout_min").orElseThrow());
@@ -200,7 +200,6 @@ class SettingsTest {
         assertEquals(5.0, config.decimal("skip_absent_h").orElseThrow());
         assertEquals(OptionalInt.of(0), config.integer("enabled"));
         assertEquals(OptionalInt.of(99), config.integer("window_s"));
-        assertEquals(OptionalInt.of(7), config.integer("explain_per_playlist"));
         assertEquals("D:\\music", config.paths().get("music"));
         assertTrue(said(warnings, "'tol' is deprecated", "'track.max_length_diff_s'"),
                 warnings.toString());

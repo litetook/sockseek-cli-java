@@ -162,7 +162,6 @@ class BatchTest {
 
         int code = RunBatch.run(config(app)
                 .sockseek(sockseek)
-                .explainTracks(0)
                 .sockseekArgs(List.of("--mock-files-dir", mock.toString(),
                         "--mock-files-no-read-tags", "--no-config", "--no-listen",
                         "--no-progress", "--length-tol=-1"))

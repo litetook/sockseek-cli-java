@@ -54,11 +54,31 @@ public final class Tools {
         return arm ? "linux-arm" : "linux-x64";
     }
 
-    /** dependencies.yaml as flat dotted keys ({@code sockseek.windows.sha256}). */
+    /**
+     * dependencies.yaml as flat dotted keys ({@code sockseek.windows.sha256}).
+     *
+     * <p>The file beside the jar wins, so a pin can be changed without rebuilding; when it
+     * is not there - which is every fresh install, because a release is one jar and nothing
+     * else - the copy built into the jar answers instead.
+     */
     public static Map<String, String> load(Path path) {
         try {
             return Settings.parseYaml(Files.readString(path, StandardCharsets.UTF_8), null);
-        } catch (IOException cannotRead) {
+        } catch (IOException | RuntimeException noFileBesideTheJar) {
+            return builtIn();
+        }
+    }
+
+    /** The pins shipped inside the jar; empty only if the build left them out. */
+    public static Map<String, String> builtIn() {
+        try (java.io.InputStream inside =
+                     Tools.class.getResourceAsStream("/" + DEPENDENCIES_NAME)) {
+            if (inside == null) {
+                return Map.of();
+            }
+            return Settings.parseYaml(new String(inside.readAllBytes(),
+                    StandardCharsets.UTF_8), null);
+        } catch (IOException | RuntimeException cannotRead) {
             return Map.of();
         }
     }
