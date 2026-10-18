@@ -106,6 +106,17 @@ public final class Cli implements Callable<Integer> {
                     + "sockseek's searches-renew-time (default 220)")
     Integer searchesRenewS;
 
+    @Option(names = "--max-sources", paramLabel = "N",
+            description = "how many different uploaders to try for one track before giving "
+                    + "up on it this run (default 3)")
+    Integer maxSources;
+
+    @Option(names = "--explain-tracks", paramLabel = "N",
+            description = "after a run, search again with every condition off for this many "
+                    + "failed tracks per playlist; costs one search each, 0 = none "
+                    + "(default 20)")
+    Integer explainTracks;
+
     @Option(names = "--no-cache",
             description = "ignore outcomes.tsv completely for this run: search everything and "
                     + "write nothing down, as if the file did not exist")
@@ -223,6 +234,12 @@ public final class Cli implements Callable<Integer> {
             case "skip_not_found_hours" -> skipNotFoundHours;
             case "searches_per_window" -> searchesPerWindow;
             case "searches_renew_s" -> searchesRenewS;
+            case "max_sources" -> maxSources;
+            // --explain is the old way of saying "all of them"
+            // Integer.valueOf, not the bare constant: a ternary with an int on one side
+            // unboxes the other, and explainTracks is null whenever the flag is absent
+            case "explain_tracks" -> explain && !noExplain
+                    ? Integer.valueOf(Integer.MAX_VALUE) : explainTracks;
             // a flag that is only ever "off": absent means "whatever the file says"
             case "use_cache" -> noCache ? 0 : null;
             default -> null;
@@ -280,13 +297,14 @@ public final class Cli implements Callable<Integer> {
                 .workDir(path("work"))
                 .logsDir(path("logs"))
                 .sockseek(path("sockseek"))
-                .options(new Options(integer("length_tol_s"), preview))
+                .options(new Options(integer("length_tol_s"), preview,
+                        integer("max_sources")))
                 .timeoutMinutes(decimal("playlist_timeout_min"))
                 .retries(integer("retries"))
                 .dryRun(dryRun)
                 .only(only)
                 .verbose(verbose)
-                .explain(explain && !noExplain)
+                .explainTracks(integer("explain_tracks"))
                 .sockseekArgs(splitSockseekArgs())
                 .sockseekConf(sockseekConf)
                 .stallSeconds(decimal("stall_timeout_s"))
@@ -319,7 +337,7 @@ public final class Cli implements Callable<Integer> {
                 new Extra("dry_run", dryRun ? Boolean.TRUE : null),
                 new Extra("preview", preview ? Boolean.TRUE : null),
                 new Extra("verbose", verbose ? Boolean.TRUE : null),
-                new Extra("explain", explain && !noExplain ? Boolean.TRUE : null),
+
                 new Extra("sockseek_conf", sockseekConf),
                 new Extra("sockseek_args", sockseekArgs.isEmpty() ? null : sockseekArgs))) {
             if (extra.value() != null) {

@@ -82,6 +82,13 @@ public final class Settings {
               searches_per_window: 34
               # and the length of that window, in seconds
               searches_renew_s: 220
+              # how many different uploaders to try for one track before giving up this run
+              max_sources: 3
+              # after a run, search again with every condition off for this many failed tracks
+              # per playlist. sockseek reports "nobody had it" and "found it and refused it"
+              # with the same code, and this is the only way to tell them apart - which the
+              # cache below needs, or it would stop searching for tracks that are there
+              explain_tracks: 20
               # remember in outcomes.tsv how each track ended; false ignores the file entirely
               use_cache: true
             """;
@@ -126,8 +133,6 @@ public final class Settings {
             # --- how long to wait on a source that is not delivering ---
             # milliseconds with no bytes arriving before this candidate is dropped
             max-stale-time = 12000
-            # how many candidates one track may be tried from before it is given up
-            max-retries = 3
             # an uploader that fails once drops down the ranking
             fails-to-downrank = 1
             # an uploader that fails twice is left out for the rest of the run
@@ -194,7 +199,15 @@ public final class Settings {
                     List.of()),
             new Setting("searches_renew_s", "--searches-renew-s", Setting.Kind.INTEGER, 220,
                     1.0, "the window those searches are counted in, in seconds. Must match "
-                            + "sockseek's searches-renew-time (default 220)", List.of()));
+                            + "sockseek's searches-renew-time (default 220)", List.of()),
+            new Setting("max_sources", "--max-sources", Setting.Kind.INTEGER, 3, 1.0,
+                    "how many different uploaders to try for one track before giving up on "
+                            + "it this run (default 3)", List.of()),
+            new Setting("explain_tracks", "--explain-tracks", Setting.Kind.INTEGER, 20, 0.0,
+                    "after a run, search again with every condition off for this many failed "
+                            + "tracks per playlist, to find out which of them nobody had and "
+                            + "which were refused by the filters; costs one search each, "
+                            + "0 = none (default 20)", List.of()));
 
     /** Taken from the template rather than written out again: renaming a placeholder there must
      *  not quietly turn "you have not filled this in yet" into "you have". */

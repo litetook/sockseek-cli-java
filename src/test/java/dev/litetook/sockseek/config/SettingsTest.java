@@ -433,7 +433,9 @@ class SettingsTest {
         assertEquals(OptionalInt.of(256), Settings.readMinBitrate(conf));
         Map<String, String> keys = Settings.parseConf(Files.readString(conf));
         assertEquals("12000", keys.get("max-stale-time"));
-        assertEquals("3", keys.get("max-retries"));
+        // max-retries left the conf on 2026-10-18: the tool owns it as max_sources,
+        // because "retries" is not what it counts
+        assertEquals(null, keys.get("max-retries"));
         assertEquals("1", keys.get("fails-to-downrank"));
         assertEquals("2", keys.get("fails-to-ignore"));
         assertEquals(List.of("username", "password"),

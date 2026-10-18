@@ -15,7 +15,7 @@ import java.util.List;
 public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path workDir,
                         Path logsDir, Path sockseek,
                         Options options, double timeoutMinutes, int retries, boolean dryRun,
-                        String only, boolean verbose, boolean explain, List<String> sockseekArgs,
+                        String only, boolean verbose, int explainTracks, List<String> sockseekArgs,
                         Path conf, Path sockseekConf, int runNo, LocalDateTime stamp,
                         double stallSeconds, double skipNotFoundHours, boolean cache) {
 
@@ -30,14 +30,14 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
 
     public RunConfig withRunNo(int number) {
         return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir, sockseek,
-                options, timeoutMinutes, retries, dryRun, only, verbose, explain,
+                options, timeoutMinutes, retries, dryRun, only, verbose, explainTracks,
                 sockseekArgs, conf, sockseekConf, number, stamp, stallSeconds,
                 skipNotFoundHours, cache);
     }
 
     public RunConfig withConf(Path merged) {
         return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir, sockseek,
-                options, timeoutMinutes, retries, dryRun, only, verbose, explain,
+                options, timeoutMinutes, retries, dryRun, only, verbose, explainTracks,
                 sockseekArgs, merged, sockseekConf, runNo, stamp, stallSeconds,
                 skipNotFoundHours, cache);
     }
@@ -60,9 +60,11 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
         private boolean dryRun;
         private String only;
         private boolean verbose;
-        // Off by default since 2026-10-17: the extra query per failed track doubled the time a
-        // big playlist spent in the search limiter, and the owner reads the reasons rarely.
-        private boolean explain;
+        // A budget rather than a switch since 2026-10-18: on a real run 104 of 135 failures
+        // carried the one code that means both "nobody had it" and "found it and refused
+        // it", and nothing but a second search can tell those apart. Twenty is enough to
+        // see which kind a playlist is suffering from without paying for every one.
+        private int explainTracks = 20;
         private List<String> sockseekArgs = List.of();
         private Path sockseekConf;
         private double stallSeconds = 300;
@@ -133,8 +135,8 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
             return this;
         }
 
-        public Builder explain(boolean value) {
-            this.explain = value;
+        public Builder explainTracks(int value) {
+            this.explainTracks = value;
             return this;
         }
 
@@ -166,7 +168,8 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
         public RunConfig build() {
             return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir,
                     sockseek, options, timeoutMinutes, retries, dryRun, only, verbose,
-                    explain, sockseekArgs, null, sockseekConf, 0, LocalDateTime.now(),
+                    explainTracks, sockseekArgs, null, sockseekConf, 0,
+                    LocalDateTime.now(),
                     stallSeconds, skipNotFoundHours, cache);
         }
     }

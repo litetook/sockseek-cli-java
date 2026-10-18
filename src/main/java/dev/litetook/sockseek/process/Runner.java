@@ -55,6 +55,8 @@ public final class Runner {
                 "--input-type", "list",
                 // the "=" form: sockseek reads "--length-tol -1" as another option
                 "--length-tol=" + options.lengthTol(),
+                // sockseek's name for it; ours says what it counts
+                "--max-retries", Integer.toString(options.maxSources()),
                 "-o", outDir.toString(),
                 "--name-format", NAME_FORMAT,
                 "--index-path", outDir.resolve(indexName).toString()));

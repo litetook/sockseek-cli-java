@@ -61,6 +61,22 @@ public final class Failures {
     /** Where it lives: beside the config, not in work/, which is safe to delete at any time. */
     public static final String FILE_NAME = "outcomes.tsv";
 
+    /**
+     * The one class that may ever stop a track being searched for again.
+     *
+     * <p>Not sockseek's word but our own, and the difference is the point. sockseek says
+     * {@code NoSearchResults} both when nobody on the network had the track and when
+     * several people did and every copy was refused by the length or the bitrate filter -
+     * measured 2026-10-18: a file sitting in the mock folder, rejected on length, reported
+     * exactly what a track nobody shares reports. On a real run that same code covered 104
+     * of 135 failures.
+     *
+     * <p>So a track is only written down as absent once the explain step has searched for it
+     * again with every condition off and found nothing at all. Anything less and the cache
+     * would stop looking for tracks that are there, which is the opposite of its job.
+     */
+    public static final String CONFIRMED_ABSENT = "NotOnNetwork";
+
     /** How many runs in a row make a failure worth mentioning in the report. */
     public static final int NAG_AFTER = 3;
 
@@ -78,9 +94,9 @@ public final class Failures {
             return when + "\t" + reason + "\t" + runs + "\t" + playlist + "\t" + line;
         }
 
-        /** The one class that is worth not searching for again today. */
+        /** Confirmed absent by a search with every condition off - see CONFIRMED_ABSENT. */
         public boolean notOnNetwork() {
-            return reason.equals(Events.Event.NOT_FOUND);
+            return reason.equals(CONFIRMED_ABSENT);
         }
     }
 
@@ -175,6 +191,20 @@ public final class Failures {
      */
     public static List<Outcome> after(List<Outcome> existing, String playlist,
                                       Map<String, Events.Event> byLine, LocalDateTime now) {
+        return after(existing, playlist, byLine, now, Set.of());
+    }
+
+    /**
+     * The same, told which lines a second search has confirmed nobody has.
+     *
+     * <p>Those are written down as {@link #CONFIRMED_ABSENT} and are the only ones the cache
+     * will ever hold back. A {@code NoSearchResults} nobody looked into is still recorded -
+     * it counts towards "failing the same way three runs running" - but it never stops a
+     * search, because it might mean the filters refused a track that is sitting there.
+     */
+    public static List<Outcome> after(List<Outcome> existing, String playlist,
+                                      Map<String, Events.Event> byLine, LocalDateTime now,
+                                      Set<String> confirmedAbsent) {
         Map<String, Outcome> kept = new LinkedHashMap<>();
         Map<String, Outcome> before = new LinkedHashMap<>();
         for (Outcome seen : existing) {
@@ -189,10 +219,16 @@ public final class Failures {
             if (!event.failed()) {
                 continue;   // it is here now; the folder says so better than any file of ours
             }
+            // sockseek's NoSearchResults becomes our CONFIRMED_ABSENT only when a search
+            // with every condition off also came back empty; otherwise it stays its own
+            // word, is counted, and never stops a search
+            String reason = event.reason().equals(Events.Event.NOT_FOUND)
+                    && confirmedAbsent.contains(said.getKey())
+                    ? CONFIRMED_ABSENT : event.reason();
             Outcome was = before.get(said.getKey());
-            int runs = was != null && was.reason().equals(event.reason()) ? was.runs() + 1 : 1;
+            int runs = was != null && was.reason().equals(reason) ? was.runs() + 1 : 1;
             kept.put(playlist + "\t" + said.getKey(),
-                    new Outcome(now, event.reason(), runs, playlist, said.getKey()));
+                    new Outcome(now, reason, runs, playlist, said.getKey()));
         }
         return List.copyOf(kept.values());
     }

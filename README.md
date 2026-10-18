@@ -173,7 +173,17 @@ where it came from, so "why is it this number?" is never a guess.
 | `skip_not_found_hours` | `2` | do not search again for a track nobody was sharing, if that was within this many hours; `0` = always search. Fractions work |
 | `searches_per_window` | `34` | the brake: all playlists together stay under this many searches per `searches_renew_s`, by pausing between them; `0` = no pause. The Soulseek server bans an account that goes faster |
 | `searches_renew_s` | `220` | the length of that window, in seconds |
+| `max_sources` | `3` | how many different uploaders to try for one track before giving up on it this run. sockseek calls this `max-retries`, which sounds like trying the same one again; what it counts is different people |
+| `explain_tracks` | `20` | after a run, search again with every condition off for this many failed tracks per playlist, to find out which nobody had and which the filters refused. One search each; `0` turns it off |
 | `use_cache` | `true` | `false` makes `outcomes.tsv` not exist for the run: nothing read, nothing written |
+
+> **Why `explain_tracks` is not zero.** sockseek reports "nobody on the network had it" and
+> "several people had it and every copy was refused by your filters" with the **same** code.
+> Measured: a file sitting in the mock folder, rejected on length, reported exactly what a
+> track nobody shares reports — and on a real run that one code covered 104 of 135 failures.
+> A second search with every condition off is the only way to tell them apart, so it is also
+> the only thing `skip_not_found_hours` is allowed to act on: a failure nobody looked into is
+> counted, but never stops a later search.
 
 ### `sockseek.conf`
 
@@ -183,7 +193,6 @@ secrets go here, so this file is safe to share.
 | Key | Default here | What it does |
 |---|---|---|
 | `max-stale-time` | `12000` | milliseconds with no bytes arriving before this source is dropped |
-| `max-retries` | `3` | how many sources one track may be tried from |
 | `fails-to-downrank` | `1` | an uploader that fails once drops down the ranking |
 | `fails-to-ignore` | `2` | an uploader that fails twice is left out for the rest of the run |
 | `min-bitrate` | `256` | **the only hard floor.** A file below this is refused outright |
@@ -203,6 +212,7 @@ more layer for a single run.
 
 Anything in the tables above, as a flag: `--length-tol 90`, `--stall-timeout 0`,
 `--skip-not-found-hours 0`, `--searches-per-window 20`, `--searches-renew-s 300`,
+`--max-sources 5`, `--explain-tracks 0`,
 `--no-cache`, and the folders as `--playlists`, `--output`, `--work`, `--logs`,
 `--sockseek`. And these, which exist only there:
 

@@ -25,7 +25,7 @@ class BatchTest {
         Files.createDirectories(app.resolve("Playlists"));
         return RunConfig.builder(app)
                 .sockseek(app.resolve("sockseek.exe"))
-                .options(new Options(-1, false))
+                .options(new Options(-1, false, 3))
                 .retries(1)
                 .timeoutMinutes(2);
     }
@@ -162,7 +162,7 @@ class BatchTest {
 
         int code = RunBatch.run(config(app)
                 .sockseek(sockseek)
-                .explain(false)
+                .explainTracks(0)
                 .sockseekArgs(List.of("--mock-files-dir", mock.toString(),
                         "--mock-files-no-read-tags", "--no-config", "--no-listen",
                         "--no-progress", "--length-tol=-1"))

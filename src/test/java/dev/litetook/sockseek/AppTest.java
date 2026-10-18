@@ -564,7 +564,8 @@ class AppTest {
         ready();
         playlist("one", "Artist - A", "Artist - B", "Artist - C");
         Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
-                LocalDateTime.now().toString(), "NoSearchResults", "1", "one", "Artist - A")
+                LocalDateTime.now().toString(), Failures.CONFIRMED_ABSENT, "1", "one",
+                "Artist - A")
                 + NEWLINE);
         Run run = run(List.of(), "1", "1", "n");
         assertTrue(run.said("3 missing track(s). 1 of them were searched for recently and "
@@ -577,7 +578,7 @@ class AppTest {
         ready();
         playlist("one", "Artist - A", "Artist - B");
         Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
-                LocalDateTime.now().minusDays(3).toString(), "NoSearchResults", "1", "one",
+                LocalDateTime.now().minusDays(3).toString(), Failures.CONFIRMED_ABSENT, "1", "one",
                 "Artist - A") + NEWLINE);
         Run run = run(List.of(), "1", "1", "n");
         assertTrue(run.said("To download: 1 playlist(s), 2 missing track(s)."),
@@ -590,7 +591,8 @@ class AppTest {
         ready();
         playlist("one", "Artist - A", "Artist - B");
         Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
-                LocalDateTime.now().toString(), "NoSearchResults", "1", "one", "Artist - A")
+                LocalDateTime.now().toString(), Failures.CONFIRMED_ABSENT, "1", "one",
+                "Artist - A")
                 + NEWLINE);
         Run run = run(List.of("--no-cache"), "1", "1", "n");
         assertTrue(!run.said("will be searched"), run.printed().toString());

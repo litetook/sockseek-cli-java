@@ -3,6 +3,7 @@ package dev.litetook.sockseek.gates;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import dev.litetook.sockseek.index.Failures;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -59,8 +60,10 @@ class MockTest {
                     + tail(said));
         }
         String written = Files.readString(outcomes, StandardCharsets.UTF_8);
-        assertTrue(written.contains("NoSearchResults") && written.contains(NOWHERE),
-                "the one nobody has should be written down:\n" + written);
+        // CONFIRMED_ABSENT, not sockseek's NoSearchResults: the explain step searched again
+        // with every condition off, found nothing, and only that verdict may stop a search
+        assertTrue(written.contains(Failures.CONFIRMED_ABSENT) && written.contains(NOWHERE),
+                "the one nobody has should be written down as confirmed:\n" + written);
         for (String name : SHARED) {
             assertTrue(!written.contains(name),
                     "what arrived should be forgotten, the folder knows better:\n" + written);

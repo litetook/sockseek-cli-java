@@ -44,8 +44,14 @@ class FailuresTest {
         // both failures are written down; what arrived is forgotten, the folder knows better
         assertEquals(List.of("A - nobody has this", "B - upload died"),
                 after.stream().map(Failures.Outcome::line).toList());
-        // but only the one class is ever held back from a later search
-        assertEquals(Set.of("A - nobody has this"), Failures.skippable(after, "mix", 1, NOW));
+        // and NOTHING is held back, because nothing was confirmed: sockseek's own word for
+        // "no results" also covers "found it and your filters refused it"
+        assertEquals(Set.of(), Failures.skippable(after, "mix", 1, NOW));
+        // only a second search with every condition off earns that
+        List<Failures.Outcome> checked = Failures.after(List.of(), "mix", byLine, NOW,
+                Set.of("A - nobody has this"));
+        assertEquals(Set.of("A - nobody has this"),
+                Failures.skippable(checked, "mix", 1, NOW));
     }
 
     @Test
@@ -94,9 +100,9 @@ class FailuresTest {
         // hours, not days, since the owner saw tracks appear when he ran at another time of
         // the same day: "деякі треки просто з'явились у пошуку коли я в інший час запустив"
         List<Failures.Outcome> all = List.of(
-                new Failures.Outcome(NOW.minusMinutes(20), "NoSearchResults", 1, "mix", "just now"),
-                new Failures.Outcome(NOW.minusHours(3), "NoSearchResults", 1, "mix", "this morning"),
-                new Failures.Outcome(NOW.minusHours(30), "NoSearchResults", 1, "mix", "yesterday"));
+                new Failures.Outcome(NOW.minusMinutes(20), Failures.CONFIRMED_ABSENT, 1, "mix", "just now"),
+                new Failures.Outcome(NOW.minusHours(3), Failures.CONFIRMED_ABSENT, 1, "mix", "this morning"),
+                new Failures.Outcome(NOW.minusHours(30), Failures.CONFIRMED_ABSENT, 1, "mix", "yesterday"));
         assertEquals(Set.of("just now"), Failures.skippable(all, "mix", 2, NOW));
         assertEquals(Set.of("just now", "this morning"), Failures.skippable(all, "mix", 4, NOW));
         assertEquals(Set.of("just now", "this morning", "yesterday"),
@@ -109,7 +115,7 @@ class FailuresTest {
     @Test
     void zeroHoursSearchesEverythingAgain() {
         List<Failures.Outcome> all = List.of(
-                new Failures.Outcome(NOW, "NoSearchResults", 1, "mix", "just now"));
+                new Failures.Outcome(NOW, Failures.CONFIRMED_ABSENT, 1, "mix", "just now"));
         assertEquals(Set.of(), Failures.skippable(all, "mix", 0, NOW));
     }
 

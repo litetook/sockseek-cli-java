@@ -173,12 +173,23 @@ public final class Explain {
             log.accept("WARN explain step did not run: " + cannotWrite.getMessage());
             return Map.of();
         }
-        Options options = new Options(-1, true);
+        // every condition off, and one source is enough: nothing is downloaded here
+        Options options = new Options(-1, true, 1);
         List<String> command = sockseek.command(probe, outDir, null, options,
                 dev.litetook.sockseek.process.Runner.INDEX_NAME);
         try {
             ProcessRunner.Output output = runner.run(command);
-            return parsePreview(output.both());
+            // Every line that was ASKED about gets an entry, even when the answer is
+            // nothing. An absent key and an empty list used to look the same to the caller,
+            // and they are opposites: one means "we never looked", the other means "we
+            // looked with every condition off and the network really does not have it" -
+            // which is the only thing the failure cache is allowed to act on.
+            Map<String, List<Candidate>> asked = new LinkedHashMap<>();
+            for (Entry entry : wanted) {
+                asked.put(entry.track().title(), List.of());
+            }
+            asked.putAll(parsePreview(output.both()));
+            return Map.copyOf(asked);
         } catch (RuntimeException cannotRun) {
             log.accept("WARN explain step did not run: " + cannotRun.getMessage());
             return Map.of();

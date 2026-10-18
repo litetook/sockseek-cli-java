@@ -968,13 +968,15 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = ambient-night [cli]
 [time]   dry_run = True [cli]
 [time] === ambient-night
 [time] WARN line 22: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 25 tracks, 8 already here, 17 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\ambient-night.list.txt --input-type list --length-tol=45 -o <DIR>\output\ambient-night --name-format "{artist( - )title|filename}" --index-path <DIR>\output\ambient-night\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\ambient-night.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\ambient-night.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\ambient-night --name-format "{artist( - )title|filename}" --index-path <DIR>\output\ambient-night\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\ambient-night.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0001)
 [1/24] ambient-night: 0 of 17 arrived - 0 of 716 in all
 
@@ -995,6 +997,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = breaks [cli]
 [time]   dry_run = True [cli]
 [time] === breaks
@@ -1002,7 +1006,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 15: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 29 tracks, 10 already here, 19 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\breaks.list.txt --input-type list --length-tol=45 -o <DIR>\output\breaks --name-format "{artist( - )title|filename}" --index-path <DIR>\output\breaks\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\breaks.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\breaks.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\breaks --name-format "{artist( - )title|filename}" --index-path <DIR>\output\breaks\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\breaks.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0002)
 [2/24] breaks: 0 of 19 arrived - 0 of 716 in all
 
@@ -1023,6 +1027,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = chill [cli]
 [time]   dry_run = True [cli]
 [time] === chill
@@ -1034,7 +1040,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 48: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 69 tracks, 24 already here, 45 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\chill.list.txt --input-type list --length-tol=45 -o <DIR>\output\chill --name-format "{artist( - )title|filename}" --index-path <DIR>\output\chill\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\chill.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\chill.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\chill --name-format "{artist( - )title|filename}" --index-path <DIR>\output\chill\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\chill.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0003)
 [3/24] chill: 0 of 45 arrived - 0 of 716 in all
 
@@ -1055,13 +1061,15 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = classics [cli]
 [time]   dry_run = True [cli]
 [time] === classics
 [time] WARN line 3: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 10 tracks, 3 already here, 7 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\classics.list.txt --input-type list --length-tol=45 -o <DIR>\output\classics --name-format "{artist( - )title|filename}" --index-path <DIR>\output\classics\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\classics.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\classics.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\classics --name-format "{artist( - )title|filename}" --index-path <DIR>\output\classics\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\classics.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0004)
 [4/24] classics: 0 of 7 arrived - 0 of 716 in all
 
@@ -1082,13 +1090,15 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = dnb [cli]
 [time]   dry_run = True [cli]
 [time] === dnb
 [time] WARN line 38: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 38 tracks, 10 already here, 28 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\dnb.list.txt --input-type list --length-tol=45 -o <DIR>\output\dnb --name-format "{artist( - )title|filename}" --index-path <DIR>\output\dnb\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\dnb.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\dnb.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\dnb --name-format "{artist( - )title|filename}" --index-path <DIR>\output\dnb\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\dnb.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0005)
 [5/24] dnb: 0 of 28 arrived - 0 of 716 in all
 
@@ -1109,6 +1119,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = dubstep-bass [cli]
 [time]   dry_run = True [cli]
 [time] === dubstep-bass
@@ -1119,7 +1131,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 46: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 45 tracks, 15 already here, 30 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\dubstep-bass.list.txt --input-type list --length-tol=45 -o <DIR>\output\dubstep-bass --name-format "{artist( - )title|filename}" --index-path <DIR>\output\dubstep-bass\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\dubstep-bass.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\dubstep-bass.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\dubstep-bass --name-format "{artist( - )title|filename}" --index-path <DIR>\output\dubstep-bass\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\dubstep-bass.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0006)
 [6/24] dubstep-bass: 0 of 30 arrived - 0 of 716 in all
 
@@ -1140,12 +1152,14 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = example [cli]
 [time]   dry_run = True [cli]
 [time] === example
 [time] WARN line 3: no valid length, searching without length filter
 [time] 3 tracks, 0 already here, 3 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\example.list.txt --input-type list --length-tol=45 -o <DIR>\output\example --name-format "{artist( - )title|filename}" --index-path <DIR>\output\example\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\example.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\example.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\example --name-format "{artist( - )title|filename}" --index-path <DIR>\output\example\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\example.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0007)
 [7/24] example: 0 of 3 arrived - 0 of 716 in all
 
@@ -1166,13 +1180,15 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = hip-hop [cli]
 [time]   dry_run = True [cli]
 [time] === hip-hop
 [time] WARN line 26: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 54 tracks, 14 already here, 40 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\hip-hop.list.txt --input-type list --length-tol=45 -o <DIR>\output\hip-hop --name-format "{artist( - )title|filename}" --index-path <DIR>\output\hip-hop\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\hip-hop.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\hip-hop.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\hip-hop --name-format "{artist( - )title|filename}" --index-path <DIR>\output\hip-hop\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\hip-hop.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0008)
 [8/24] hip-hop: 0 of 40 arrived - 0 of 716 in all
 
@@ -1193,6 +1209,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = house [cli]
 [time]   dry_run = True [cli]
 [time] === house
@@ -1209,7 +1227,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 83: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 84 tracks, 25 already here, 59 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\house.list.txt --input-type list --length-tol=45 -o <DIR>\output\house --name-format "{artist( - )title|filename}" --index-path <DIR>\output\house\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\house.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\house.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\house --name-format "{artist( - )title|filename}" --index-path <DIR>\output\house\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\house.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0009)
 [9/24] house: 0 of 59 arrived - 0 of 716 in all
 
@@ -1230,12 +1248,14 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = nothing-here [cli]
 [time]   dry_run = True [cli]
 [time] === nothing-here
 [time] WARN 1 duplicate line(s) dropped
 [time] 17 tracks, 0 already here, 17 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\nothing-here.list.txt --input-type list --length-tol=45 -o <DIR>\output\nothing-here --name-format "{artist( - )title|filename}" --index-path <DIR>\output\nothing-here\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\nothing-here.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\nothing-here.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\nothing-here --name-format "{artist( - )title|filename}" --index-path <DIR>\output\nothing-here\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\nothing-here.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0010)
 [10/24] nothing-here: 0 of 17 arrived - 0 of 716 in all
 
@@ -1256,11 +1276,13 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = one-track [cli]
 [time]   dry_run = True [cli]
 [time] === one-track
 [time] 1 tracks, 0 already here, 1 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\one-track.list.txt --input-type list --length-tol=45 -o <DIR>\output\one-track --name-format "{artist( - )title|filename}" --index-path <DIR>\output\one-track\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\one-track.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\one-track.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\one-track --name-format "{artist( - )title|filename}" --index-path <DIR>\output\one-track\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\one-track.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0011)
 [11/24] one-track: 0 of 1 arrived - 0 of 716 in all
 
@@ -1281,6 +1303,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = other [cli]
 [time]   dry_run = True [cli]
 [time] === other
@@ -1289,7 +1313,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 39: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 36 tracks, 12 already here, 24 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\other.list.txt --input-type list --length-tol=45 -o <DIR>\output\other --name-format "{artist( - )title|filename}" --index-path <DIR>\output\other\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\other.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\other.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\other --name-format "{artist( - )title|filename}" --index-path <DIR>\output\other\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\other.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0012)
 [12/24] other: 0 of 24 arrived - 0 of 716 in all
 
@@ -1310,6 +1334,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = phonk-dark [cli]
 [time]   dry_run = True [cli]
 [time] === phonk-dark
@@ -1319,7 +1345,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 34: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 31 tracks, 12 already here, 19 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\phonk-dark.list.txt --input-type list --length-tol=45 -o <DIR>\output\phonk-dark --name-format "{artist( - )title|filename}" --index-path <DIR>\output\phonk-dark\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\phonk-dark.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\phonk-dark.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\phonk-dark --name-format "{artist( - )title|filename}" --index-path <DIR>\output\phonk-dark\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\phonk-dark.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0013)
 [13/24] phonk-dark: 0 of 19 arrived - 0 of 716 in all
 
@@ -1340,6 +1366,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = pop [cli]
 [time]   dry_run = True [cli]
 [time] === pop
@@ -1354,7 +1382,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 82: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 90 tracks, 29 already here, 61 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\pop.list.txt --input-type list --length-tol=45 -o <DIR>\output\pop --name-format "{artist( - )title|filename}" --index-path <DIR>\output\pop\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\pop.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\pop.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\pop --name-format "{artist( - )title|filename}" --index-path <DIR>\output\pop\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\pop.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0014)
 [14/24] pop: 0 of 61 arrived - 0 of 716 in all
 
@@ -1375,6 +1403,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = rock-metal [cli]
 [time]   dry_run = True [cli]
 [time] === rock-metal
@@ -1383,7 +1413,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 25: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 43 tracks, 11 already here, 32 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\rock-metal.list.txt --input-type list --length-tol=45 -o <DIR>\output\rock-metal --name-format "{artist( - )title|filename}" --index-path <DIR>\output\rock-metal\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\rock-metal.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\rock-metal.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\rock-metal --name-format "{artist( - )title|filename}" --index-path <DIR>\output\rock-metal\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\rock-metal.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0015)
 [15/24] rock-metal: 0 of 32 arrived - 0 of 716 in all
 
@@ -1404,6 +1434,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = techno-acid [cli]
 [time]   dry_run = True [cli]
 [time] === techno-acid
@@ -1413,7 +1445,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 28: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 27 tracks, 7 already here, 20 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\techno-acid.list.txt --input-type list --length-tol=45 -o <DIR>\output\techno-acid --name-format "{artist( - )title|filename}" --index-path <DIR>\output\techno-acid\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\techno-acid.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\techno-acid.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\techno-acid --name-format "{artist( - )title|filename}" --index-path <DIR>\output\techno-acid\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\techno-acid.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0016)
 [16/24] techno-acid: 0 of 20 arrived - 0 of 716 in all
 
@@ -1434,6 +1466,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = techno-hard [cli]
 [time]   dry_run = True [cli]
 [time] === techno-hard
@@ -1450,7 +1484,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 109: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 107 tracks, 28 already here, 79 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\techno-hard.list.txt --input-type list --length-tol=45 -o <DIR>\output\techno-hard --name-format "{artist( - )title|filename}" --index-path <DIR>\output\techno-hard\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\techno-hard.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\techno-hard.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\techno-hard --name-format "{artist( - )title|filename}" --index-path <DIR>\output\techno-hard\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\techno-hard.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0017)
 [17/24] techno-hard: 0 of 79 arrived - 0 of 716 in all
 
@@ -1471,6 +1505,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = techno-melodic [cli]
 [time]   dry_run = True [cli]
 [time] === techno-melodic
@@ -1480,7 +1516,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 60: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 61 tracks, 11 already here, 50 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\techno-melodic.list.txt --input-type list --length-tol=45 -o <DIR>\output\techno-melodic --name-format "{artist( - )title|filename}" --index-path <DIR>\output\techno-melodic\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\techno-melodic.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\techno-melodic.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\techno-melodic --name-format "{artist( - )title|filename}" --index-path <DIR>\output\techno-melodic\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\techno-melodic.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0018)
 [18/24] techno-melodic: 0 of 50 arrived - 0 of 716 in all
 
@@ -1501,13 +1537,15 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = techno [cli]
 [time]   dry_run = True [cli]
 [time] === techno
 [time] WARN line 32: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 40 tracks, 11 already here, 29 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\techno.list.txt --input-type list --length-tol=45 -o <DIR>\output\techno --name-format "{artist( - )title|filename}" --index-path <DIR>\output\techno\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\techno.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\techno.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\techno --name-format "{artist( - )title|filename}" --index-path <DIR>\output\techno\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\techno.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0019)
 [19/24] techno: 0 of 29 arrived - 0 of 716 in all
 
@@ -1528,6 +1566,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = trance [cli]
 [time]   dry_run = True [cli]
 [time] === trance
@@ -1537,7 +1577,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 32: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 33 tracks, 14 already here, 19 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\trance.list.txt --input-type list --length-tol=45 -o <DIR>\output\trance --name-format "{artist( - )title|filename}" --index-path <DIR>\output\trance\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\trance.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\trance.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\trance --name-format "{artist( - )title|filename}" --index-path <DIR>\output\trance\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\trance.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0020)
 [20/24] trance: 0 of 19 arrived - 0 of 716 in all
 
@@ -1558,6 +1598,8 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = ukrainian [cli]
 [time]   dry_run = True [cli]
 [time] === ukrainian
@@ -1576,7 +1618,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] WARN line 144: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 146 tracks, 44 already here, 102 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\ukrainian.list.txt --input-type list --length-tol=45 -o <DIR>\output\ukrainian --name-format "{artist( - )title|filename}" --index-path <DIR>\output\ukrainian\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\ukrainian.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\ukrainian.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\ukrainian --name-format "{artist( - )title|filename}" --index-path <DIR>\output\ukrainian\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\ukrainian.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0021)
 [21/24] ukrainian: 0 of 102 arrived - 0 of 716 in all
 
@@ -1597,12 +1639,14 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = wanted [cli]
 [time]   dry_run = True [cli]
 [time] === wanted
 [time] WARN line 3: no valid length, searching without length filter
 [time] 4 tracks, 0 already here, 4 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\wanted.list.txt --input-type list --length-tol=45 -o <DIR>\output\wanted --name-format "{artist( - )title|filename}" --index-path <DIR>\output\wanted\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\wanted.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\wanted.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\wanted --name-format "{artist( - )title|filename}" --index-path <DIR>\output\wanted\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\wanted.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0022)
 [22/24] wanted: 0 of 4 arrived - 0 of 716 in all
 
@@ -1623,13 +1667,15 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = weird-edges [cli]
 [time]   dry_run = True [cli]
 [time] === weird-edges
 [time] WARN line 7: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
 [time] 12 tracks, 4 already here, 8 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\weird-edges.list.txt --input-type list --length-tol=45 -o <DIR>\output\weird-edges --name-format "{artist( - )title|filename}" --index-path <DIR>\output\weird-edges\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\weird-edges.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\weird-edges.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\weird-edges --name-format "{artist( - )title|filename}" --index-path <DIR>\output\weird-edges\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\weird-edges.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0023)
 [23/24] weird-edges: 0 of 8 arrived - 0 of 716 in all
 
@@ -1650,12 +1696,14 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time]   use_cache = True [config]
 [time]   searches_per_window = 34 [config]
 [time]   searches_renew_s = 220 [config]
+[time]   max_sources = 3 [default]
+[time]   explain_tracks = 20 [default]
 [time]   only = with-links [cli]
 [time]   dry_run = True [cli]
 [time] === with-links
 [time] WARN 1 duplicate line(s) dropped
 [time] 8 tracks, 5 already here, 3 missing, length tolerance +-45 s
-[time] dry run: <DIR>\sockseek.exe <DIR>\work\with-links.list.txt --input-type list --length-tol=45 -o <DIR>\output\with-links --name-format "{artist( - )title|filename}" --index-path <DIR>\output\with-links\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\with-links.events.txt\" echo {row};{state};{failure-reason}"
+[time] dry run: <DIR>\sockseek.exe <DIR>\work\with-links.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\with-links --name-format "{artist( - )title|filename}" --index-path <DIR>\output\with-links\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\with-links.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0024)
 [24/24] with-links: 0 of 3 arrived - 0 of 716 in all
 

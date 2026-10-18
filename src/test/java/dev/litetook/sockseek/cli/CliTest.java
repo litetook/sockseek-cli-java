@@ -83,11 +83,12 @@ class CliTest {
     void onlyTheFlagsThatWereGivenAppearAtTheEnd(@TempDir Path app) {
         String bare = block(parsed(app));
         assertTrue(!bare.contains("dry_run"), bare);
-        assertTrue(!bare.contains("explain"), bare);   // off by default, so nothing to report
+        assertTrue(bare.contains("explain_tracks = 20 [config]"), bare);
         String said = block(parsed(app, "--dry-run", "--only", "mix", "--explain"));
         assertTrue(said.contains("  only = mix [cli]"), said);
         assertTrue(said.contains("  dry_run = True [cli]"), said);   // True, with a capital
-        assertTrue(said.contains("  explain = True [cli]"), said);
+        // --explain is the old way of saying "all of them"
+        assertTrue(said.contains("  explain_tracks = 2147483647 [cli]"), said);
     }
 
     @Test
@@ -95,7 +96,7 @@ class CliTest {
         // it is in the owner's fingers and in every note written before 2026-10-17; a flag that
         // used to work must not start failing the command line
         String said = block(parsed(app, "--no-explain"));
-        assertTrue(!said.contains("explain = True"), said);
+        assertTrue(!said.contains("explain_tracks = 2147483647"), said);
     }
 
     @Test

@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -199,9 +200,6 @@ public final class Batch {
         dev.litetook.sockseek.process.Status status = Runner.runWithRetry(command, cfg.appDir(),
                 client.timeoutSeconds(), cfg.retries(), log, Runner.RETRY_PAUSE_SECONDS,
                 watch, cfg.stallSeconds(), outDir);
-        if (cfg.cache()) {
-            remember(cacheFile, remembered, playlist.name(), said);
-        }
         if (cfg.options().preview()) {
             log.accept(status == dev.litetook.sockseek.process.Status.OK ? "preview done"
                     : "FAILED");
@@ -247,8 +245,13 @@ public final class Batch {
         // about them and the index has nothing to say either; they are counted, not listed
         List<Entry> reportable = still.stream()
                 .filter(entry -> !skip.contains(entry.original())).toList();
-        if (!reportable.isEmpty() && !broke) {
-            report(reportable, entries, rows, listFile, outDir, client);
+        Set<String> absent = !reportable.isEmpty() && !broke
+                ? report(reportable, entries, rows, listFile, outDir, client)
+                : Set.of();
+        // after the report, not before it: what the report learns is the only thing that
+        // may turn a failure into "do not search for this again"
+        if (cfg.cache()) {
+            remember(cacheFile, remembered, playlist.name(), said, absent);
         }
         // The question the owner kept asking of a cut-short run: how many never got a turn?
         // sockseek leaves state=0 on a row still in the queue, and eleven of them after the
@@ -309,12 +312,12 @@ public final class Batch {
 
     /** Write back what this playlist now knows about tracks nobody had. */
     void remember(Path cacheFile, List<Failures.Outcome> existing, String playlist,
-                  Map<String, Events.Event> said) {
+                  Map<String, Events.Event> said, Set<String> confirmedAbsent) {
         if (said.isEmpty()) {
             return;   // no events at all: say nothing rather than forget what was known
         }
         List<Failures.Outcome> after = Failures.after(existing, playlist, said,
-                LocalDateTime.now());
+                LocalDateTime.now(), confirmedAbsent);
         if (!Failures.write(cacheFile, after)) {
             log.accept("WARN cannot write " + cacheFile + ", what happened to these tracks "
                     + "will not be remembered");
@@ -341,18 +344,26 @@ public final class Batch {
     }
 
     /** One FAILED line per track still missing, with the reason in words. */
-    void report(List<Entry> still, List<Entry> entries, List<IndexRow> rows, Path listFile,
-                Path outDir, Sockseek client) {
+    Set<String> report(List<Entry> still, List<Entry> entries, List<IndexRow> rows,
+                       Path listFile, Path outDir, Sockseek client) {
         Map<String, IndexRow> byLine = SockseekIndex.rowsByEntry(entries, rows);
         List<Failure> failures = still.stream()
                 .map(entry -> failureOf(entry.original(), byLine.get(entry.original())))
                 .toList();
-        Map<String, List<Candidate>> found = cfg.explain()
-                ? Explain.explainFailures(failures, entries, listFile, client, outDir, log,
-                        capture)
-                : Map.of();
+        // a budget, not a switch: one extra search per failed track, and a real run had 135
+        // failures. Twenty is enough to see which kind a playlist is suffering from
+        int budget = Math.min(cfg.explainTracks(), failures.size());
+        List<Failure> asked = failures.subList(0, Math.max(0, budget));
+        Map<String, List<Candidate>> found = asked.isEmpty() ? Map.of()
+                : Explain.explainFailures(asked, entries, listFile, client, outDir, log,
+                        capture);
+        if (budget < failures.size()) {
+            log.accept((failures.size() - budget) + " more failure(s) were not looked into - "
+                    + "raise explain_tracks, or --explain for all of them");
+        }
         OptionalInt minBitrate = Settings.readMinBitrate(cfg.conf() != null ? cfg.conf()
                 : cfg.sockseek().getParent().resolve(Settings.SOCKSEEK_CONF));
+        Set<String> absent = new LinkedHashSet<>();
         for (int i = 0; i < still.size(); i++) {
             Failure failure = failures.get(i);
             if (SockseekIndex.OK_STATES.contains(failure.state().strip())) {
@@ -360,18 +371,24 @@ public final class Batch {
                         + failure.playlistLine());
             }
             log.accept(SockseekIndex.format(failure));
-            if (cfg.explain()) {
+            if (cfg.explainTracks() > 0) {
                 // the search string is what sockseek echoes as "Results for ...", which is the
                 // track title - not the playlist line with its " | 4:09" tail
                 String key = still.get(i).track().title();
                 Optional<List<Candidate>> candidates = found.containsKey(key)
                         ? Optional.of(found.get(key)) : Optional.empty();
+                // searched again with every condition off and still nothing: this one is
+                // really not out there, and it is the only kind the cache may act on
+                if (candidates.isPresent() && candidates.get().isEmpty()) {
+                    absent.add(failure.playlistLine());
+                }
                 for (String line : Explain.explainFailure(failure, candidates,
                         cfg.options().lengthTol(), minBitrate)) {
                     log.accept(line);
                 }
             }
         }
+        return absent;
     }
 
     private static Failure failureOf(String line, IndexRow row) {

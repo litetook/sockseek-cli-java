@@ -46,7 +46,9 @@ class RunnerTest {
     @Test
     void theTuningIsLeftToTheConfFile() {
         List<String> command = command(Options.defaults());
-        for (String absent : List.of("--max-stale-time", "--fast-search", "--max-retries",
+        // --max-retries is the exception, and it is on the line because the tool owns it
+        // as max_sources - see Options
+        for (String absent : List.of("--max-stale-time", "--fast-search",
                 "--search-timeout", "--searches-per-time", "--searches-renew-time",
                 "--concurrent-searches", "--strict-conditions", "--desperate",
                 "--artist-maybe-wrong", "--remove-brackets", "--remove-ft")) {
@@ -57,7 +59,7 @@ class RunnerTest {
     @Test
     void minusOneIsJoinedWithAnEqualsSign() {
         // sockseek rejects "--length-tol -1": it reads the -1 as another option
-        List<String> command = command(new Options(-1, false));
+        List<String> command = command(new Options(-1, false, 3));
         assertTrue(command.contains("--length-tol=-1"));
         assertFalse(command.contains("--length-tol"));
         assertFalse(command.contains("-1"));
@@ -65,7 +67,7 @@ class RunnerTest {
 
     @Test
     void noQualityOptionIsEverPassedByUs() {
-        for (Options options : List.of(Options.defaults(), new Options(-1, true))) {
+        for (Options options : List.of(Options.defaults(), new Options(-1, true, 3))) {
             for (String gone : List.of("--min-bitrate", "--max-bitrate", "--pref-min-bitrate",
                     "--pref-max-bitrate", "--pref-format", "--strict-conditions")) {
                 assertTrue(command(options).stream().noneMatch(part -> part.startsWith(gone)),
@@ -76,7 +78,7 @@ class RunnerTest {
 
     @Test
     void previewAsksForResultsInsteadOfDownloading() {
-        assertTrue(command(new Options(3, true)).contains("--print"));
+        assertTrue(command(new Options(3, true, 3)).contains("--print"));
     }
 
     @Test
@@ -193,7 +195,7 @@ class RunnerTest {
         assertTrue(with.get(with.indexOf("--on-complete") + 1).contains("{row};{state}"));
         // a preview downloads nothing, so no track ever completes and the action is pointless
         List<String> preview = Runner.buildCommand(Path.of("s.exe"), Path.of("l.txt"),
-                Path.of("out"), new Options(3, true), null, List.of(), Runner.INDEX_NAME, null,
+                Path.of("out"), new Options(3, true, 3), null, List.of(), Runner.INDEX_NAME, null,
                 events);
         assertFalse(preview.contains("--on-complete"));
     }
@@ -272,4 +274,5 @@ class RunnerTest {
         assertFalse(screen.worthSaying(false), "and the next one, a moment later, is not");
         assertTrue(screen.worthSaying(true), "unless it is the last, which must be the final count");
     }
-}
+}
+
