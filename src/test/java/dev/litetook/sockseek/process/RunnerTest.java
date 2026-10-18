@@ -259,4 +259,17 @@ class RunnerTest {
         assertEquals(Status.OK, status);
         assertEquals(List.of(new Events.Event(1, "Succeeded", "None")), seen);
     }
-}
+
+
+    // ----------------------------------------------- writing beside somebody else's display
+
+    @Test
+    void theProgressLineIsSaidAtMostEveryCoupleOfSeconds() {
+        // one line per finished track is a line a second on a big playlist, and it buries
+        // the display it sits next to
+        Screen screen = new Screen();
+        assertTrue(screen.worthSaying(false), "the first one is always worth saying");
+        assertFalse(screen.worthSaying(false), "and the next one, a moment later, is not");
+        assertTrue(screen.worthSaying(true), "unless it is the last, which must be the final count");
+    }
+}

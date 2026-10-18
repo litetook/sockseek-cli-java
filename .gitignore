@@ -12,8 +12,16 @@ build/
 /yt-dlp
 /yt-dlp_macos
 
-# the Soulseek login and any local override of sockseek.conf
+# Everything a RUN creates in this folder. The project folder is also a perfectly good
+# place to run the tool from - which is how a file of failed track names ended up in a
+# public repository on 2026-10-18 - so every one of them is named here, not just the
+# obvious ones. config.yaml and sockseek.conf are written from the templates in
+# Settings.java on first run; the copies the manual shows are in those templates.
 /sockseek.local.conf
+/config.yaml
+/sockseek.conf
+/outcomes.tsv
+/not-found.tsv
 
 # downloads, run logs, generated list files
 /output/

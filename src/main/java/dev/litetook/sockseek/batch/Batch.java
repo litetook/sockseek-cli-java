@@ -15,6 +15,7 @@ import dev.litetook.sockseek.playlist.Playlists;
 import dev.litetook.sockseek.process.Events;
 import dev.litetook.sockseek.process.ProcessRunner;
 import dev.litetook.sockseek.process.Runner;
+import dev.litetook.sockseek.process.Screen;
 import dev.litetook.sockseek.process.Sockseek;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -45,6 +46,7 @@ public final class Batch {
     private final Path workDir;
     private final Consumer<String> log;
     private final ProcessRunner capture;
+    private final Screen screen = new Screen();
 
     public Batch(RunConfig cfg, Path logsDir, Path workDir, Consumer<String> log,
                  ProcessRunner capture) {
@@ -192,7 +194,8 @@ public final class Batch {
         }
         Files.createDirectories(outDir);
         Map<String, Events.Event> said = new LinkedHashMap<>();
-        Events.Tail watch = new Events.Tail(eventsFile, event -> record(event, wanted, said));
+        Events.Tail watch = new Events.Tail(eventsFile,
+                event -> record(event, wanted, said, playlist.name()));
         dev.litetook.sockseek.process.Status status = Runner.runWithRetry(command, cfg.appDir(),
                 client.timeoutSeconds(), cfg.retries(), log, Runner.RETRY_PAUSE_SECONDS,
                 watch, cfg.stallSeconds(), outDir);
@@ -282,14 +285,24 @@ public final class Batch {
      * belongs to is known exactly rather than matched by name. The line printed here is the
      * only live count there is: sockseek's own display knows this playlist, not the run.
      */
-    void record(Events.Event event, List<Entry> wanted, Map<String, Events.Event> said) {
+    void record(Events.Event event, List<Entry> wanted, Map<String, Events.Event> said,
+                String playlistName) {
         if (event.row() > wanted.size()) {
             return;   // a row we never wrote: nothing to attach it to, and nothing to claim
         }
         String line = wanted.get(event.row() - 1).original();
         said.put(line, event);
-        long done = said.size();
+        int done = said.size();
         long got = said.values().stream().filter(Events.Event::succeeded).count();
+        // the window title is the only place that is reliably visible while sockseek draws
+        Screen.title(playlistName + "  " + done + "/" + wanted.size() + "  " + got
+                + " downloaded");
+        // every finished track is a line a second on a big playlist, which buries the
+        // display it sits beside; the last one is always said so the final count is final
+        if (!screen.worthSaying(done == wanted.size())) {
+            return;
+        }
+        Screen.freshLine();
         log.accept(">> " + done + " of " + wanted.size() + " done, " + got + " downloaded"
                 + (event.succeeded() ? "" : "  (" + event.reason() + ": " + line + ")"));
     }
