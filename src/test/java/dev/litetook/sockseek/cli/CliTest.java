@@ -33,11 +33,11 @@ class CliTest {
         // run already uses exactly what is in the file - and the block says so
         String said = block(parsed(app));
         assertTrue(Files.isRegularFile(app.resolve("config.yaml")));
-        assertTrue(said.contains("  length_tol_s = 45 [config]"), said);
+        assertTrue(said.contains("  track.max_length_diff_s = 45 [config]"), said);
         // 60, not the 10 it shipped with until 2026-10-17: ten minutes is what cut
         // run #0056 off with 35 tracks unsearched, eleven of them never even started
-        assertTrue(said.contains("  playlist_timeout_min = 60 [config]"), said);
-        assertTrue(said.contains("  retries = 1 [config]"), said);
+        assertTrue(said.contains("  playlist.attempt_timeout_min = 60 [config]"), said);
+        assertTrue(said.contains("  playlist.attempts = 1 [config]"), said);
         // a whole number reads as a whole number, not 60.0
         assertTrue(!said.contains("60.0"), said);
     }
@@ -45,31 +45,31 @@ class CliTest {
     @Test
     void aKeyThatTheFileDoesNotSetFallsBackToTheBuiltInDefault(@TempDir Path app)
             throws IOException {
-        Files.writeString(app.resolve("config.yaml"), "search:\n  retries: 3\n");
+        Files.writeString(app.resolve("config.yaml"), "playlist:\n  attempts: 3\n");
         String said = block(parsed(app));
-        assertTrue(said.contains("  retries = 3 [config]"), said);
-        assertTrue(said.contains("  length_tol_s = 45 [default]"), said);
-        assertTrue(said.contains("  playlist_timeout_min = 60 [default]"), said);
+        assertTrue(said.contains("  playlist.attempts = 3 [config]"), said);
+        assertTrue(said.contains("  track.max_length_diff_s = 45 [default]"), said);
+        assertTrue(said.contains("  playlist.attempt_timeout_min = 60 [default]"), said);
     }
 
     @Test
     void theConfigFileIsTheMiddleSourceAndTheFlagWins(@TempDir Path app) throws IOException {
         Files.writeString(app.resolve("config.yaml"),
-                "search:\n  length_tol_s: 6\n  retries: 5\n");
-        String said = block(parsed(app, "--retries", "3"));
-        assertTrue(said.contains("  length_tol_s = 6 [config]"), said);
-        assertTrue(said.contains("  retries = 3 [cli]"), said);
-        assertTrue(said.contains("  playlist_timeout_min = 60 [default]"), said);
+                "track:\n  max_length_diff_s: 6\nplaylist:\n  attempts: 5\n");
+        String said = block(parsed(app, "--attempts", "3"));
+        assertTrue(said.contains("  track.max_length_diff_s = 6 [config]"), said);
+        assertTrue(said.contains("  playlist.attempts = 3 [cli]"), said);
+        assertTrue(said.contains("  playlist.attempt_timeout_min = 60 [default]"), said);
     }
 
     @Test
     void theFoldersAreNamedWithWhereTheyCameFrom(@TempDir Path app) throws IOException {
-        Files.writeString(app.resolve("config.yaml"), "paths:\n  output: exported\n");
+        Files.writeString(app.resolve("config.yaml"), "paths:\n  music: exported\n");
         String said = block(parsed(app, "--playlists", "lists"));
-        assertTrue(said.contains("playlists_dir = lists [cli]"), said);
-        assertTrue(said.contains("output_dir = " + app.resolve("exported") + " [config]"), said);
-        assertTrue(said.contains("sockseek_exe = " + app.resolve("sockseek.exe") + " [default]"),
-                said);
+        assertTrue(said.contains("paths.playlists = lists [cli]"), said);
+        assertTrue(said.contains("paths.music = " + app.resolve("exported") + " [config]"), said);
+        assertTrue(said.contains("paths.sockseek_bin = " + app.resolve("sockseek.exe")
+                + " [default]"), said);
     }
 
     @Test
@@ -83,12 +83,12 @@ class CliTest {
     void onlyTheFlagsThatWereGivenAppearAtTheEnd(@TempDir Path app) {
         String bare = block(parsed(app));
         assertTrue(!bare.contains("dry_run"), bare);
-        assertTrue(bare.contains("explain_tracks = 20 [config]"), bare);
+        assertTrue(bare.contains("cache.explain_per_playlist = 20 [config]"), bare);
         String said = block(parsed(app, "--dry-run", "--only", "mix", "--explain"));
         assertTrue(said.contains("  only = mix [cli]"), said);
         assertTrue(said.contains("  dry_run = True [cli]"), said);   // True, with a capital
         // --explain is the old way of saying "all of them"
-        assertTrue(said.contains("  explain_tracks = 2147483647 [cli]"), said);
+        assertTrue(said.contains("  cache.explain_per_playlist = 2147483647 [cli]"), said);
     }
 
     @Test
@@ -96,20 +96,24 @@ class CliTest {
         // it is in the owner's fingers and in every note written before 2026-10-17; a flag that
         // used to work must not start failing the command line
         String said = block(parsed(app, "--no-explain"));
-        assertTrue(!said.contains("explain_tracks = 2147483647"), said);
+        assertTrue(!said.contains("explain_per_playlist = 2147483647"), said);
     }
 
     @Test
     void aValueBelowTheMinimumStopsTheRunWithTwo(@TempDir Path app) {
         ByteArrayOutputStream err = new ByteArrayOutputStream();
-        for (String[] argv : List.of(new String[] {"--retries", "0"},
+        for (String[] argv : List.of(new String[] {"--attempts", "0"},
+                new String[] {"--max-length-diff", "-2"},
+                new String[] {"--attempt-timeout", "-5"},
+                // the names they had before 2026-10-18 reach the same settings
+                new String[] {"--retries", "0"},
                 new String[] {"--length-tol", "-2"},
                 new String[] {"--playlist-timeout", "-5"})) {
             assertEquals(2, Cli.main(List.of(argv), app,
                     new PrintStream(err, true, StandardCharsets.UTF_8)), String.join(" ", argv));
         }
         String said = err.toString(StandardCharsets.UTF_8);
-        assertTrue(said.contains("retries"), said);
+        assertTrue(said.contains("attempts"), said);
         assertTrue(said.contains("below the minimum"), said);
     }
 
@@ -122,7 +126,32 @@ class CliTest {
 
     @Test
     void minusOneIsALegalLengthTolerance(@TempDir Path app) {
-        assertTrue(block(parsed(app, "--length-tol", "-1")).contains("length_tol_s = -1 [cli]"));
+        assertTrue(block(parsed(app, "--max-length-diff", "-1"))
+                .contains("track.max_length_diff_s = -1 [cli]"));
+    }
+
+    @Test
+    void theOldFlagNamesStillReachTheSameSettings(@TempDir Path app) {
+        // they are in the owner's fingers and in every note written before 2026-10-18
+        String said = block(parsed(app, "--retries", "4", "--length-tol", "9",
+                "--playlist-timeout", "15", "--skip-not-found-hours", "3",
+                "--searches-renew-s", "77", "--output", "exported"));
+        assertTrue(said.contains("  playlist.attempts = 4 [cli]"), said);
+        assertTrue(said.contains("  track.max_length_diff_s = 9 [cli]"), said);
+        assertTrue(said.contains("  playlist.attempt_timeout_min = 15 [cli]"), said);
+        assertTrue(said.contains("  cache.skip_absent_h = 3 [cli]"), said);
+        assertTrue(said.contains("  rate_limit.window_s = 77 [cli]"), said);
+        assertTrue(said.contains("paths.music = exported [cli]"), said);
+    }
+
+    @Test
+    void theFormatOrderOfTheConfigFileIsUsed(@TempDir Path app) throws IOException {
+        // until 2026-10-18 the key was dropped as unknown and only the flag worked, so a
+        // config that said mp3,flac,wav quietly made one unordered pass
+        Files.writeString(app.resolve("config.yaml"), "track:\n  format_order: mp3,flac,wav\n");
+        Cli cli = parsed(app);
+        assertEquals(List.of("mp3", "flac", "wav"), cli.formatOrder());
+        assertTrue(block(cli).contains("track.format_order = mp3,flac,wav [config]"), block(cli));
     }
 
     @Test

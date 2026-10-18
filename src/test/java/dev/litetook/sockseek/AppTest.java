@@ -375,7 +375,9 @@ class AppTest {
         assertTrue(run.said("Put your Soulseek login in "), run.printed().toString());
         assertTrue(run.said("Then run this again. Nothing can be downloaded until then."),
                 run.printed().toString());
-        assertTrue(Files.isRegularFile(home.resolve(Settings.SOCKSEEK_LOCAL_CONF)));
+        // and the file it asks for is NOT written for you: a placeholder file looks filled in
+        assertFalse(Files.exists(home.resolve(Settings.LOCAL_CONFIG_NAME)));
+        assertTrue(Files.isRegularFile(home.resolve(Settings.CONFIG_NAME)));
     }
 
     @Test

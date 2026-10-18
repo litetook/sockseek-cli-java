@@ -26,9 +26,16 @@ import java.util.function.Consumer;
 public final class Settings {
 
     public static final String CONFIG_NAME = "config.yaml";
-    public static final String SOCKSEEK_CONF = "sockseek.conf";
-    public static final String SOCKSEEK_LOCAL_CONF = "sockseek.local.conf";
+    /**
+     * The one file that is never committed: the login, and anything else this machine wants
+     * to override. It is not created by the tool - a file full of placeholders is a file that
+     * looks filled in. Replaces sockseek.local.conf, by the owner's decision of 2026-10-18.
+     */
+    public static final String LOCAL_CONFIG_NAME = "config.local.yaml";
     public static final String SOCKSEEK_EFFECTIVE_CONF = "sockseek.effective.conf";
+
+    /** The section of config.yaml that is sockseek's own, passed on without being read. */
+    public static final String SOCKSEEK_SECTION = "sockseek";
 
     public static final List<String> CREDENTIAL_KEYS = List.of("username", "password");
     /**
@@ -40,209 +47,238 @@ public final class Settings {
     public static final String FORMAT_ORDER = "format_order";
 
     public static final List<String> PATH_KEYS =
-            List.of("sockseek", "playlists", "output", "work", "logs");
+            List.of("sockseek_bin", "playlists", "music", "work", "logs");
+    /** What those folders were called before 2026-10-18; still read, with a warning. */
+    private static final Map<String, String> PATH_OLD_KEYS =
+            Map.of("sockseek", "sockseek_bin", "output", "music");
     private static final Map<String, String> PATH_DEFAULTS = Map.of(
-            "sockseek", "sockseek.exe", "playlists", "Playlists", "output", "output",
+            "sockseek_bin", "sockseek.exe", "playlists", "Playlists", "music", "output",
             "work", "work", "logs", "logs");
 
     /**
-     * The settings file, written when it is missing.
+     * The settings file, written when it is missing. One file since 2026-10-18: the tool's own
+     * settings and sockseek's, in sections, by the owner's decision ("зведи це все в один ямл
+     * файл"). Before that sockseek.conf stood beside it, and the reason it could stand apart -
+     * "those keys are sockseek's, not ours" - is now a section instead of a file.
      *
      * <p>It carries a comment per key since 2026-10-17. Until then it was a bare list of
      * names and values and the manual did the explaining, by the owner's call of 2026-10-11 -
      * he reversed it on seeing the file: a setting you have to leave the file to understand
      * is a setting you will not touch. The comments say what the key IS; the manual still has
      * the why and the measurements behind each default.
+     *
+     * <p>The login is NOT here and no placeholder for it is written anywhere: it goes in
+     * config.local.yaml, which the owner writes himself and git never sees.
      */
     public static final String CONFIG_TEMPLATE = """
+            # Sections say what a value affects, and the full name of a setting is
+            # section.key - playlist.attempts, track.max_sources. A key found under the
+            # wrong section still works and is named in a warning; an unknown key is named
+            # and ignored. Everything under "sockseek:" is sockseek's own and is passed to
+            # it untouched.
+            #
+            # The Soulseek login does not live here. Put it in config.local.yaml, which is
+            # git-ignored and overrides any key below:
+            #
+            #     sockseek:
+            #       username: your-login
+            #       password: your-password
+
+            # ======================================================================
+            # WHERE THINGS ARE
+            # ======================================================================
             paths:
-              # the sockseek binary; .exe is added or dropped to match what is really there
-              sockseek: sockseek.exe
-              # folder of playlist .txt files - this is the input
+              # the sockseek program; .exe is added or dropped to match what is there
+              sockseek_bin: sockseek.exe
+              # input: one playlist .txt per playlist
               playlists: Playlists
-              # where the audio goes, one sub-folder per playlist
-              output: output
-              # generated list files and the merged sockseek config; rebuilt every run and
-              # safe to delete - but it holds the login in plain text while one is going
+              # output: the audio, one sub-folder per playlist
+              music: output
+              # scratch: generated list files and the merged sockseek config, rebuilt every
+              # run and safe to delete - but it holds the login while a run is going
               work: work
               # run logs, session logs and the run counter
               logs: logs
 
-            search:
-              # HARD filter: a shared file may differ from the playlist length by this many
-              # seconds, -1 turns it off
-              length_tol_s: 45
-              # how many times to attempt one playlist; each attempt is a fresh sockseek
-              retries: 1
-              # wall clock for ONE attempt at one playlist, in minutes, 0 = no limit
-              playlist_timeout_min: 60
-              # stop a playlist when nothing has finished AND nothing has arrived on disk for
-              # this many seconds, 0 = never stop it
-              stall_timeout_s: 300
-              # do not search again for a track nobody was sharing, if that was within this
-              # many hours; 0 = always search. Fractions are fine
-              skip_not_found_hours: 2
-              # the brake across playlists: all of them together stay under this many
-              # searches per searches_renew_s, or the Soulseek server bans the account for
-              # half an hour. Both must match searches-per-time and searches-renew-time in
-              # sockseek.conf: sockseek keeps to them inside one process, this keeps to them
-              # across all of them
+            # ======================================================================
+            # THE BRAKE - all playlists together, because the server counts per account
+            # ======================================================================
+            rate_limit:
+              # more searches than this in one window and the server bans the account for
+              # half an hour. sockseek counts inside ONE process and a run is many of them,
+              # so this is the only count that matches what the server sees; 0 = no pause
               searches_per_window: 34
-              # and the length of that window, in seconds
-              searches_renew_s: 220
-              # how many different uploaders to try for one track before giving up this run
-              max_sources: 3
-              # after a run, search again with every condition off for this many failed tracks
-              # per playlist. sockseek reports "nobody had it" and "found it and refused it"
-              # with the same code, and this is the only way to tell them apart - which the
-              # cache below needs, or it would stop searching for tracks that are there
-              explain_tracks: 20
-              # Formats in the order you want them, most wanted first. Each is a separate
-              # pass over whatever is still missing, with that format REQUIRED, and a last
-              # pass with no format at all picks up everything else. This is the only way
-              # to order them: sockseek's own pref-format is unordered by its own
-              # documentation, so "flac,mp3" there means "both equally fine", not "flac
-              # first".
+              # the length of that window, in seconds
+              window_s: 220
+
+            # ======================================================================
+            # ONE PLAYLIST - when to give up on it
+            # ======================================================================
+            playlist:
+              # how many goes at one playlist; 1 means one go and no repeat. Each is a
+              # fresh sockseek
+              attempts: 1
+              # kill ONE go after this many minutes, 0 = never. Two attempts can take twice
+              # this long
+              attempt_timeout_min: 60
+              # kill a go when nothing has finished AND nothing has arrived on disk for this
+              # many seconds, 0 = never
+              stall_timeout_s: 300
+
+            # ======================================================================
+            # ONE TRACK - which file is the right one, and how hard to try
+            # ======================================================================
+            track:
+              # Formats you want, most wanted first. Each is a separate pass over whatever
+              # is still missing with that format REQUIRED, and a last pass takes anything
+              # else. This is the only way to order them: sockseek's own pref-format is
+              # unordered by its own documentation, so "flac,mp3" there means "both are
+              # fine", not "flac first".
               #
               # It costs searches: a track nobody has goes through every pass, so three
               # formats mean four searches for it instead of one - until the cache has
               # confirmed it absent and stops looking. Empty means one pass, no ordering.
               #   format_order: mp3,flac,wav
               format_order:
-              # remember in outcomes.tsv how each track ended; false ignores the file entirely
-              use_cache: true
-            """;
+              # HARD condition and the only one we own: a shared file whose length differs
+              # from the playlist by more than this many seconds is refused outright.
+              # -1 turns it off. A refused track looks exactly like a missing one
+              max_length_diff_s: 45
+              # how many different uploaders to try for one track before giving up this run
+              max_sources: 3
 
-    /**
-     * sockseek.conf is recreated when it is missing, like config.yaml: it carries measured
-     * decisions - the 256 kbps floor, the 30 s wait, the ranking ceiling - and losing them
-     * silently would quietly change every run.
-     *
-     * <p>The two login keys stay as comments because sockseek refuses a key with an empty value
-     * (measured 2026-10-11: "Error parsing config ... at line 0").
-     *
-     * <p>The four waiting keys are the honest answer to the owner's rule of 2026-10-17, "якщо
-     * швидкість до 60 кб/с це дуже мало... переключаємось на наступне. і так тричі". sockseek
-     * has no "slower than N kB/s" lever at all - there is no such condition
-     * ({@code uploadspeed}, {@code upspeed} and {@code speed} are all rejected as unknown,
-     * measured) and no way to interrupt one transfer from outside without taking the console
-     * away. What it does have is these: {@code max-stale-time} drops a source that has sent
-     * nothing for 12 s rather than 30, {@code max-retries} caps the attempts at the three he
-     * asked for (and sockseek does move to the next candidate by itself - measured with three
-     * copies of one track and two forced failures), and the two {@code fails-to-} keys push a
-     * bad uploader down the ranking after one failure and out of it after two. That is "three
-     * tries, then somebody else", bounded by sockseek's own clock instead of ours.
-     *
-     * <p>{@code pref-max-bitrate = 1411} and {@code pref-format = flac,mp3} are the owner's
-     * decision of 2026-10-16 about disk space, and both are PREFERENCES, so nothing is ever
-     * refused for being too big: 1411 kbps is exactly CD lossless, so anything above it can
-     * only be 24-bit or above 48 kHz, and a wav costs 10 MB a minute where a flac of the same
-     * CD quality costs 7. Both still download when nothing cheaper exists. Measured on the
-     * owner's own 57 files: the heaviest was a 2722 kbps flac, 102 MB for 5:15, and the six
-     * files above 1411 kbps held 26% of all the bytes.
-     */
-    public static final String SOCKSEEK_CONF_TEMPLATE = """
-            # sockseek's own options, without the leading --. No secrets here: this file is
-            # safe to share. The login goes in sockseek.local.conf, which overrides any key
-            # below as well. `sockseek.exe --help` is the full list.
-            #
-            # These two stay commented out: sockseek refuses a key with an empty value.
-            # username =
-            # password =
+            # ======================================================================
+            # MEMORY BETWEEN RUNS - outcomes.tsv
+            # ======================================================================
+            cache:
+              # remember how each track ended; false ignores the file entirely - searches
+              # everything and writes nothing down
+              enabled: true
+              # do not search again for a track confirmed absent - nobody on the network had
+              # it - if that was within this many hours; 0 = always search. Fractions are
+              # fine. Only a confirmed absence counts, never a track the filters refused
+              skip_absent_h: 2
+              # after a run, search again with every condition off for this many failed
+              # tracks IN EACH PLAYLIST. sockseek reports "nobody had it" and "found it and
+              # refused it" with the SAME code, and this is the only way to tell them apart,
+              # which the line above depends on; costs one search each, 0 = none
+              explain_per_playlist: 20
 
-            # --- how long to wait on a source that is not delivering ---
-            # milliseconds with no bytes arriving before this candidate is dropped
-            max-stale-time = 12000
-            # an uploader that fails once drops down the ranking
-            fails-to-downrank = 1
-            # an uploader that fails twice is left out for the rest of the run
-            fails-to-ignore = 2
+            # ======================================================================
+            # SOCKSEEK - handed to sockseek untouched. The key names are ITS, not ours,
+            # which is why they carry dashes and no units. `sockseek --help` is the full
+            # list. The sub-blocks are ours, for reading only: they are flattened away on
+            # the way out, and a line pasted in sockseek's own "key = value" form is read
+            # just as well as "key: value".
+            # ======================================================================
+            sockseek:
 
-            # --- quality ---
-            # A HARD ceiling is not set, on purpose: an expensive file should come last,
-            # not be refused, and refusing it can mean the track does not arrive at all.
-            # Uncomment one of these if the disk matters more than the coverage. All three
-            # reject outright; the pref- keys below only reorder.
-            #   max-bitrate = 1411      kbps. 1411 is exactly CD lossless, so this keeps
-            #                           24-bit and hi-res out
-            #   max-samplerate = 48000  Hz. Keeps 96 and 192 kHz out, where the size is
-            #   max-bitdepth = 16       bits. 24-bit is 1.5x the bytes at the same rate
-            #   format = mp3,flac       the formats allowed AT ALL (not an order - see
-            #                           format_order in config.yaml for that)
-            # the ONLY hard floor: a file below this bitrate is refused outright
-            min-bitrate = 256
-            # everything with pref- only RANKS candidates and never refuses one
-            pref-min-bitrate = 320
-            # 1411 kbps is CD lossless; anything above it is 24-bit or hi-res, so it ranks
-            # last and arrives only when there is nothing cheaper
-            pref-max-bitrate = 1411
-            # flac and mp3 equally preferred; wav is not listed, so it ranks below both
-            pref-format = flac,mp3
+              # -- REFUSE: a file failing any of these is not downloaded AT ALL ------
+              # all off on purpose: a refusal is indistinguishable from "nobody had it",
+              # and min-bitrate = 256 refused every mp3 at 192 or 224 - a large part of
+              # what Soulseek actually has, and 104 of 135 failures on a real run
+              refuse:
+                # min-bitrate: 256       # worse than this -> never, even if nothing else exists
+                # max-bitrate: 1411      # better than this -> never (1411 kbps = CD lossless)
+                # max-samplerate: 48000  # above 48 kHz -> never
+                # max-bitdepth: 16       # 24-bit -> never
+                # format: mp3,flac       # the only formats allowed at all - not an order
 
-            # --- picking a source early ---
-            # take the first candidate that satisfies the preferred conditions instead of
-            # waiting for the whole search to finish
-            fast-search = true
-            # but spend this many milliseconds collecting candidates first
-            fast-search-delay = 2000
-            # a pass mark for that shortcut ONLY; a slower uploader stays in the normal set.
-            # The unit is undocumented and still unproven - 1 is sockseek's own default
-            fast-search-min-up-speed = 200
-            # prefer files whose path contains the track title / the artist
-            pref-strict-title = true
-            pref-strict-artist = true
-            """;
+              # -- PREFER: the same ideas as an ORDER. Nothing here ever refuses -----
+              prefer:
+                # 320+ comes first; worse still downloads when that is all there is
+                pref-min-bitrate: 320
+                # above CD lossless comes last: 24-bit and hi-res cost a lot of bytes for
+                # little gain, and still arrive when there is nothing cheaper
+                pref-max-bitrate: 1411
+                # flac and mp3 equally; wav is unlisted, so it comes last
+                pref-format: flac,mp3
+                # files whose path contains the track title come first
+                pref-strict-title: true
+                # and the same for the artist
+                pref-strict-artist: true
 
-    public static final String LOCAL_CONF_TEMPLATE = """
-            username = your-login
-            password = your-password
+              # -- PICK A SOURCE: how long to shop around before committing ----------
+              pick_source:
+                # take the first candidate that fits instead of waiting for the whole
+                # search to end
+                fast-search: true
+                # milliseconds spent collecting candidates first, so "the first" is not
+                # simply the only one
+                fast-search-delay: 2000
+                # the speed a candidate needs to qualify for that shortcut; a slower one
+                # stays in the normal queue. The unit is undocumented and unproven -
+                # sockseek's own default is 1
+                fast-search-min-up-speed: 200
+
+              # -- DROP A SOURCE: when to stop waiting on one that is not delivering --
+              drop_source:
+                # milliseconds connected with no bytes arriving before this candidate is
+                # dropped and the next uploader is tried
+                max-stale-time: 12000
+                # one failure pushes an uploader down the ranking
+                fails-to-downrank: 1
+                # two failures and it is left out for the rest of the run
+                fails-to-ignore: 2
+                # how many DIFFERENT uploaders a track is offered to is track.max_sources
+                # above: sockseek calls that max-retries, which counts something else
             """;
 
     public static final List<Setting> ALL = List.of(
-            new Setting("length_tol_s", "--length-tol", Setting.Kind.INTEGER, 45, -1.0,
-                    "length tolerance in seconds around the playlist length; HARD condition, "
-                            + "-1 disables (default 45)", List.of("tol")),
+            // ---- one track ----
+            new Setting("track", "max_length_diff_s", "--max-length-diff",
+                    Setting.Kind.INTEGER, 45, -1.0,
+                    "refuse a shared file whose length differs from the playlist by more than "
+                            + "this many seconds; HARD condition, -1 disables (default 45)",
+                    List.of("tol", "length_tol_s")),
+            new Setting("track", "max_sources", "--max-sources", Setting.Kind.INTEGER, 3, 1.0,
+                    "how many different uploaders to try for one track before giving up on "
+                            + "it this run (default 3)", List.of()),
+            // ---- one playlist ----
             // 60 and 1, the same numbers the shipped config.yaml carries. They used to be
             // 40 and 2, so a deleted config file quietly changed how a run behaved and the
             // help text named a default the file disagreed with - one number is enough.
-            new Setting("playlist_timeout_min", "--playlist-timeout", Setting.Kind.DECIMAL, 60.0,
-                    0.0, "wall-clock limit per attempt for one playlist, in minutes, 0 = none "
-                            + "(default 60)", List.of("timeout")),
-            new Setting("retries", "--retries", Setting.Kind.INTEGER, 1, 1.0,
-                    "attempts per playlist, at least 1 (default 1)", List.of()),
-            new Setting("stall_timeout_s", "--stall-timeout", Setting.Kind.DECIMAL, 300.0, 0.0,
-                    "stop a playlist when no track has finished for this many seconds, "
-                            + "0 = never (default 300)", List.of()),
-            new Setting("skip_not_found_hours", "--skip-not-found-hours",
-                    Setting.Kind.DECIMAL, 2.0, 0.0,
-                    "do not search again for a track nobody had, if that was within this many "
-                            + "hours; 0 = always search (default 2). Fractions are fine: 0.5 "
-                            + "is half an hour", List.of()),
-            new Setting("use_cache", "--no-cache", Setting.Kind.BOOLEAN, 1, 0.0,
+            new Setting("playlist", "attempt_timeout_min", "--attempt-timeout",
+                    Setting.Kind.DECIMAL, 60.0, 0.0,
+                    "wall-clock limit for ONE attempt at one playlist, in minutes, 0 = none "
+                            + "(default 60)", List.of("timeout", "playlist_timeout_min")),
+            // "retries" counted attempts, so retries = 1 meant one go and no repeat at all.
+            // Renamed 2026-10-18 for the same reason max-retries became max_sources: a name
+            // that counts something else is a name that will be set to the wrong number.
+            new Setting("playlist", "attempts", "--attempts", Setting.Kind.INTEGER, 1, 1.0,
+                    "goes at one playlist, at least 1; 1 means one go and no repeat "
+                            + "(default 1)", List.of("retries")),
+            new Setting("playlist", "stall_timeout_s", "--stall-timeout", Setting.Kind.DECIMAL,
+                    300.0, 0.0,
+                    "stop an attempt when nothing has finished and nothing has arrived on "
+                            + "disk for this many seconds, 0 = never (default 300)", List.of()),
+            // ---- the cache ----
+            // "not found" was the very word that meant two things, which is what the
+            // confirmed-absent class exists to undo; the key no longer repeats it.
+            new Setting("cache", "skip_absent_h", "--skip-absent", Setting.Kind.DECIMAL, 2.0,
+                    0.0, "do not search again for a track confirmed absent from the network, "
+                            + "if that was within this many hours; 0 = always search "
+                            + "(default 2). Fractions are fine: 0.5 is half an hour",
+                    List.of("skip_not_found_hours")),
+            new Setting("cache", "enabled", "--no-cache", Setting.Kind.BOOLEAN, 1, 0.0,
                     "remember what happened to a track and act on it; false ignores "
                             + "outcomes.tsv completely - searches everything and writes "
-                            + "nothing down (default true)", List.of()),
-            new Setting("searches_per_window", "--searches-per-window", Setting.Kind.INTEGER,
-                    34, 0.0, "keep the searches of ALL playlists together under this many per "
-                            + "searches_renew_s, by pausing between playlists; 0 = no pause. "
-                            + "Must match sockseek's searches-per-time (default 34)",
-                    List.of()),
-            new Setting("searches_renew_s", "--searches-renew-s", Setting.Kind.INTEGER, 220,
-                    1.0, "the window those searches are counted in, in seconds. Must match "
-                            + "sockseek's searches-renew-time (default 220)", List.of()),
-            new Setting("max_sources", "--max-sources", Setting.Kind.INTEGER, 3, 1.0,
-                    "how many different uploaders to try for one track before giving up on "
-                            + "it this run (default 3)", List.of()),
-            new Setting("explain_tracks", "--explain-tracks", Setting.Kind.INTEGER, 20, 0.0,
+                            + "nothing down (default true)", List.of("use_cache")),
+            new Setting("cache", "explain_per_playlist", "--explain-tracks",
+                    Setting.Kind.INTEGER, 20, 0.0,
                     "after a run, search again with every condition off for this many failed "
                             + "tracks per playlist, to find out which of them nobody had and "
                             + "which were refused by the filters; costs one search each, "
-                            + "0 = none (default 20)", List.of()));
-
-    /** Taken from the template rather than written out again: renaming a placeholder there must
-     *  not quietly turn "you have not filled this in yet" into "you have". */
-    private static final Set<String> PLACEHOLDERS =
-            Set.copyOf(parseConf(LOCAL_CONF_TEMPLATE).values());
+                            + "0 = none (default 20)", List.of("explain_tracks")),
+            // ---- the whole run ----
+            new Setting("rate_limit", "searches_per_window", "--searches-per-window",
+                    Setting.Kind.INTEGER, 34, 0.0,
+                    "keep the searches of ALL playlists together under this many per "
+                            + "rate_limit.window_s, by pausing between playlists; 0 = no "
+                            + "pause (default 34)", List.of()),
+            new Setting("rate_limit", "window_s", "--searches-window", Setting.Kind.INTEGER,
+                    220, 1.0, "the window those searches are counted in, in seconds "
+                            + "(default 220)", List.of("searches_renew_s")));
 
     private Settings() {
     }
@@ -256,15 +292,26 @@ public final class Settings {
     // ------------------------------------------------------------------ config.yaml
 
     /**
-     * Flat {@code key: value} pairs, section names ignored.
+     * {@code section.key -> value}, one entry per setting in the file.
      *
-     * <p>Deliberately not a YAML implementation: the config is a list of names and values.
-     * A line that looks like a setting but yields no pair is reported with its number -
+     * <p>Deliberately not a YAML implementation: the config is a list of names and values in
+     * named blocks. A line that opens a block ends in a colon and carries no value; a line
+     * indented under it belongs to that block, and the name it comes back under is
+     * {@code block.key}. Only the OUTERMOST block names a key, so the reading aids inside the
+     * sockseek block - refuse, prefer, pick_source, drop_source - flatten away, and
+     * {@code sockseek.min-bitrate} is what comes out of all of them.
+     *
+     * <p>Inside the sockseek block a line may also be written sockseek's own way,
+     * {@code key = value}, so a line pasted out of its help works without translation.
+     *
+     * <p>A line that looks like a setting but yields no pair is reported with its number -
      * dropping one silently is how a setting goes missing while the log still claims the
      * default was chosen on purpose.
      */
     public static Map<String, String> parseYaml(String text, Consumer<String> warn) {
         Map<String, String> values = new LinkedHashMap<>();
+        String block = "";          // the outermost block, "" at the top level
+        int blockIndent = -1;       // the indent that opened it; deeper blocks are read aids
         int number = 0;
         for (String raw : text.lines().toList()) {
             number++;
@@ -272,13 +319,30 @@ public final class Settings {
             if (line.isEmpty() || line.startsWith("#")) {
                 continue;
             }
+            int indent = raw.length() - raw.stripLeading().length();
+            if (indent <= blockIndent) {
+                block = "";
+                blockIndent = -1;
+            }
             // split on the first ": ", not the first ":", or a value like a Windows path would
             // lose everything after its own colon
             int separator = line.indexOf(": ");
-            String head = separator >= 0 ? line.substring(0, separator) : trimTrailingColons(line);
-            String given = separator >= 0 ? line.substring(separator + 2).strip() : "";
-            String value = separator >= 0 ? scalar(given) : "";
+            // "key = value" as sockseek writes it, so a line pasted out of its help works
+            int equals = block.equals(SOCKSEEK_SECTION) ? line.indexOf('=') : -1;
+            boolean pair = separator >= 0 || equals > 0;
+            String head = separator >= 0 ? line.substring(0, separator)
+                    : equals > 0 ? line.substring(0, equals) : trimTrailingColons(line);
+            String given = separator >= 0 ? line.substring(separator + 2).strip()
+                    : equals > 0 ? line.substring(equals + 1).strip() : "";
+            String value = pair ? scalar(given) : "";
             String key = head.strip();
+            if (!pair && line.endsWith(":") && !key.isEmpty()) {
+                if (blockIndent < 0) {               // an outermost block: it names the keys
+                    block = key;
+                    blockIndent = indent;
+                }
+                continue;                            // a deeper one is a reading aid only
+            }
             if (!value.isEmpty() && !value.equals(given) && given.indexOf('#') >= 0
                     && warn != null) {
                 // a folder really can be called Rock#1, and cutting it down to Rock without a
@@ -289,13 +353,24 @@ public final class Settings {
                         + "quotes if the # belongs to it");
             }
             if (!key.isEmpty() && !value.isEmpty()) {
-                values.put(key, value);
-            } else if ((key.isEmpty() || !line.endsWith(":")) && warn != null) {
+                values.put(block.isEmpty() ? key : block + "." + key, value);
+            } else if (warn != null) {
                 warn.accept("line " + number + " is not a 'key: value' pair, ignored: '"
                         + line + "'");
             }
         }
         return values;
+    }
+
+    /** The block a full name belongs to, {@code ""} for a name written without one. */
+    public static String sectionOf(String fullName) {
+        int dot = fullName.indexOf('.');
+        return dot < 0 ? "" : fullName.substring(0, dot);
+    }
+
+    /** The key itself, whether or not the name carries its block. */
+    public static String leafOf(String fullName) {
+        return fullName.substring(fullName.indexOf('.') + 1);
     }
 
     private static String trimTrailingColons(String line) {
@@ -351,6 +426,13 @@ public final class Settings {
         if (!Files.exists(path)) {
             return create(path, say);
         }
+        Config base = read(path, say);
+        Path local = path.resolveSibling(LOCAL_CONFIG_NAME);
+        return Files.exists(local) ? over(base, read(local, say)) : base;
+    }
+
+    /** One file, checked. {@link #loadConfig} is this plus the local layer on top. */
+    private static Config read(Path path, Consumer<String> say) {
         String text;
         try {
             text = readUtf8(path);
@@ -363,25 +445,49 @@ public final class Settings {
                 message -> say.accept("WARN: " + name + ": " + message));
         Map<String, String> paths = new LinkedHashMap<>();
         Map<String, Number> numbers = new LinkedHashMap<>();
+        Map<String, String> words = new LinkedHashMap<>();
+        Map<String, String> sockseek = new LinkedHashMap<>();
         for (Map.Entry<String, String> pair : raw.entrySet()) {
-            String key = pair.getKey();
+            String full = pair.getKey();
+            String section = sectionOf(full);
+            String key = leafOf(full);
+            // sockseek's own block: not ours to understand, so not ours to check either
+            if (section.equals(SOCKSEEK_SECTION)) {
+                sockseek.put(key, pair.getValue());
+                continue;
+            }
+            String folder = PATH_OLD_KEYS.get(key);
+            if (folder != null) {
+                say.accept("WARN: " + name + ": key '" + key + "' is deprecated, use '"
+                        + folder + "' (same value)");
+                key = folder;
+            }
             if (PATH_KEYS.contains(key)) {
                 paths.put(key, pair.getValue());
                 continue;
             }
+            if (key.equals(FORMAT_ORDER)) {
+                words.put(FORMAT_ORDER, pair.getValue());
+                continue;
+            }
             Optional<Setting> found = byKey(key);
             if (found.isEmpty()) {
-                say.accept("WARN: " + name + ": unknown key '" + key + "', ignored");
+                say.accept("WARN: " + name + ": unknown key '" + full + "', ignored");
                 continue;
             }
             Setting setting = found.get();
             if (!key.equals(setting.key())) {
                 say.accept("WARN: " + name + ": key '" + key + "' is deprecated, use '"
-                        + setting.key() + "' (same value, unit in the name)");
+                        + setting.fullName() + "' (same value, unit in the name)");
+            } else if (!section.isEmpty() && !section.equals(setting.section())) {
+                // honoured anyway: the blocks group the file, they do not decide anything.
+                // Saying so is how a key that drifted into the wrong block gets noticed
+                say.accept("WARN: " + name + ": '" + full + "' belongs under "
+                        + setting.section() + ", read as '" + setting.fullName() + "'");
             }
             Optional<Number> value = setting.kind().parse(pair.getValue());
             if (value.isEmpty()) {
-                say.accept("WARN: " + name + ": invalid value for '" + key
+                say.accept("WARN: " + name + ": invalid value for '" + full
                         + "', using the default");
                 continue;
             }
@@ -393,7 +499,20 @@ public final class Settings {
             }
             numbers.put(setting.key(), value.get());
         }
-        return new Config(paths, numbers);
+        return new Config(paths, numbers, words, sockseek);
+    }
+
+    /** The local layer on top of the committed one: a key it names wins, the rest stays. */
+    private static Config over(Config base, Config local) {
+        Map<String, String> paths = new LinkedHashMap<>(base.paths());
+        paths.putAll(local.paths());
+        Map<String, Number> numbers = new LinkedHashMap<>(base.numbers());
+        numbers.putAll(local.numbers());
+        Map<String, String> words = new LinkedHashMap<>(base.text());
+        words.putAll(local.text());
+        Map<String, String> sockseek = new LinkedHashMap<>(base.sockseek());
+        sockseek.putAll(local.sockseek());
+        return new Config(paths, numbers, words, sockseek);
     }
 
     private static Config create(Path path, Consumer<String> say) {
@@ -425,7 +544,9 @@ public final class Settings {
     public static Path folder(Path appDir, String key) {
         try {
             Map<String, String> values = parseYaml(readUtf8(appDir.resolve(CONFIG_NAME)), null);
-            String given = values.get(key);
+            // "paths.logs" is how the file names it now; the bare "logs" of the flat file
+            // before 2026-10-18 still answers, because an old config.yaml must keep working
+            String given = values.getOrDefault("paths." + key, values.get(key));
             if (given != null && !given.isBlank()) {
                 Path path = Path.of(given.strip());
                 return path.isAbsolute() ? path : appDir.resolve(path);
@@ -444,7 +565,7 @@ public final class Settings {
             Path path = Path.of(value);
             found.put(key, path.isAbsolute() ? path : appDir.resolve(path));
         }
-        found.put("sockseek", eitherSuffix(found.get("sockseek")));
+        found.put("sockseek_bin", eitherSuffix(found.get("sockseek_bin")));
         return found;
     }
 
@@ -539,7 +660,7 @@ public final class Settings {
         return CREDENTIAL_KEYS.stream()
                 .filter(key -> {
                     String value = values.get(key);
-                    return value == null || value.isBlank() || PLACEHOLDERS.contains(value);
+                    return value == null || value.isBlank();
                 })
                 .toList();
     }
@@ -547,52 +668,57 @@ public final class Settings {
     /**
      * Create the files a fresh clone needs, and name the ones that were created.
      *
-     * <p>All three are made here rather than deep inside a run: the first thing a new user
-     * should see is "put your login in this file", not an error after a 50 MB download.
+     * <p>Only config.yaml: the login file is deliberately NOT written. A file full of
+     * your-login placeholders is a file that looks filled in, and the one check that would
+     * catch it - comparing against the placeholders - is a check that breaks the day somebody
+     * really is called your-login. The owner asked for it empty and absent on 2026-10-18.
      */
     public static List<String> ensureFiles(Path appDir, Consumer<String> warn) {
         Consumer<String> say = warn == null ? message -> { } : warn;
-        List<String> created = new ArrayList<>();
-        Map<String, String> files = new LinkedHashMap<>();
-        files.put(CONFIG_NAME, CONFIG_TEMPLATE);
-        files.put(SOCKSEEK_CONF, SOCKSEEK_CONF_TEMPLATE);
-        files.put(SOCKSEEK_LOCAL_CONF, LOCAL_CONF_TEMPLATE);
-        for (Map.Entry<String, String> file : files.entrySet()) {
-            Path path = appDir.resolve(file.getKey());
-            if (Files.exists(path)) {
-                continue;
-            }
-            try {
-                Files.createDirectories(appDir);
-                Files.writeString(path, file.getValue(), StandardCharsets.UTF_8);
-            } catch (IOException cannotCreate) {
-                say.accept("WARN cannot create " + file.getKey() + ": "
-                        + cannotCreate.getMessage());
-                continue;
-            }
-            created.add(file.getKey());
-            say.accept(file.getKey().equals(SOCKSEEK_LOCAL_CONF)
-                    ? "WARN created " + file.getKey() + ": put your Soulseek login there "
-                            + "(it is git-ignored and overrides " + SOCKSEEK_CONF + ")"
-                    : "WARN created " + file.getKey() + " from the built-in template");
+        Path path = appDir.resolve(CONFIG_NAME);
+        if (Files.exists(path)) {
+            return List.of();
         }
-        return List.copyOf(created);
+        try {
+            Files.createDirectories(appDir);
+            Files.writeString(path, CONFIG_TEMPLATE, StandardCharsets.UTF_8);
+        } catch (IOException cannotCreate) {
+            say.accept("WARN cannot create " + CONFIG_NAME + ": " + cannotCreate.getMessage());
+            return List.of();
+        }
+        say.accept("WARN created " + CONFIG_NAME + " from the built-in template");
+        return List.of(CONFIG_NAME);
     }
 
     /**
-     * Merge the sockseek config layers into {@code work/} and return that file.
+     * The sockseek block as sockseek's own config text: one {@code key = value} per line, in
+     * the order the file wrote them.
+     */
+    public static String sockseekConf(Map<String, String> block) {
+        StringBuilder out = new StringBuilder();
+        for (Map.Entry<String, String> pair : block.entrySet()) {
+            out.append(pair.getKey()).append(" = ").append(pair.getValue()).append('\n');
+        }
+        return out.toString();
+    }
+
+    /**
+     * Write what sockseek is to read into {@code work/} and return that file.
      *
-     * <p>Lowest to highest: sockseek.conf (the defaults that come with the tool, no login) ->
-     * sockseek.local.conf (this machine: the login and anything else) -> the file given with
-     * {@code --sockseek-conf}. Each layer may hold as few keys as it likes.
+     * <p>sockseek reads exactly one config file and knows no includes, so the layers are
+     * merged here, lowest to highest: the sockseek block of config.yaml -> the same block of
+     * config.local.yaml, which is where the login is -> the file given with
+     * {@code --sockseek-conf}, which is still a sockseek.conf in its own syntax. Each layer
+     * may hold as few keys as it likes.
      */
     public static Path effectiveConf(Path appDir, Path workDir, Consumer<String> warn,
                                      Path extra) {
         Consumer<String> say = warn == null ? message -> { } : warn;
-        ensureFiles(appDir, say);   // a run started through the engine alone still gets them
-        String merged = textOf(appDir.resolve(SOCKSEEK_CONF), say);
-        for (Path layer : new Path[] {appDir.resolve(SOCKSEEK_LOCAL_CONF), extra}) {
-            merged = mergeConf(merged, textOf(layer, say));
+        ensureFiles(appDir, say);   // a run started through the engine alone still gets it
+        Config config = loadConfig(appDir.resolve(CONFIG_NAME), say);
+        String merged = sockseekConf(config.sockseek());
+        if (extra != null) {
+            merged = mergeConf(merged, textOf(extra, say));
         }
         Path target = workDir.resolve(SOCKSEEK_EFFECTIVE_CONF);
         try {

@@ -1,37 +1,151 @@
+# Sections say what a value affects, and the full name of a setting is
+# section.key - playlist.attempts, track.max_sources. A key found under the
+# wrong section still works and is named in a warning; an unknown key is named
+# and ignored. Everything under "sockseek:" is sockseek's own and is passed to
+# it untouched.
+#
+# The Soulseek login does not live here. Put it in config.local.yaml, which is
+# git-ignored and overrides any key below:
+#
+#     sockseek:
+#       username: your-login
+#       password: your-password
+
+# ======================================================================
+# WHERE THINGS ARE
+# ======================================================================
 paths:
-  # the sockseek binary; .exe is added or dropped to match what is really there
-  sockseek: sockseek.exe
-  # folder of playlist .txt files - this is the input
+  # the sockseek program; .exe is added or dropped to match what is there
+  sockseek_bin: sockseek.exe
+  # input: one playlist .txt per playlist
   playlists: Playlists
-  # where the audio goes, one sub-folder per playlist
-  output: output
-  # generated list files and the merged sockseek config; rebuilt every run and
-  # safe to delete - but it holds the login in plain text while one is going
+  # output: the audio, one sub-folder per playlist
+  music: output
+  # scratch: generated list files and the merged sockseek config, rebuilt every
+  # run and safe to delete - but it holds the login while a run is going
   work: work
   # run logs, session logs and the run counter
   logs: logs
 
-search:
-  # HARD filter: a shared file may differ from the playlist length by this many
-  # seconds, -1 turns it off
-  length_tol_s: 45
-  # how many times to attempt one playlist; each attempt is a fresh sockseek
-  retries: 1
-  # wall clock for ONE attempt at one playlist, in minutes, 0 = no limit
-  playlist_timeout_min: 60
-  # stop a playlist when nothing has finished AND nothing has arrived on disk for
-  # this many seconds, 0 = never stop it
-  stall_timeout_s: 300
-  # do not search again for a track nobody was sharing, if that was within this
-  # many hours; 0 = always search. Fractions are fine
-  skip_not_found_hours: 2
-  # the brake across playlists: all of them together stay under this many
-  # searches per searches_renew_s, or the Soulseek server bans the account for
-  # half an hour. Both must match searches-per-time and searches-renew-time in
-  # sockseek.conf: sockseek keeps to them inside one process, this keeps to them
-  # across all of them
+# ======================================================================
+# THE BRAKE - all playlists together, because the server counts per account
+# ======================================================================
+rate_limit:
+  # more searches than this in one window and the server bans the account for
+  # half an hour. sockseek counts inside ONE process and a run is many of them,
+  # so this is the only count that matches what the server sees; 0 = no pause
   searches_per_window: 34
-  # and the length of that window, in seconds
-  searches_renew_s: 220
-  # remember in outcomes.tsv how each track ended; false ignores the file entirely
-  use_cache: true
+  # the length of that window, in seconds
+  window_s: 220
+
+# ======================================================================
+# ONE PLAYLIST - when to give up on it
+# ======================================================================
+playlist:
+  # how many goes at one playlist; 1 means one go and no repeat. Each is a
+  # fresh sockseek
+  attempts: 1
+  # kill ONE go after this many minutes, 0 = never. Two attempts can take twice
+  # this long
+  attempt_timeout_min: 60
+  # kill a go when nothing has finished AND nothing has arrived on disk for this
+  # many seconds, 0 = never
+  stall_timeout_s: 300
+
+# ======================================================================
+# ONE TRACK - which file is the right one, and how hard to try
+# ======================================================================
+track:
+  # Formats you want, most wanted first. Each is a separate pass over whatever
+  # is still missing with that format REQUIRED, and a last pass takes anything
+  # else. This is the only way to order them: sockseek's own pref-format is
+  # unordered by its own documentation, so "flac,mp3" there means "both are
+  # fine", not "flac first".
+  #
+  # It costs searches: a track nobody has goes through every pass, so three
+  # formats mean four searches for it instead of one - until the cache has
+  # confirmed it absent and stops looking. Empty means one pass, no ordering.
+  #   format_order: mp3,flac,wav
+  format_order:
+  # HARD condition and the only one we own: a shared file whose length differs
+  # from the playlist by more than this many seconds is refused outright.
+  # -1 turns it off. A refused track looks exactly like a missing one
+  max_length_diff_s: 45
+  # how many different uploaders to try for one track before giving up this run
+  max_sources: 3
+
+# ======================================================================
+# MEMORY BETWEEN RUNS - outcomes.tsv
+# ======================================================================
+cache:
+  # remember how each track ended; false ignores the file entirely - searches
+  # everything and writes nothing down
+  enabled: true
+  # do not search again for a track confirmed absent - nobody on the network had
+  # it - if that was within this many hours; 0 = always search. Fractions are
+  # fine. Only a confirmed absence counts, never a track the filters refused
+  skip_absent_h: 2
+  # after a run, search again with every condition off for this many failed
+  # tracks IN EACH PLAYLIST. sockseek reports "nobody had it" and "found it and
+  # refused it" with the SAME code, and this is the only way to tell them apart,
+  # which the line above depends on; costs one search each, 0 = none
+  explain_per_playlist: 20
+
+# ======================================================================
+# SOCKSEEK - handed to sockseek untouched. The key names are ITS, not ours,
+# which is why they carry dashes and no units. `sockseek --help` is the full
+# list. The sub-blocks are ours, for reading only: they are flattened away on
+# the way out, and a line pasted in sockseek's own "key = value" form is read
+# just as well as "key: value".
+# ======================================================================
+sockseek:
+
+  # -- REFUSE: a file failing any of these is not downloaded AT ALL ------
+  # all off on purpose: a refusal is indistinguishable from "nobody had it",
+  # and min-bitrate = 256 refused every mp3 at 192 or 224 - a large part of
+  # what Soulseek actually has, and 104 of 135 failures on a real run
+  refuse:
+    # min-bitrate: 256       # worse than this -> never, even if nothing else exists
+    # max-bitrate: 1411      # better than this -> never (1411 kbps = CD lossless)
+    # max-samplerate: 48000  # above 48 kHz -> never
+    # max-bitdepth: 16       # 24-bit -> never
+    # format: mp3,flac       # the only formats allowed at all - not an order
+
+  # -- PREFER: the same ideas as an ORDER. Nothing here ever refuses -----
+  prefer:
+    # 320+ comes first; worse still downloads when that is all there is
+    pref-min-bitrate: 320
+    # above CD lossless comes last: 24-bit and hi-res cost a lot of bytes for
+    # little gain, and still arrive when there is nothing cheaper
+    pref-max-bitrate: 1411
+    # flac and mp3 equally; wav is unlisted, so it comes last
+    pref-format: flac,mp3
+    # files whose path contains the track title come first
+    pref-strict-title: true
+    # and the same for the artist
+    pref-strict-artist: true
+
+  # -- PICK A SOURCE: how long to shop around before committing ----------
+  pick_source:
+    # take the first candidate that fits instead of waiting for the whole
+    # search to end
+    fast-search: true
+    # milliseconds spent collecting candidates first, so "the first" is not
+    # simply the only one
+    fast-search-delay: 2000
+    # the speed a candidate needs to qualify for that shortcut; a slower one
+    # stays in the normal queue. The unit is undocumented and unproven -
+    # sockseek's own default is 1
+    fast-search-min-up-speed: 200
+
+  # -- DROP A SOURCE: when to stop waiting on one that is not delivering --
+  drop_source:
+    # milliseconds connected with no bytes arriving before this candidate is
+    # dropped and the next uploader is tried
+    max-stale-time: 12000
+    # one failure pushes an uploader down the ranking
+    fails-to-downrank: 1
+    # two failures and it is left out for the rest of the run
+    fails-to-ignore: 2
+    # how many DIFFERENT uploaders a track is offered to is track.max_sources
+    # above: sockseek calls that max-retries, which counts something else

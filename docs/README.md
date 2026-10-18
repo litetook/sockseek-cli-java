@@ -24,7 +24,7 @@ The first run creates three config files and stops, because it cannot download a
 it knows who you are:
 
 ```
-Put your Soulseek login in ...\sockseek.local.conf:
+Put your Soulseek login in ...\config.local.yaml:
     username = your-login
     password = your-password
 ```
@@ -124,61 +124,94 @@ a guess.
 
 ## Settings: `config.yaml`
 
-There are two config files and the split is the whole point:
+One file, in blocks, since 2026-10-18. A block says **what a value affects**, and the full
+name of a setting is `block.key`:
 
-| File | Holds | Read by |
-|---|---|---|
-| `config.yaml` | folders, and the numbers this tool decides itself | this tool |
-| `sockseek.conf` | the Soulseek login and every sockseek option | sockseek |
+| Block | What it affects |
+|---|---|
+| `paths` | where the binary, the playlists, the music and the logs are |
+| `rate_limit` | the whole run: every playlist together, against one Soulseek account |
+| `playlist` | one playlist: how many goes at it, and when to stop one |
+| `track` | one track: which file counts as the right one, and how hard to try |
+| `cache` | what is remembered between runs |
+| `sockseek` | sockseek's own options, passed to it untouched - its names, not ours |
 
-Both files carry a one-line comment per key, so you can work in them without leaving them;
-this manual has the why and the measurements behind each default. Precedence is
-**command line > config.yaml > built-in default**, and every run log opens with the effective
-value of each key and where it came from, so "why is it this number?" is always answered by
-the log rather than by guessing.
+A key found under the wrong block still works and is named in a warning: the blocks group the
+file, they do not decide anything. Everything above `sockseek:` is this tool's; everything
+under it belongs to sockseek and is never interpreted here.
 
-This is what a fresh folder gets, comments and all:
+The login is not in this file. It goes in **`config.local.yaml`**, which git never sees and
+which overrides any key of `config.yaml`:
+
+```yaml
+sockseek:
+  username: your-login
+  password: your-password
+```
+
+That file is yours to write - the tool never creates it, because a file full of
+`your-login` placeholders is a file that looks filled in.
+
+Every key carries a one-line comment, so you can work in the file without leaving it; this
+manual has the why and the measurements behind each default. Precedence is
+**command line > config.local.yaml > config.yaml > built-in default**, and every run log opens
+with the effective value of each key and where it came from, so "why is it this number?" is
+always answered by the log rather than by guessing.
+
+**The names changed on 2026-10-18** - `retries` counted goes, not repeats, and
+`skip_not_found_hours` said "not found" for the one thing that word could not tell apart. The
+old key names and the old flags are still accepted, with a warning that names the new one:
+`tol`/`length_tol_s`, `timeout`/`playlist_timeout_min`, `retries`, `skip_not_found_hours`,
+`use_cache`, `searches_renew_s`, `explain_tracks`, `paths.sockseek`, `paths.output`, and the
+flags `--length-tol`, `--playlist-timeout`, `--retries`, `--skip-not-found-hours`,
+`--searches-renew-s`, `--output`.
+
+This is the shape of it, comments trimmed:
 
 ```yaml
 paths:
-  # the sockseek binary; .exe is added or dropped to match what is really there
-  sockseek: sockseek.exe
-  # folder of playlist .txt files - this is the input
-  playlists: Playlists
-  # where the audio goes, one sub-folder per playlist
-  output: output
+  sockseek_bin: sockseek.exe   # the program; .exe added or dropped to match what is there
+  playlists: Playlists         # input: one .txt per playlist
+  music: output                # output: the audio, one sub-folder per playlist
+  work: work                   # scratch, rebuilt every run
+  logs: logs                   # run logs, session logs, the run counter
 
-search:
-  # HARD filter: a shared file may differ from the playlist length by this many
-  # seconds, -1 turns it off
-  length_tol_s: 45
-  # how many times to attempt one playlist; each attempt is a fresh sockseek
-  retries: 1
-  # wall clock for ONE attempt at one playlist, in minutes, 0 = no limit
-  playlist_timeout_min: 60
-  # stop a playlist when nothing has finished AND nothing has arrived on disk for
-  # this many seconds, 0 = never stop it
-  stall_timeout_s: 300
-  # do not search again for a track nobody was sharing, if that was within this
-  # many hours; 0 = always search. Fractions are fine
-  skip_not_found_hours: 2
-  # the brake across playlists: all of them together stay under this many searches
-  # per 220 s, or the Soulseek server bans the account for 30 minutes
-  searches_per_window: 34
-  # remember in outcomes.tsv how each track ended; false ignores the file entirely
-  use_cache: true
+rate_limit:
+  searches_per_window: 34      # more than this in one window = a half-hour ban
+  window_s: 220                # the length of that window
+
+playlist:
+  attempts: 1                  # goes at one playlist; 1 = one go, no repeat
+  attempt_timeout_min: 60      # kill ONE go after this long; 0 = never
+  stall_timeout_s: 300         # kill a go that has stopped getting anywhere
+
+track:
+  format_order: mp3,flac,wav   # one pass per format, then a pass that takes anything
+  max_length_diff_s: 45        # refuse a file this far off the playlist length; -1 = off
+  max_sources: 3               # different uploaders tried for one track
+
+cache:
+  enabled: true                # remember how each track ended
+  skip_absent_h: 2             # skip a track confirmed absent if it was seen this recently
+  explain_per_playlist: 20     # failures re-searched with every condition off, per playlist
+
+sockseek:                      # its options, its names - see the section below
+  prefer:
+    pref-min-bitrate: 320
+  drop_source:
+    max-stale-time: 12000
 ```
 
-### `paths.sockseek`, `paths.playlists`, `paths.output`
+### `paths.sockseek_bin`, `paths.playlists`, `paths.music`
 
 **What they're for.** Where the binary is, where your playlists are, where the music goes.
-A relative path is relative to the folder you run from; an absolute one (`output: D:\music`)
+A relative path is relative to the folder you run from; an absolute one (`music: D:\music`)
 is taken as it is.
 
 **Behind the scenes.** The binary is accepted with or without `.exe`, whichever is actually
 there, so one config file works on Windows and Linux.
 
-### `length_tol_s` — 45 seconds · `--length-tol`
+### `track.max_length_diff_s` — 45 seconds · `--max-length-diff`
 
 **What it's for.** How far a shared file's length may differ from the length in your playlist
 before it is refused. This is a **hard** filter, the only one besides the bitrate floor. `-1`
@@ -193,7 +226,7 @@ the query to appear in the file path and the query still carries the `(... Remix
 `--strict-title`: measured on a full 30-track playlist it let 6 tracks through where the plain
 window let 15.
 
-### `retries` — 1 · `--retries`
+### `playlist.attempts` — 1 · `--attempts`
 
 **What it's for.** How many times a playlist is attempted. A second attempt re-searches only
 what is still missing.
@@ -203,17 +236,17 @@ the first attempt delivered on the second — but it doubles the wall clock, and
 a **new sockseek process with a fresh search budget**, which raises the real risk of the
 30-minute server ban. That is why the shipped file asks for one.
 
-### `playlist_timeout_min` — 10 minutes · `--playlist-timeout`
+### `playlist.attempt_timeout_min` — 60 minutes · `--attempt-timeout`
 
 **What it's for.** A wall clock on one attempt at one playlist. `0` means none. **Minutes**,
-and **per attempt**: with 40 and `retries: 2`, a playlist can run 80 minutes.
+and **per attempt**: with 40 and `attempts: 2`, a playlist can run 80 minutes.
 
 **Behind the scenes.** It is a limit on the whole sockseek process, never on one track. When it
 fires, the process tree is killed and the log says so in a sentence that stands out — because
 sockseek paints its progress display in place and nothing repaints it after the kill, so its
 last frame sits there frozen, looking exactly like a hang. (It was read as one on 2026-10-17.)
 
-### `stall_timeout_s` — 300 seconds · `--stall-timeout`
+### `playlist.stall_timeout_s` — 300 seconds · `--stall-timeout`
 
 **What it's for.** Stop a playlist that has stopped getting anywhere. If no track has finished
 — downloaded, failed, skipped, anything — for this many seconds, the run is not stuck behind a
@@ -226,26 +259,27 @@ which is the 220-second search window — waiting for that window is not a hang,
 here tries to shorten it. What this is **not** is a deadline for one track: there is no way to
 cancel a single sockseek job from outside, so the tool does not pretend to have one.
 
-### `use_cache` — true · `--no-cache`
+### `cache.enabled` — true · `--no-cache`
 
 **What it's for.** The master switch for `outcomes.tsv`. `false` makes the file not exist for
 the length of a run: nothing is read from it, nothing is written back. A clean sweep that
 leaves no trace, the way `--dry-run` leaves none.
 
-**Behind the scenes.** Not the same as `skip_not_found_hours: 0`, which only stops the
-**skipping** — the run still counts what happened and writes it down. `use_cache: false` also
+**Behind the scenes.** Not the same as `skip_absent_h: 0`, which only stops the
+**skipping** — the run still counts what happened and writes it down. `enabled: false` also
 stops the counting, so a run you did for a one-off reason cannot push a track's "failed 4
 runs running" counter up and make it look worse than it is.
 
-### `searches_per_window` — 34 · `--searches-per-window`
+### `rate_limit.searches_per_window` — 34 · `--searches-per-window`
 
 **What it's for.** The brake across playlists. It keeps the searches of **all** of them
-together under this many per `searches_renew_s` seconds, by pausing between playlists. `0`
-turns it off.
+together under this many per `rate_limit.window_s` seconds, by pausing between playlists.
+`0` turns it off.
 
-⚠ These two must match `searches-per-time` and `searches-renew-time` in `sockseek.conf`.
-sockseek keeps to them inside one process; this keeps to them across all of them. Change one
-pair and not the other and the brake is pacing to a limit the server does not use.
+⚠ sockseek has the same two numbers of its own, `searches-per-time` and
+`searches-renew-time`, and **neither is set in the shipped file** - it uses its own defaults
+inside each process, while these two are what the brake across processes goes by. Set them in
+the `sockseek:` block if you change these, or the two are pacing to different limits.
 
 **Behind the scenes.** sockseek has the same budget, but it lives inside **one process**, and
 this tool runs one process per playlist. Every new playlist therefore starts with a full
@@ -268,7 +302,7 @@ was never speed — it was borrowing against a ban.
 
 A dry run and a `--preview` ask the server for nothing, so neither is paced.
 
-### `skip_not_found_hours` — 2 hours · `--skip-not-found-hours`
+### `cache.skip_absent_h` — 2 hours · `--skip-absent`
 
 **What it's for.** Do not spend this hour's searches on a track nobody had an hour ago. `0`
 searches everything again, every time. Fractions work: `0.5` is half an hour.
@@ -280,7 +314,7 @@ Only **one** class of failure is ever **skipped** — `NoSearchResults`, nobody 
 ones that arrive next time. A run that skips anything says so out loud:
 
 ```
-skipping 4 track(s) nobody had within the last 2 hour(s); set skip_not_found_hours: 0 to
+skipping 4 track(s) nobody had within the last 2 hour(s); set cache.skip_absent_h: 0 to
 search them anyway
 ```
 
@@ -310,8 +344,8 @@ config, one tab-separated line per track:
 
 **What it's for.** Two jobs that must not be confused:
 
-- **Skipping** — `NoSearchResults` only, and only within `skip_not_found_hours`. That is the
-  one above.
+- **Skipping** — a confirmed absence only (`NotOnNetwork`), and only within
+  `cache.skip_absent_h`. That is the one above.
 - **Counting** — everything else is remembered and **never** skipped, so a track that has
   been failing the same way for three runs can say so:
 
@@ -370,64 +404,71 @@ action at all, whatever its help says (measured 2026-10-17). This tool does not 
 
 ---
 
-## Settings: `sockseek.conf`
+## Settings: the `sockseek:` block
 
-Same folder. The keys are sockseek's own command-line options without the `--`, same units;
-`sockseek.exe --help` is the reference. A typo is loud: sockseek rejects an unknown key on
-startup. The file shipped below is what a fresh folder gets, comments and all.
+The same `config.yaml`, bottom block. The keys are sockseek's own command-line options
+without the `--`, same units and same names - which is why they carry dashes where ours carry
+underscores. `sockseek --help` is the reference, and a typo is loud: sockseek rejects an
+unknown key on startup.
 
+Nothing in this block is read by this tool. It is written out to
+`work/sockseek.effective.conf` as plain `key = value` lines and handed to sockseek, because
+sockseek reads exactly one config file and knows no includes.
+
+The four sub-blocks - `refuse`, `prefer`, `pick_source`, `drop_source` - are ours, for
+reading only. They are flattened away on the way out, and sockseek never sees them. The one
+thing worth knowing before changing anything here is which of the two kinds a key belongs to:
+a **refuse** key can mean the track never arrives, a **prefer** key only changes the order.
+
+A line may also be written in sockseek's own `key = value` form, so anything pasted out of
+its help works without translation.
+
+```yaml
+sockseek:
+
+  # -- REFUSE: a file failing any of these is not downloaded AT ALL --------
+  # all off on purpose: a refusal is indistinguishable from "nobody had it"
+  refuse:
+    # min-bitrate: 256       # worse than this -> never, even if nothing else exists
+    # max-bitrate: 1411      # better than this -> never (1411 kbps = CD lossless)
+    # max-samplerate: 48000  # above 48 kHz -> never
+    # max-bitdepth: 16       # 24-bit -> never
+    # format: mp3,flac       # the only formats allowed at all - not an order
+
+  # -- PREFER: the same ideas as an ORDER. Nothing here ever refuses -------
+  prefer:
+    pref-min-bitrate: 320
+    pref-max-bitrate: 1411
+    pref-format: flac,mp3
+    pref-strict-title: true
+    pref-strict-artist: true
+
+  # -- PICK A SOURCE: how long to shop around before committing -----------
+  pick_source:
+    fast-search: true
+    fast-search-delay: 2000          # ms
+    fast-search-min-up-speed: 200    # unit undocumented and unproven
+
+  # -- DROP A SOURCE: when to stop waiting on one that is not delivering --
+  drop_source:
+    max-stale-time: 12000            # ms - 12 s of silence, then the next uploader
+    fails-to-downrank: 1
+    fails-to-ignore: 2
 ```
-# sockseek's own options, without the leading --. No secrets here: this file is
-# safe to share. The login goes in sockseek.local.conf, which overrides any key
-# below as well. `sockseek.exe --help` is the full list.
-#
-# These two stay commented out: sockseek refuses a key with an empty value.
-# username =
-# password =
 
-# --- how long to wait on a source that is not delivering ---
-# milliseconds with no bytes arriving before this candidate is dropped
-max-stale-time = 12000
-# how many candidates one track may be tried from before it is given up
-max-retries = 3
-# an uploader that fails once drops down the ranking
-fails-to-downrank = 1
-# an uploader that fails twice is left out for the rest of the run
-fails-to-ignore = 2
-
-# --- quality ---
-# the ONLY hard floor: a file below this bitrate is refused outright
-min-bitrate = 256
-# everything with pref- only RANKS candidates and never refuses one
-pref-min-bitrate = 320
-# 1411 kbps is CD lossless; anything above it is 24-bit or hi-res, so it ranks
-# last and arrives only when there is nothing cheaper
-pref-max-bitrate = 1411
-# flac and mp3 equally preferred; wav is not listed, so it ranks below both
-pref-format = flac,mp3
-
-# --- picking a source early ---
-# take the first candidate that satisfies the preferred conditions instead of
-# waiting for the whole search to finish
-fast-search = true
-# but spend this many milliseconds collecting candidates first
-fast-search-delay = 2000
-# a pass mark for that shortcut ONLY; a slower uploader stays in the normal set.
-# The unit is undocumented and still unproven - 1 is sockseek's own default
-fast-search-min-up-speed = 200
-# prefer files whose path contains the track title / the artist
-pref-strict-title = true
-pref-strict-artist = true
-```
+⚠ `min-bitrate` and `pref-min-bitrate` are one prefix apart and opposite in effect: the first
+refuses a file outright, the second only ranks it. That pair is what made 104 of 135 failures
+on a real run read as "nobody had it" - which is why the floor ships commented out.
 
 ### The waiting keys — "three tries, then somebody else"
 
 **What they're for.** A source that is not delivering should be dropped quickly and replaced,
 and a source that keeps failing should stop being offered.
 
-- `max-stale-time = 12000` — milliseconds with no bytes before a candidate is dropped.
-- `max-retries = 3` — how many candidates one track may be tried from.
-- `fails-to-downrank = 1`, `fails-to-ignore = 2` — an uploader drops down the ranking after one
+- `max-stale-time: 12000` — milliseconds with no bytes before a candidate is dropped.
+- how many candidates one track may be tried from is **ours**, `track.max_sources`: sockseek
+  calls it `max-retries`, which counts something else.
+- `fails-to-downrank: 1`, `fails-to-ignore: 2` — an uploader drops down the ranking after one
   failure and out of it after two.
 
 **Behind the scenes.** There is **no** "slower than 60 kB/s" lever anywhere in sockseek. It is
@@ -481,14 +522,15 @@ sockseek reads one config file and has no `include`, so the tool merges them its
 `work/sockseek.effective.conf` and points sockseek at that:
 
 ```
-sockseek.conf  <  sockseek.local.conf  <  --sockseek-conf FILE
+config.yaml (sockseek:)  <  config.local.yaml (sockseek:)  <  --sockseek-conf FILE
 ```
 
-Lowest to highest; a key replaces the same key below it, a new key is appended. `sockseek.conf`
-holds **no secrets** and is safe to share; `sockseek.local.conf` holds your login and is
-git-ignored, and it overrides any other key too, so it is also the place for a
-machine-specific tweak. `--sockseek-conf FILE` adds a top layer for one run — a second account,
-a lossless profile — without touching anything on disk.
+Lowest to highest; a key replaces the same key below it, a new key is appended.
+`config.yaml` holds **no secrets** and is safe to share; `config.local.yaml` holds your login
+and is git-ignored, and it overrides any other key too, so it is also the place for a
+machine-specific tweak. `--sockseek-conf FILE` adds a top layer for one run — a second
+account, a lossless profile — in sockseek's own `key = value` syntax, without touching
+anything on disk.
 
 > ⚠ The merged file in `work/` holds your login **in plain text**. `work/` is git-ignored and
 > safe to delete at any time; just do not copy it anywhere.
@@ -509,7 +551,7 @@ Two consequences worth knowing:
 
 - The budget lives **inside one sockseek process**, which is why there is one process per
   playlist and why you should not run two copies of the tool at once.
-- Each retry is a new process with a fresh budget — so `retries: 2` really can put 45 searches
+- Each retry is a new process with a fresh budget — so `attempts: 2` really can put 45 searches
   on the server in six minutes.
 
 A ban cannot be lifted from the client. You wait it out.
@@ -536,7 +578,7 @@ with every condition off:
   -> nothing on the network: 0 candidates even with every condition off
   -> IS on the network: 2 candidate(s), closest 346s/320kbps
      rejected by length: playlist says 319s, diff +27s
-     to take it: run.cmd --only <playlist> --length-tol 28
+     to take it: run.cmd --only <playlist> --max-length-diff 28
   -> IS on the network: 1 candidate(s), closest 267s/320kbps
      length and quality are fine, so the uploader did not deliver - try again later
 ```
@@ -547,7 +589,7 @@ difference between a long night and a longer one.
 
 ### Things to try, roughly in order
 
-1. `--length-tol 60`, or `-1` to drop the length filter.
+1. `--max-length-diff 60`, or `-1` to drop the length filter.
 2. `--sockseek-args="--artist-maybe-wrong"` — free-form titles often put the artist elsewhere.
 3. `--sockseek-args="--remove-brackets --remove-ft"` — drops `[FREE DOWNLOAD]` and `feat. ...`.
    Note that `--remove-brackets` only removes **square** brackets, so it does nothing for
@@ -620,9 +662,10 @@ still prints the table and the price, it just does not stop for an answer. `--ye
 still asks which playlists, which is one keystroke too many for a scheduled night. If both
 `--all` and `--only` are given, `--only` wins and the run says so.
 
-Engine: `--playlists DIR`, `--output DIR`, `--sockseek FILE`, `--config FILE`,
-`--sockseek-conf FILE`, `--length-tol SEC`, `--playlist-timeout MIN`, `--stall-timeout SEC`,
-`--skip-not-found-hours HOURS`, `--no-cache`, `--searches-per-window N`, `--retries N`,
+Engine: `--playlists DIR`, `--music DIR`, `--sockseek FILE`, `--config FILE`,
+`--sockseek-conf FILE`, `--max-length-diff SEC`, `--attempt-timeout MIN`, `--stall-timeout SEC`,
+`--skip-absent HOURS`, `--no-cache`, `--searches-per-window N`, `--attempts N`,
+`--searches-window SEC`,
 `--explain`,
 `--preview`, `--dry-run`,
 `--verbose`, `--sockseek-args "STRING"`.

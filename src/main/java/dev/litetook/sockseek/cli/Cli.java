@@ -39,7 +39,7 @@ public final class Cli implements Callable<Integer> {
      * this is finished enough to use, not a preview of something. The release workflow
      * refuses to publish a tag whose name disagrees with this.
      */
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "1.1.0";
 
     @Option(names = "--version", versionHelp = true, description = "print the version and exit")
     boolean version;
@@ -51,45 +51,50 @@ public final class Cli implements Callable<Integer> {
             description = "folder with playlist .txt files (config: paths.playlists)")
     Path playlists;
 
-    @Option(names = "--output", paramLabel = "DIR",
-            description = "export folder (config: paths.output)")
+    @Option(names = {"--music", "--output"}, paramLabel = "DIR",
+            description = "export folder (config: paths.music)")
     Path output;
 
     @Option(names = "--sockseek", paramLabel = "FILE",
-            description = "path to sockseek.exe (config: paths.sockseek)")
+            description = "path to sockseek.exe (config: paths.sockseek_bin)")
     Path sockseek;
 
     @Option(names = "--only", paramLabel = "NAME",
             description = "process only this playlist (file name without .txt)")
     String only;
 
-    @Option(names = "--length-tol", paramLabel = "SEC",
-            description = "length tolerance in seconds around the playlist length; HARD "
-                    + "condition, -1 disables (default 45)")
+    @Option(names = {"--max-length-diff", "--length-tol"}, paramLabel = "SEC",
+            description = "refuse a file whose length differs from the playlist by more than "
+                    + "this many seconds; HARD condition, -1 disables (default 45) "
+                    + "(config: track.max_length_diff_s)")
     Integer lengthTol;
 
-    @Option(names = "--playlist-timeout", paramLabel = "MIN",
-            description = "wall-clock limit per attempt for one playlist, in minutes, 0 = none "
-                    + "(default 40)")
+    @Option(names = {"--attempt-timeout", "--playlist-timeout"}, paramLabel = "MIN",
+            description = "wall-clock limit for ONE attempt at one playlist, in minutes, "
+                    + "0 = none (default 60) (config: playlist.attempt_timeout_min)")
     Double playlistTimeout;
 
-    @Option(names = "--retries", paramLabel = "N",
-            description = "attempts per playlist, at least 1 (default 2)")
+    @Option(names = {"--attempts", "--retries"}, paramLabel = "N",
+            description = "goes at one playlist, at least 1; 1 means one go and no repeat "
+                    + "(default 1) (config: playlist.attempts)")
     Integer retries;
 
     @Option(names = "--stall-timeout", paramLabel = "SEC",
-            description = "stop a playlist when no track has finished for this many seconds, "
-                    + "0 = never (default 300)")
+            description = "stop an attempt when no track has finished and nothing has arrived "
+                    + "on disk for this many seconds, 0 = never (default 300) "
+                    + "(config: playlist.stall_timeout_s)")
     Double stallTimeout;
 
-    @Option(names = "--skip-not-found-hours", paramLabel = "HOURS",
-            description = "do not search again for a track nobody had, if that was within this "
-                    + "many hours; 0 = always search (default 2). Fractions are fine")
+    @Option(names = {"--skip-absent", "--skip-not-found-hours"}, paramLabel = "HOURS",
+            description = "do not search again for a track confirmed absent from the network, "
+                    + "if that was within this many hours; 0 = always search (default 2). "
+                    + "Fractions are fine (config: cache.skip_absent_h)")
     Double skipNotFoundHours;
 
     @Option(names = "--searches-per-window", paramLabel = "N",
             description = "keep the searches of ALL playlists together under this many per "
-                    + "220 s, by pausing between them; 0 = no pause (default 34)")
+                    + "window, by pausing between them; 0 = no pause (default 34) "
+                    + "(config: rate_limit.searches_per_window)")
     Integer searchesPerWindow;
 
     @Option(names = "--work", paramLabel = "DIR",
@@ -101,9 +106,9 @@ public final class Cli implements Callable<Integer> {
             description = "run logs, session logs and the run counter (config: paths.logs)")
     Path logs;
 
-    @Option(names = "--searches-renew-s", paramLabel = "SEC",
-            description = "the window searches are counted in, in seconds; must match "
-                    + "sockseek's searches-renew-time (default 220)")
+    @Option(names = {"--searches-window", "--searches-renew-s"}, paramLabel = "SEC",
+            description = "the window those searches are counted in, in seconds (default 220) "
+                    + "(config: rate_limit.window_s)")
     Integer searchesRenewS;
 
     @Option(names = "--max-sources", paramLabel = "N",
@@ -159,7 +164,8 @@ public final class Cli implements Callable<Integer> {
     Path config;
 
     @Option(names = "--sockseek-conf", paramLabel = "FILE",
-            description = "one more sockseek.conf layer, same syntax, as few keys as you like")
+            description = "one more layer on top of the sockseek block of config.yaml, in "
+                    + "sockseek own key = value syntax, as few keys as you like")
     Path sockseekConf;
 
     @Option(names = "--sockseek-args", paramLabel = "STRING",
@@ -196,10 +202,10 @@ public final class Cli implements Callable<Integer> {
         record Folder(String flag, String key, Path given) {
         }
         for (Folder folder : List.of(new Folder("playlists", "playlists_dir", playlists),
-                new Folder("output", "output_dir", output),
+                new Folder("music", "music_dir", output),
                 new Folder("work", "work_dir", work),
                 new Folder("logs", "logs_dir", logs),
-                new Folder("sockseek", "sockseek_exe", sockseek))) {
+                new Folder("sockseek_bin", "sockseek_bin", sockseek))) {
             if (folder.given() != null) {
                 values.put(folder.flag(), folder.given());
                 sources.put(folder.flag(), "cli");
@@ -234,21 +240,21 @@ public final class Cli implements Callable<Integer> {
 
     private Number given(Setting setting) {
         return switch (setting.key()) {
-            case "length_tol_s" -> lengthTol;
-            case "playlist_timeout_min" -> playlistTimeout;
-            case "retries" -> retries;
+            case "max_length_diff_s" -> lengthTol;
+            case "attempt_timeout_min" -> playlistTimeout;
+            case "attempts" -> retries;
             case "stall_timeout_s" -> stallTimeout;
-            case "skip_not_found_hours" -> skipNotFoundHours;
+            case "skip_absent_h" -> skipNotFoundHours;
             case "searches_per_window" -> searchesPerWindow;
-            case "searches_renew_s" -> searchesRenewS;
+            case "window_s" -> searchesRenewS;
             case "max_sources" -> maxSources;
             // --explain is the old way of saying "all of them"
             // Integer.valueOf, not the bare constant: a ternary with an int on one side
             // unboxes the other, and explainTracks is null whenever the flag is absent
-            case "explain_tracks" -> explain && !noExplain
+            case "explain_per_playlist" -> explain && !noExplain
                     ? Integer.valueOf(Integer.MAX_VALUE) : explainTracks;
             // a flag that is only ever "off": absent means "whatever the file says"
-            case "use_cache" -> noCache ? 0 : null;
+            case "enabled" -> noCache ? 0 : null;
             default -> null;
         };
     }
@@ -274,7 +280,7 @@ public final class Cli implements Callable<Integer> {
      */
     public List<String> formatOrder() {
         String given = formatOrder != null ? formatOrder
-                : loaded.paths().getOrDefault(Settings.FORMAT_ORDER, "");
+                : loaded.text(Settings.FORMAT_ORDER, "");
         return java.util.Arrays.stream(given.split(","))
                 .map(String::strip)
                 .filter(one -> !one.isEmpty())
@@ -316,23 +322,23 @@ public final class Cli implements Callable<Integer> {
     public RunConfig runConfig() {
         return RunConfig.builder(appDir)
                 .playlistsDir(path("playlists"))
-                .outputDir(path("output"))
+                .outputDir(path("music"))
                 .workDir(path("work"))
                 .logsDir(path("logs"))
-                .sockseek(path("sockseek"))
-                .options(new Options(integer("length_tol_s"), preview,
+                .sockseek(path("sockseek_bin"))
+                .options(new Options(integer("max_length_diff_s"), preview,
                         integer("max_sources"), null))
-                .timeoutMinutes(decimal("playlist_timeout_min"))
-                .retries(integer("retries"))
+                .timeoutMinutes(decimal("attempt_timeout_min"))
+                .retries(integer("attempts"))
                 .dryRun(dryRun)
                 .only(only)
                 .verbose(verbose)
-                .explainTracks(integer("explain_tracks"))
+                .explainTracks(integer("explain_per_playlist"))
                 .sockseekArgs(splitSockseekArgs())
                 .sockseekConf(sockseekConf)
                 .stallSeconds(decimal("stall_timeout_s"))
-                .skipNotFoundHours(decimal("skip_not_found_hours"))
-                .cache(integer("use_cache") != 0)
+                .skipNotFoundHours(decimal("skip_absent_h"))
+                .cache(integer("enabled") != 0)
                 .formatOrder(formatOrder())
                 .build();
     }
@@ -342,21 +348,23 @@ public final class Cli implements Callable<Integer> {
         List<String> lines = new ArrayList<>();
         lines.add("effective configuration of sockseek-cli " + VERSION
                 + " (key = value [source: cli | config | default]):");
-        lines.add("  playlists_dir = " + path("playlists") + " [" + sources.get("playlists") + "]");
-        lines.add("  output_dir = " + path("output") + " [" + sources.get("output") + "]");
-        lines.add("  work_dir = " + path("work") + " [" + sources.get("work") + "]");
-        lines.add("  logs_dir = " + path("logs") + " [" + sources.get("logs") + "]");
+        lines.add("  paths.playlists = " + path("playlists")
+                + " [" + sources.get("playlists") + "]");
+        lines.add("  paths.music = " + path("music") + " [" + sources.get("music") + "]");
+        lines.add("  paths.work = " + path("work") + " [" + sources.get("work") + "]");
+        lines.add("  paths.logs = " + path("logs") + " [" + sources.get("logs") + "]");
         if (!formatOrder().isEmpty()) {
-            lines.add("  format_order = " + String.join(",", formatOrder())
+            lines.add("  track.format_order = " + String.join(",", formatOrder())
                     + " [" + (formatOrder != null ? "cli" : "config") + "]");
         }
-        lines.add("  sockseek_exe = " + path("sockseek") + " [" + sources.get("sockseek") + "]");
+        lines.add("  paths.sockseek_bin = " + path("sockseek_bin")
+                + " [" + sources.get("sockseek_bin") + "]");
         lines.add("  config_file = " + path("config") + " [" + sources.get("config") + "]");
         for (Setting setting : Settings.ALL) {
             Object value = values.get(setting.key());
             String shown = setting.kind() == Setting.Kind.BOOLEAN
                     ? trueFalse(((Number) value).intValue() != 0) : plain(value);
-            lines.add("  " + setting.key() + " = " + shown
+            lines.add("  " + setting.fullName() + " = " + shown
                     + " [" + sources.get(setting.key()) + "]");
         }
         record Extra(String key, Object value) {

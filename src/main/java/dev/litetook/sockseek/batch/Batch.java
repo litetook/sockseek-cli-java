@@ -403,8 +403,10 @@ public final class Batch {
             log.accept((failures.size() - budget) + " more failure(s) were not looked into - "
                     + "raise explain_tracks, or --explain for all of them");
         }
-        OptionalInt minBitrate = Settings.readMinBitrate(cfg.conf() != null ? cfg.conf()
-                : cfg.sockseek().getParent().resolve(Settings.SOCKSEEK_CONF));
+        // the merged file is what sockseek was actually given; when the caller took the
+        // config over (--no-config in the tests) there is no floor to report
+        OptionalInt minBitrate = cfg.conf() == null ? OptionalInt.empty()
+                : Settings.readMinBitrate(cfg.conf());
         Set<String> absent = new LinkedHashSet<>();
         for (int i = 0; i < still.size(); i++) {
             Failure failure = failures.get(i);

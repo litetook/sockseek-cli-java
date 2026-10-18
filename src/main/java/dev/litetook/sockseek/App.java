@@ -273,12 +273,16 @@ public final class App {
         }
 
         Path appDir = wiring.appDir();
-        if (Settings.ensureFiles(appDir, out).contains(Settings.SOCKSEEK_LOCAL_CONF)) {
+        if (!Settings.ensureFiles(appDir, out).isEmpty()
+                && !Files.exists(appDir.resolve(Settings.LOCAL_CONFIG_NAME))) {
+            // a fresh clone: config.yaml has just been written, and the one thing it does
+            // not carry is the login. The file for it is never created here - see ensureFiles
             out.accept("");
             out.accept("Put your Soulseek login in "
-                    + appDir.resolve(Settings.SOCKSEEK_LOCAL_CONF) + ":");
-            out.accept("    username = your-login");
-            out.accept("    password = your-password");
+                    + appDir.resolve(Settings.LOCAL_CONFIG_NAME) + ":");
+            out.accept("    sockseek:");
+            out.accept("      username: your-login");
+            out.accept("      password: your-password");
             out.accept("Then run this again. Nothing can be downloaded until then.");
             return 2;
         }
@@ -287,7 +291,7 @@ public final class App {
         Map<String, Path> folders = Settings.configPaths(config, appDir);
         Path playlistsDir = front.playlists() != null ? front.playlists()
                 : folders.get("playlists");
-        Path outputDir = front.output() != null ? front.output() : folders.get("output");
+        Path outputDir = front.output() != null ? front.output() : folders.get("music");
 
         if (front.importSource() != null) {
             if (Links.isLink(front.importSource())) {
@@ -1004,7 +1008,7 @@ public final class App {
      */
     private static boolean haveSockseek(Config config, Ask ask, Consumer<String> out,
                                         Wiring wiring) {
-        Path configured = Settings.configPaths(config, wiring.appDir()).get("sockseek");
+        Path configured = Settings.configPaths(config, wiring.appDir()).get("sockseek_bin");
         if (Files.isRegularFile(configured)) {
             return true;
         }

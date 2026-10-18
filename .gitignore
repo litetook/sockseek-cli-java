@@ -17,8 +17,11 @@ build/
 # public repository on 2026-10-18 - so every one of them is named here, not just the
 # obvious ones. config.yaml and sockseek.conf are written from the templates in
 # Settings.java on first run; the copies the manual shows are in those templates.
-/sockseek.local.conf
 /config.yaml
+/config.local.yaml
+# the two files config.yaml replaced on 2026-10-18; still ignored, because an old
+# checkout may still have them lying around with a login in one of them
+/sockseek.local.conf
 /sockseek.conf
 /outcomes.tsv
 /not-found.tsv

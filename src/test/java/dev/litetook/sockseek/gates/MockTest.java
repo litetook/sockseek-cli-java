@@ -110,7 +110,7 @@ class MockTest {
         lines.add(NOWHERE + " | 3:00");
         Files.writeString(into.resolve("Playlists").resolve("mix.txt"),
                 String.join("\n", lines) + "\n", StandardCharsets.UTF_8);
-        Files.writeString(into.resolve("sockseek.local.conf"), Gates.LOCAL_CONF);
+        Files.writeString(into.resolve("config.local.yaml"), Gates.LOCAL_CONF);
         Files.copy(Gates.sockseek(), into.resolve(Gates.sockseek().getFileName().toString()),
                 StandardCopyOption.REPLACE_EXISTING);
         Files.copy(Gates.FIXTURE.resolve("dependencies.yaml"),

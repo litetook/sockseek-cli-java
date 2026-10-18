@@ -41,6 +41,14 @@ class DocsTest {
             "(?:^\\s+|[\\[(]\\s*)(?:-[A-Za-z],\\s+)?(--[a-z][a-z0-9]*(?:-[a-z0-9]+)*)",
             Pattern.MULTILINE);
 
+    /**
+     * The second and later names of an option picocli lists as synonyms, as in
+     * {@code --attempts, --retries}: the old name of a renamed option stays accepted, so it
+     * counts as accepted here too, and the manuals still have to mention it.
+     */
+    private static final Pattern SYNONYM = Pattern.compile(
+            ",\\s+(--[a-z][a-z0-9]*(?:-[a-z0-9]+)*)");
+
     private static final Pattern ANSI = Pattern.compile("\u001b\\[[0-9;]*m");
 
     /** Not ours: they are named in the manuals because that is where you pass them. */
@@ -96,9 +104,14 @@ class DocsTest {
 
     private static Set<String> listed(String text) {
         Set<String> found = new LinkedHashSet<>();
-        Matcher match = LISTED.matcher(ANSI.matcher(text).replaceAll(""));
+        String plain = ANSI.matcher(text).replaceAll("");
+        Matcher match = LISTED.matcher(plain);
         while (match.find()) {
             found.add(match.group(1));
+        }
+        Matcher synonym = SYNONYM.matcher(plain);
+        while (synonym.find()) {
+            found.add(synonym.group(1));
         }
         return found;
     }

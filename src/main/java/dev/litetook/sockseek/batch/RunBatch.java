@@ -66,7 +66,14 @@ public final class RunBatch {
             List<String> absent = Settings.missingCredentials(text);
             if (!absent.isEmpty() && !cfg.dryRun()) {
                 log.accept("ERROR: no Soulseek login: " + String.join(", ", absent)
-                        + " missing in " + cfg.appDir().resolve(Settings.SOCKSEEK_LOCAL_CONF));
+                        + " missing under sockseek: in "
+                        + cfg.appDir().resolve(Settings.LOCAL_CONFIG_NAME));
+                // the file it used to live in, for a folder that has been through 2026-10-18
+                if (java.nio.file.Files.exists(cfg.appDir().resolve("sockseek.local.conf"))) {
+                    log.accept("       there is still a sockseek.local.conf here: move those "
+                            + "two lines into " + Settings.LOCAL_CONFIG_NAME
+                            + " under a \"sockseek:\" line, as \"username: ...\"");
+                }
                 return 2;
             }
         }

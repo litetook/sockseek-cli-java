@@ -99,7 +99,8 @@ class ExplainTest {
                         "p/q.opus"))), 3, OptionalInt.of(256)));
         assertTrue(said.contains("rejected by quality"), said);
         assertTrue(said.contains("65kbps"), said);
-        assertTrue(said.contains("sockseek.conf"), said);
+        assertTrue(said.contains("config.yaml"), said);
+        assertTrue(said.contains("sockseek.min-bitrate"), said);
     }
 
     @Test

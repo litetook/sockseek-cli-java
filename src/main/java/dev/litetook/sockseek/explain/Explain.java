@@ -124,7 +124,8 @@ public final class Explain {
                         && one.bitrate().getAsInt() < minBitrate.getAsInt())) {
             int worst = within.stream().mapToInt(one -> one.bitrate().orElse(0)).max().orElse(0);
             lines.add("     rejected by quality: best is " + worst + "kbps, below min-bitrate "
-                    + minBitrate.getAsInt() + " in " + Settings.SOCKSEEK_CONF);
+                    + minBitrate.getAsInt() + " in " + Settings.CONFIG_NAME
+                    + " (sockseek.min-bitrate)");
             return lines;
         }
         lines.add("     length and quality are fine, so the uploader did not deliver - try "

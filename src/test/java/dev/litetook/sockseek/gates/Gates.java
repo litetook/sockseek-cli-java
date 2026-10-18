@@ -41,7 +41,8 @@ public final class Gates {
     public static final boolean RECORDING = Boolean.getBoolean("gates.record");
 
     /** The login never leaves the sandbox, and a dry run never signs in anyway. */
-    public static final String LOCAL_CONF = "username = gate\npassword = gate\n";
+    public static final String LOCAL_CONF =
+            "sockseek:\n  username: gate\n  password: gate\n";
 
     /** sockseek's own meaning: 1 = downloaded, 3 = was already there and skipped. */
     public static final List<String> OK_STATES = List.of("1", "3");
@@ -161,11 +162,11 @@ public final class Gates {
 
     public static Path sandbox(Path into, State state) throws IOException {
         Files.createDirectories(into);
-        for (String name : List.of("config.yaml", "sockseek.conf", "dependencies.yaml")) {
+        for (String name : List.of("config.yaml", "dependencies.yaml")) {
             Files.copy(FIXTURE.resolve(name), into.resolve(name),
                     StandardCopyOption.REPLACE_EXISTING);
         }
-        Files.writeString(into.resolve("sockseek.local.conf"), LOCAL_CONF);
+        Files.writeString(into.resolve("config.local.yaml"), LOCAL_CONF);
         // a placeholder: --dry-run prints the command line and starts nothing
         Files.write(into.resolve("sockseek.exe"), new byte[0]);
         copyTree(FIXTURE.resolve("Playlists"), into.resolve("Playlists"));

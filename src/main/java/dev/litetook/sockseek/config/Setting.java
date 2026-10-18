@@ -7,14 +7,23 @@ import java.util.Optional;
  * One tunable number: the config key (its unit is in the name), the command-line flag, the
  * built-in default and the lowest legal value.
  *
+ * @param section the block of config.yaml it belongs in - what the value affects, not what it
+ *                is about: the whole run, one playlist, one track, the cache. The full name of
+ *                a setting is {@code section.key}, and a key found under another section is
+ *                still honoured, with a warning: the file groups, it does not decide
  * @param minimum null when any value will do
  * @param oldKeys names an earlier version used, still accepted with a warning
  */
-public record Setting(String key, String flag, Kind kind, Number fallback, Double minimum,
-                      String help, List<String> oldKeys) {
+public record Setting(String section, String key, String flag, Kind kind, Number fallback,
+                      Double minimum, String help, List<String> oldKeys) {
 
     public Setting {
         oldKeys = List.copyOf(oldKeys);
+    }
+
+    /** {@code playlist.attempts} - how the setting is named in the file and in the run log. */
+    public String fullName() {
+        return section + "." + key;
     }
 
     /**
