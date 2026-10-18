@@ -111,9 +111,9 @@ class IndexTest {
 
     @Test
     void aMatchedFailureShowsStateReasonAndTheLine() {
-        assertEquals("FAILED  state=2 reason=9 (no candidate passed the name/length/quality "
-                        + "conditions)  Cosmic Drift - Pressure - Rivet (Cosmic Drift Rework)"
-                        + " | 5:37",
+        assertEquals("FAILED  state=2 reason=9 (nobody had it, OR they did and the "
+                        + "conditions refused it - explain_tracks says which)  "
+                        + "Cosmic Drift - Pressure - Rivet (Cosmic Drift Rework) | 5:37",
                 SockseekIndex.format(failure(
                         "Cosmic Drift - Pressure - Rivet (Cosmic Drift Rework) | 5:37",
                         "Cry For You", "2", "9")));
@@ -132,8 +132,9 @@ class IndexTest {
 
     @Test
     void anUnmatchedFailureSaysSoInsteadOfGuessing() {
-        assertEquals("FAILED  state=2 reason=9 (no candidate passed the name/length/quality "
-                        + "conditions)  (no matching playlist line, index title: Some Title)",
+        assertEquals("FAILED  state=2 reason=9 (nobody had it, OR they did and the "
+                        + "conditions refused it - explain_tracks says which)  "
+                        + "(no matching playlist line, index title: Some Title)",
                 SockseekIndex.format(failure("", "Some Title", "2", "9")));
     }
 
@@ -149,7 +150,7 @@ class IndexTest {
                 .contains("(not searched - skipped as not found last time)"));
         // a real search failure still reports the reason, not the state
         assertTrue(SockseekIndex.format(failure("x", "t", "2", "9"))
-                .contains("(no candidate passed the name/length/quality conditions)"));
+                .contains("(nobody had it, OR they did and the conditions refused it - explain_tracks says which)"));
     }
 
     @Test

@@ -46,11 +46,19 @@ public final class SockseekIndex {
     public static final Set<String> OK_STATES = Set.of("1", "3");
 
     /**
-     * failurereason, read off real logs on 2026-10-07. 9 does NOT mean "not on the network":
-     * run #0004 found two 320 kbps files for a track whose row said 9.
+     * failurereason, read off real logs on 2026-10-07.
+     *
+     * <p>9 is two different things wearing one number, and the wording has to say so. It is
+     * not "not on the network": run #0004 found two 320 kbps copies of a track whose row
+     * said 9, refused on length. Measured again on 2026-10-18 from the other side - a file
+     * sitting in the mock folder, rejected on length, produced exactly what a track nobody
+     * shares produces, in the index and in the event word alike - and on a real run that one
+     * code covered 104 of 135 failures. Only a second search with every condition off can
+     * separate them, which is what explain_tracks buys.
      */
     private static final Map<String, String> REASON_TEXT = Map.of(
-            "9", "no candidate passed the name/length/quality conditions",
+            "9", "nobody had it, OR they did and the conditions refused it - "
+                    + "explain_tracks says which",
             "4", "found, but the download did not come through",
             "0", "no failure recorded");
 
