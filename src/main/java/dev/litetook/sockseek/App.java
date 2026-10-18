@@ -97,11 +97,23 @@ public final class App {
             A tool it needs but cannot find (sockseek, and later yt-dlp) is offered for download at the
             version pinned in dependencies.yaml.""";
 
+    /**
+     * The playlist option 4 adds to, and the folder its music lands in.
+     *
+     * <p>A playlist like any other: it is searched, cached and reported the same way, and it
+     * grows every time a single track is asked for. The owner asked for it on 2026-10-18 -
+     * "просто качає у папку unsorted нову".
+     */
+    public static final String UNSORTED = "unsorted";
+
     /** Where the list comes from. The first question of an interactive run. */
     public enum Source {
         TXT("1", "txt", "download a playlist from a .txt file"),
         SPOTIFY("2", "Spotify", "save a .txt from a Spotify link, then download it"),
-        SOUNDCLOUD("3", "SoundCloud", "save a .txt from a SoundCloud link, then download it");
+        SOUNDCLOUD("3", "SoundCloud", "save a .txt from a SoundCloud link, then download it"),
+        /** One track, from either service, straight into the unsorted playlist. */
+        TRACK("4", "Spotify or SoundCloud",
+                "one track from a link, into " + UNSORTED);
 
         private final String key;
         private final String label;
@@ -323,7 +335,26 @@ public final class App {
                 source = picked.get();
             }
 
-            if (source != Source.TXT) {
+            if (source == Source.TRACK) {
+                Link link = askForLink(source, ask, out);
+                if (link.back()) {
+                    continue;
+                }
+                if (link.url() == null) {
+                    return 0;
+                }
+                Written added = trackToUnsorted(link.url(), playlistsDir, out, config,
+                        front.cookiesFrom(), ask, wiring);
+                if (added.file() == null) {
+                    return added.code();
+                }
+                chosen = named(scan(playlistsDir, outputDir), UNSORTED);
+                if (chosen.isEmpty()) {
+                    out.accept("Wrote " + added.file().getFileName()
+                            + ", but reading it back found nothing. Look at the file.");
+                    return 1;
+                }
+            } else if (source != Source.TXT) {
                 Link link = askForLink(source, ask, out);
                 if (link.back()) {
                     continue;
@@ -800,7 +831,7 @@ public final class App {
             if (picked.isPresent()) {
                 return picked;
             }
-            out.accept("Type 1, 2 or 3, or Enter to quit.");
+            out.accept("Type 1, 2, 3 or 4, or Enter to quit.");
         }
     }
 
@@ -915,6 +946,74 @@ public final class App {
      * <p>Only the track list is taken. The downloading stays with the engine, so a link ends up
      * in the same place a hand-written list does: a file you can read, edit and re-run.
      */
+    /**
+     * Option 4: one track from a link, added to the unsorted playlist and downloaded there.
+     *
+     * <p>A link that turns out to hold several tracks adds all of them and says so, rather
+     * than taking the first and quietly dropping the rest - there is no reading of the
+     * person's mind that can be right there, and the folder is the same either way.
+     */
+    private static Written trackToUnsorted(String url, Path playlistsDir, Consumer<String> out,
+                                           Config config, String cookiesFrom, Ask ask,
+                                           Wiring wiring) {
+        Optional<Linked> read = readLink(url, out, cookiesFrom, ask, wiring);
+        if (read.isEmpty()) {
+            return new Written(2, null);
+        }
+        Linked linked = read.get();
+        List<String> added;
+        try {
+            added = Imports.appendToPlaylist(linked.lines(), playlistsDir, UNSORTED);
+        } catch (IOException cannotWrite) {
+            out.accept("Nothing written: " + cannotWrite.getMessage());
+            return new Written(2, null);
+        }
+        Path file = Imports.playlistFile(playlistsDir, UNSORTED);
+        if (added.isEmpty()) {
+            out.accept(linked.lines().size() + " track(s) already in "
+                    + file.getFileName() + "; downloading what is still missing.");
+            return new Written(0, file);
+        }
+        for (String line : added) {
+            out.accept("  + " + line);
+        }
+        out.accept(added.size() + " track(s) added to " + file.getFileName()
+                + "; they land in " + UNSORTED + "/");
+        return new Written(0, file);
+    }
+
+    /** The link, read into tracks, with every reason it could not be read already said. */
+    private static Optional<Linked> readLink(String url, Consumer<String> out,
+                                             String cookiesFrom, Ask ask, Wiring wiring) {
+        Optional<String> service = Links.detect(url);
+        if (service.isEmpty()) {
+            out.accept("Not a link this tool can read: " + url);
+            out.accept("Spotify and SoundCloud links are supported.");
+            return Optional.empty();
+        }
+        Path tool = null;
+        if (service.get().equals("soundcloud")) {
+            Predicate<String> agreed = ask == null ? null : question -> yes(ask, question);
+            Optional<Path> found = Tools.ensure("yt-dlp", out, pinned(wiring), wiring.appDir(),
+                    agreed, wiring.downloader());
+            if (found.isEmpty()) {
+                out.accept("Without yt-dlp a SoundCloud link cannot be read.");
+                return Optional.empty();
+            }
+            tool = found.get();
+        }
+        out.accept("Reading " + url);
+        Linked linked = wiring.reader().read(url, tool, cookiesFrom);
+        for (String warning : linked.warnings()) {
+            out.accept("WARN " + warning);
+        }
+        if (linked.lines().isEmpty()) {
+            out.accept("Nothing imported.");
+            return Optional.empty();
+        }
+        return Optional.of(linked);
+    }
+
     private static Written linkToPlaylist(String url, Path playlistsDir, String name,
                                           boolean overwrite, Consumer<String> out, Config config,
                                           String cookiesFrom, Ask ask, Wiring wiring,

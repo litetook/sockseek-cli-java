@@ -112,6 +112,32 @@ run.cmd --import exported.csv --as techno-2026 --overwrite
 
 `--import` writes the playlist file and stops. Downloading stays a separate, confirmed step.
 
+### One track, into `unsorted`
+
+Option **4** of the opening menu takes a single Spotify or SoundCloud link, adds that track
+to `Playlists/unsorted.txt` and downloads it into `output/unsorted/`:
+
+```
+Pick one (Enter quits): 4
+Paste the Spotify or SoundCloud link ([b] back, Enter cancels): https://open.spotify.com/track/1pKYY...
+Reading https://open.spotify.com/track/1pKYY...
+  + Daft Punk - Around the World | 7:10
+1 track(s) added to unsorted.txt; they land in unsorted/
+```
+
+`unsorted` is an ordinary playlist: it is searched, cached, reported and re-run like any
+other, and `--only unsorted` picks it up later. The file **grows** rather than being replaced,
+and a line already in it is not added twice - asking for the same track again just downloads
+whatever is still missing.
+
+**Behind the scenes.** A Spotify track page embeds the track itself instead of a list -
+measured on the live page 2026-10-18: the entity carries `name`, `artists[0].name` and
+`duration` in milliseconds, and no `trackList` at all. A page that does not say `type: track`
+is never read this way, so a private playlist still reports what is actually wrong with it.
+On SoundCloud nothing special happens: yt-dlp prints one line for a track link exactly as it
+does for a set. A link that turns out to hold several tracks adds all of them and says so -
+guessing which one was meant would be worse than taking them.
+
 **Behind the scenes.** Spotify is read from its public embed page, whose HTML carries the track
 list as JSON — no account, no API key, no Premium, all of which sockseek's own Spotify support
 needs. That page seems to stop at 100 tracks, so an import that returns exactly 100 warns you.

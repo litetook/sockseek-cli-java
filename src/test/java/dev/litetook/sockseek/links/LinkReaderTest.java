@@ -157,11 +157,21 @@ class LinkReaderTest {
     }
 
     @Test
-    void aLinkToATrackAsksForAPlaylistLink() {
+    void aLinkToATrackIsReadAsThatOneTrack() {
+        // refused until 2026-10-18, when option 4 - one track into unsorted - gave it a
+        // meaning. A track page that still carries a trackList is read from the list
         Linked linked = spotify(embedPage(track("x", "y", 1000), "X"),
                 "https://open.spotify.com/track/abc");
+        assertEquals(List.of("y - x | 0:01"), linked.lines());
+        assertEquals(List.of(), linked.warnings());
+    }
+
+    @Test
+    void aLinkToSomethingElseEntirelyStillAsksForOneWeCanRead() {
+        Linked linked = new LinkReader(any -> "", null)
+                .read("https://example.com/song", null, null);
         assertEquals(List.of(), linked.lines());
-        assertTrue(said(linked, "playlist or album link"), linked.warnings().toString());
+        assertTrue(said(linked, "not a link this tool can read"), linked.warnings().toString());
     }
 
     @Test
@@ -278,19 +288,87 @@ class LinkReaderTest {
         assertEquals("Ti\u00ebsto \u00b7 L\u00f6ffler", output.text().strip());
         assertFalse(output.text().contains("\ufffd"), output.text());
     }
-
-    /** Whichever of the usual names answers, or nothing. */
-    private static String interpreter() {
-        for (String name : List.of(System.getProperty("python.exe", "python"), "py",
-                "python3")) {
-            try {
-                if (ProcessRunner.system().run(List.of(name, "--version")).code() == 0) {
-                    return name;
-                }
-            } catch (RuntimeException notThisOne) {
-                continue;
-            }
-        }
-        return null;
-    }
-}
+
+
+    /** Whichever of the usual names answers, or nothing. */
+
+    private static String interpreter() {
+
+        for (String name : List.of(System.getProperty("python.exe", "python"), "py",
+
+                "python3")) {
+
+            try {
+
+                if (ProcessRunner.system().run(List.of(name, "--version")).code() == 0) {
+
+                    return name;
+
+                }
+
+            } catch (RuntimeException notThisOne) {
+
+                continue;
+
+            }
+
+        }
+
+        return null;
+
+    }
+
+
+    /**
+     * A single track embeds itself instead of a list - measured against the live page on
+     * 2026-10-18 for spotify:track:1pKYYY0dkg23sQQXi0Q5zN: the entity carries name, artists
+     * and duration in milliseconds, and no trackList at all.
+     */
+    private static String trackPage(String name, String artist, long durationMs) {
+        return "<!DOCTYPE html><html><body>"
+                + "<script id=\"__NEXT_DATA__\" type=\"application/json\">"
+                + "{\"props\":{\"pageProps\":{\"state\":{\"data\":{\"entity\":{"
+                + "\"name\":\"" + name + "\",\"type\":\"track\",\"duration\":" + durationMs
+                + ",\"artists\":[{\"name\":\"" + artist + "\"}]}}}}}}"
+                + "</script></body></html>";
+    }
+
+    @Test
+    void aSingleTrackLinkIsOneLine() {
+        Linked read = spotify(trackPage("Around the World", "Daft Punk", 429533),
+                "https://open.spotify.com/track/1pKYYY0dkg23sQQXi0Q5zN");
+        // 429533 ms rounds to 7:10; Spotify shows 7:09 because it cuts the fraction, and
+        // the length is a tolerance window here, not a label
+        assertEquals(List.of("Daft Punk - Around the World | 7:10"), read.lines());
+        assertEquals(List.of(), read.warnings());
+    }
+
+    @Test
+    void theSpotifyUriFormOfATrackWorksToo() {
+        Linked read = spotify(trackPage("Porcelain", "Moby", 241000),
+                "spotify:track:1pKYYY0dkg23sQQXi0Q5zN");
+        assertEquals(List.of("Moby - Porcelain | 4:01"), read.lines());
+    }
+
+    @Test
+    void aTrackWithNoLengthIsStillATrack() {
+        // then it is searched without a length filter rather than not at all
+        Linked read = spotify(trackPage("Untitled", "Nobody", 0),
+                "https://open.spotify.com/track/abc123");
+        assertEquals(List.of("Nobody - Untitled"), read.lines());
+    }
+
+    @Test
+    void aPrivatePlaylistStillSaysWhatIsWrong() {
+        // the entity of an unreadable playlist has no name either, so it must not be read as
+        // a single track with an empty title
+        String page = "<!DOCTYPE html><html><body>"
+                + "<script id=\"__NEXT_DATA__\" type=\"application/json\">"
+                + "{\"props\":{\"pageProps\":{\"state\":{\"data\":{\"entity\":{}}}}}}"
+                + "</script></body></html>";
+        Linked read = spotify(page, SPOTIFY_URL);
+        assertEquals(List.of(), read.lines());
+        assertTrue(said(read, "no track list"), read.warnings().toString());
+    }
+}
+

@@ -51,8 +51,8 @@ public final class LinkReader {
     private static final List<String> ENTITY_PATH =
             List.of("props", "pageProps", "state", "data", "entity");
     private static final Pattern SPOTIFY_REF = Pattern.compile(
-            "(?:open\\.spotify\\.com/(?:intl-[\\w-]+/)?(?<kind>playlist|album)/"
-                    + "|spotify:(?<kind2>playlist|album):)(?<id>[A-Za-z0-9]+)");
+            "(?:open\\.spotify\\.com/(?:intl-[\\w-]+/)?(?<kind>playlist|album|track)/"
+                    + "|spotify:(?<kind2>playlist|album|track):)(?<id>[A-Za-z0-9]+)");
 
     /** A separator no track title carries, so yt-dlp's one line per track splits safely. */
     public static final String FIELD_SEPARATOR = "\u001f";
@@ -104,7 +104,7 @@ public final class LinkReader {
     public Linked spotify(String url) {
         Matcher found = SPOTIFY_REF.matcher(url == null ? "" : url);
         if (!found.find()) {
-            throw new LinkError("a Spotify playlist or album link is expected, e.g. "
+            throw new LinkError("a Spotify playlist, album or track link is expected, e.g. "
                     + "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M");
         }
         String kind = found.group("kind") == null ? found.group("kind2") : found.group("kind");
@@ -112,6 +112,12 @@ public final class LinkReader {
                 String.format(SPOTIFY_EMBED, kind, found.group("id"))));
         JsonNode tracks = entity.path("trackList");
         if (!tracks.isArray() || tracks.isEmpty()) {
+            // a single track embeds itself rather than a list, so the entity IS the track
+            Optional<String> alone = oneTrack(entity);
+            if (alone.isPresent()) {
+                return new Linked(List.of(alone.get()), List.of(), "spotify",
+                        entity.path("name").asText(""));
+            }
             throw new LinkError("the Spotify page carries no track list. A playlist that is not "
                     + "public cannot be read this way");
         }
@@ -134,6 +140,30 @@ public final class LinkReader {
                         + "returned exactly that, so a longer playlist is cut here. Check the file")
                 : List.<String>of();
         return new Linked(lines, warnings, "spotify", entity.path("name").asText(""));
+    }
+
+    /**
+     * One track out of a track embed: its own name, its first artist, its length.
+     *
+     * <p>Empty when the entity is not a track at all, which is how a private playlist is told
+     * apart from a single track.
+     */
+    private static Optional<String> oneTrack(JsonNode entity) {
+        String title = entity.path("name").asText("").strip();
+        // the page has to SAY it is a track: a private playlist also carries a name and no
+        // track list, and reading that as a one-track playlist would hide the real problem
+        if (title.isEmpty() || !entity.path("type").asText("").strip().equals("track")) {
+            return Optional.empty();
+        }
+        JsonNode artists = entity.path("artists");
+        String artist = artists.isArray() && !artists.isEmpty()
+                ? artists.get(0).path("name").asText("").strip() : "";
+        OptionalInt milliseconds = seconds(entity.path("duration").asText(""));
+        OptionalInt length = milliseconds.isPresent()
+                ? OptionalInt.of((int) Math.round(milliseconds.getAsInt() / 1000.0))
+                : OptionalInt.empty();
+        return Optional.of(Imports.trackLine(
+                artist.isEmpty() ? title : artist + " - " + title, length));
     }
 
     private static JsonNode entity(String page) {

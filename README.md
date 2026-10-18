@@ -151,7 +151,30 @@ loosen:
 java -jar sockseek-cli.jar --only starter --yes --length-tol 90   # or -1 for no filter
 ```
 
-**7. Now your own.** Drop more `.txt` files into `Playlists/`, or import them rather than
+**7. One track, right now.** Run it with no arguments and the first question offers four
+ways in; the fourth takes a single Spotify or SoundCloud link and downloads that one track:
+
+```
+Where from?
+
+  1  download a playlist from a .txt file
+  2  save a .txt from a Spotify link, then download it
+  3  save a .txt from a SoundCloud link, then download it
+  4  one track from a link, into unsorted
+
+Pick one (Enter quits): 4
+
+Paste the Spotify or SoundCloud link ([b] back, Enter cancels): https://open.spotify.com/track/...
+Reading https://open.spotify.com/track/...
+  + Daft Punk - Around the World | 7:10
+1 track(s) added to unsorted.txt; they land in unsorted/
+```
+
+`unsorted` is a playlist like any other - `Playlists/unsorted.txt`, music in
+`output/unsorted/`. It grows each time you do this, the same track is never added twice, and
+everything else works on it as usual: the cache, the length filter, `--only unsorted`.
+
+**8. Now your own.** Drop more `.txt` files into `Playlists/`, or import them rather than
 typing them out:
 
 ```bash
@@ -171,7 +194,7 @@ sockseek itself is fetched the first time it is needed, at the version pinned in
 the same way if you import from SoundCloud. Nothing is installed system-wide and nothing
 needs admin rights.
 
-**8. Run it again tomorrow.** What you can get depends on who is online, so a second run
+**9. Run it again tomorrow.** What you can get depends on who is online, so a second run
 over the same playlist is the normal way to pick up the rest — it searches only what is
 still missing, and skips what nobody was sharing an hour ago.
 

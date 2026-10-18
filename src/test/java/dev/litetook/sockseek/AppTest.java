@@ -103,7 +103,7 @@ class AppTest {
     // ------------------------------------------------------------------ the opening menu
 
     @Test
-    void theMenuOffersThreeWaysIn() throws IOException {
+    void theMenuOffersFourWaysIn() throws IOException {
         ready();
         assertEquals(List.of(
                 "Where from?",
@@ -111,6 +111,7 @@ class AppTest {
                 "  1  download a playlist from a .txt file",
                 "  2  save a .txt from a Spotify link, then download it",
                 "  3  save a .txt from a SoundCloud link, then download it",
+                "  4  one track from a link, into unsorted",
                 "",
                 "Pick one (Enter quits): "), run(List.of()).printed());
     }
@@ -133,7 +134,7 @@ class AppTest {
     @Test
     void aWrongAnswerAsksAgainInsteadOfGuessing() throws IOException {
         ready();
-        assertTrue(run(List.of(), "7", "x", "").said("Type 1, 2 or 3, or Enter to quit."));
+        assertTrue(run(List.of(), "7", "x", "").said("Type 1, 2, 3 or 4, or Enter to quit."));
     }
 
     // ------------------------------------------------------------------ the table and the list
@@ -688,5 +689,81 @@ class AppTest {
 
     private static int points(String line) {
         return line.codePointCount(0, line.length());
+    }
+
+    // ------------------------------------------------------------------ one track, unsorted
+
+    /** A Spotify track embed, the shape measured on the live page 2026-10-18. */
+    private static String trackPage(String name, String artist, long durationMs) {
+        return "<!DOCTYPE html><html><body>"
+                + "<script id=\"__NEXT_DATA__\" type=\"application/json\">"
+                + "{\"props\":{\"pageProps\":{\"state\":{\"data\":{\"entity\":{"
+                + "\"name\":\"" + name + "\",\"type\":\"track\",\"duration\":" + durationMs
+                + ",\"artists\":[{\"name\":\"" + artist + "\"}]}}}}}}"
+                + "</script></body></html>";
+    }
+
+    private App.Wiring wiringReading(String page) {
+        return new App.Wiring(home, engine,
+                new dev.litetook.sockseek.links.LinkReader(any -> page, null), url -> {
+                    throw new IOException("a test must not reach the network");
+                });
+    }
+
+    private Run runWith(App.Wiring wiring, List<String> args, String... answers) {
+        Script script = new Script(answers);
+        int code = App.run(args.toArray(String[]::new), script, script.printed::add, wiring);
+        return new Run(code, script.printed);
+    }
+
+    @Test
+    void optionFourPutsOneTrackInUnsortedAndDownloadsIt() throws IOException {
+        ready();
+        Run run = runWith(wiringReading(trackPage("Around the World", "Daft Punk", 429533)),
+                List.of(), "4", "https://open.spotify.com/track/1pKYYY0dkg23sQQXi0Q5zN", "y");
+        assertEquals(0, run.code(), run.printed().toString());
+        assertEquals(List.of("Daft Punk - Around the World | 7:10"),
+                Files.readAllLines(home.resolve("Playlists").resolve("unsorted.txt")));
+        // and it is downloaded like any other playlist, into its own folder
+        assertEquals(List.of(List.of("--only", "unsorted")), engine.calls);
+        assertTrue(run.said("+ Daft Punk - Around the World | 7:10"), run.printed().toString());
+    }
+
+    @Test
+    void asecondTrackIsAddedRatherThanReplacingTheFirst() throws IOException {
+        ready();
+        runWith(wiringReading(trackPage("Around the World", "Daft Punk", 429533)),
+                List.of(), "4", "https://open.spotify.com/track/one", "y");
+        runWith(wiringReading(trackPage("Porcelain", "Moby", 241000)),
+                List.of(), "4", "https://open.spotify.com/track/two", "y");
+        assertEquals(List.of("Daft Punk - Around the World | 7:10", "Moby - Porcelain | 4:01"),
+                Files.readAllLines(home.resolve("Playlists").resolve("unsorted.txt")));
+    }
+
+    @Test
+    void theSameTrackTwiceIsNotWrittenTwice() throws IOException {
+        ready();
+        String page = trackPage("Porcelain", "Moby", 241000);
+        runWith(wiringReading(page), List.of(), "4", "https://open.spotify.com/track/two", "y");
+        Run again = runWith(wiringReading(page), List.of(), "4",
+                "https://open.spotify.com/track/two", "y");
+        assertEquals(List.of("Moby - Porcelain | 4:01"),
+                Files.readAllLines(home.resolve("Playlists").resolve("unsorted.txt")));
+        assertTrue(again.said("already in unsorted.txt"), again.printed().toString());
+    }
+
+    @Test
+    void aLinkNeitherServiceOwnsIsRefusedWithoutTouchingTheList() throws IOException {
+        ready();
+        Run run = runWith(wiringReading(""), List.of(), "4", "https://example.com/song", "");
+        assertEquals(2, run.code());
+        assertTrue(run.said("Not a link this tool can read"), run.printed().toString());
+        assertFalse(Files.exists(home.resolve("Playlists").resolve("unsorted.txt")));
+    }
+
+    @Test
+    void theMenuOffersItAsFour() {
+        assertEquals(Optional.of(App.Source.TRACK), App.sourceMenu(new Script("4"),
+                line -> { }));
     }
 }

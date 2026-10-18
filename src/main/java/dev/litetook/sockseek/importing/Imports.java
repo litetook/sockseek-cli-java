@@ -107,6 +107,54 @@ public final class Imports {
                 : name.strip()) + ".txt");
     }
 
+    /**
+     * Add these lines to a playlist, making it when it is not there, and say which were new.
+     *
+     * <p>For the one-track-from-a-link option: the file grows, nothing in it is lost, and a
+     * line already in it is not added twice - asking for the same track again is a thing
+     * people do, and a doubled line would be searched twice.
+     */
+    public static List<String> appendToPlaylist(List<String> lines, Path playlistsDir,
+                                                String name) throws IOException {
+        Path target = playlistFile(playlistsDir, name);
+        Files.createDirectories(playlistsDir);
+        List<String> already = Files.exists(target)
+                ? Files.readAllLines(target, StandardCharsets.UTF_8) : List.of();
+        java.util.Set<String> seen = already.stream().map(String::strip)
+                .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
+        List<String> added = new ArrayList<>();
+        for (String line : lines) {
+            if (!line.isBlank() && seen.add(line.strip())) {
+                added.add(line.strip());
+            }
+        }
+        if (added.isEmpty()) {
+            return List.of();
+        }
+        StringBuilder text = new StringBuilder();
+        for (String line : already) {
+            text.append(line).append('\n');
+        }
+        if (!already.isEmpty() && !already.get(already.size() - 1).isBlank()
+                && text.charAt(text.length() - 1) != '\n') {
+            text.append('\n');
+        }
+        for (String line : added) {
+            text.append(line).append('\n');
+        }
+        // beside the target and renamed, like writePlaylist: a playlist is the person's own
+        // work, and a half-written file would take their list with it
+        Path part = target.resolveSibling(target.getFileName() + ".part");
+        try {
+            Files.writeString(part, text.toString(), StandardCharsets.UTF_8);
+            move(part, target);
+        } catch (IOException cannotWrite) {
+            Files.deleteIfExists(part);
+            throw cannotWrite;
+        }
+        return List.copyOf(added);
+    }
+
     /** The playlist file, or empty when one is already there and may not be replaced. */
     public static Optional<Path> writePlaylist(List<String> lines, Path playlistsDir, String name,
                                                boolean overwrite) throws IOException {
