@@ -17,10 +17,12 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
                         Options options, double timeoutMinutes, int retries, boolean dryRun,
                         String only, boolean verbose, int explainTracks, List<String> sockseekArgs,
                         Path conf, Path sockseekConf, int runNo, LocalDateTime stamp,
-                        double stallSeconds, double skipNotFoundHours, boolean cache) {
+                        double stallSeconds, double skipNotFoundHours, boolean cache,
+                        List<String> formatOrder) {
 
     public RunConfig {
         sockseekArgs = List.copyOf(sockseekArgs);
+        formatOrder = List.copyOf(formatOrder);
     }
 
     public Sockseek client() {
@@ -32,14 +34,14 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
         return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir, sockseek,
                 options, timeoutMinutes, retries, dryRun, only, verbose, explainTracks,
                 sockseekArgs, conf, sockseekConf, number, stamp, stallSeconds,
-                skipNotFoundHours, cache);
+                skipNotFoundHours, cache, formatOrder);
     }
 
     public RunConfig withConf(Path merged) {
         return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir, sockseek,
                 options, timeoutMinutes, retries, dryRun, only, verbose, explainTracks,
                 sockseekArgs, merged, sockseekConf, runNo, stamp, stallSeconds,
-                skipNotFoundHours, cache);
+                skipNotFoundHours, cache, formatOrder);
     }
 
     public static Builder builder(Path appDir) {
@@ -70,6 +72,7 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
         private double stallSeconds = 300;
         private double skipNotFoundHours = 2;
         private boolean cache = true;
+        private List<String> formatOrder = List.of();
 
         private Builder(Path appDir) {
             this.appDir = appDir;
@@ -165,12 +168,18 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
             return this;
         }
 
+        /** Formats to ask for in order, most wanted first; empty means one pass. */
+        public Builder formatOrder(List<String> value) {
+            this.formatOrder = value;
+            return this;
+        }
+
         public RunConfig build() {
             return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir,
                     sockseek, options, timeoutMinutes, retries, dryRun, only, verbose,
                     explainTracks, sockseekArgs, null, sockseekConf, 0,
                     LocalDateTime.now(),
-                    stallSeconds, skipNotFoundHours, cache);
+                    stallSeconds, skipNotFoundHours, cache, formatOrder);
         }
     }
 }

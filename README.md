@@ -174,6 +174,7 @@ where it came from, so "why is it this number?" is never a guess.
 | `searches_per_window` | `34` | the brake: all playlists together stay under this many searches per `searches_renew_s`, by pausing between them; `0` = no pause. The Soulseek server bans an account that goes faster |
 | `searches_renew_s` | `220` | the length of that window, in seconds |
 | `max_sources` | `3` | how many different uploaders to try for one track before giving up on it this run. sockseek calls this `max-retries`, which sounds like trying the same one again; what it counts is different people |
+| `format_order` | *(empty)* | formats you want, most wanted first, comma separated — `mp3,flac,wav`. Each is a separate pass over whatever is still missing with that format **required**, and a last pass takes anything. The only way to order them: sockseek's own `pref-format` is unordered by its documentation. It costs searches — a track nobody has goes through every pass |
 | `explain_tracks` | `20` | after a run, search again with every condition off for this many failed tracks per playlist, to find out which nobody had and which the filters refused. One search each; `0` turns it off |
 | `use_cache` | `true` | `false` makes `outcomes.tsv` not exist for the run: nothing read, nothing written |
 
@@ -212,7 +213,7 @@ more layer for a single run.
 
 Anything in the tables above, as a flag: `--length-tol 90`, `--stall-timeout 0`,
 `--skip-not-found-hours 0`, `--searches-per-window 20`, `--searches-renew-s 300`,
-`--max-sources 5`, `--explain-tracks 0`,
+`--max-sources 5`, `--explain-tracks 0`, `--format-order mp3,flac`,
 `--no-cache`, and the folders as `--playlists`, `--output`, `--work`, `--logs`,
 `--sockseek`. And these, which exist only there:
 

@@ -25,7 +25,7 @@ class BatchTest {
         Files.createDirectories(app.resolve("Playlists"));
         return RunConfig.builder(app)
                 .sockseek(app.resolve("sockseek.exe"))
-                .options(new Options(-1, false, 3))
+                .options(new Options(-1, false, 3, null))
                 .retries(1)
                 .timeoutMinutes(2);
     }

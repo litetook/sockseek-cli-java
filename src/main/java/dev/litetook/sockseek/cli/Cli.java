@@ -117,6 +117,13 @@ public final class Cli implements Callable<Integer> {
                     + "(default 20)")
     Integer explainTracks;
 
+    @Option(names = "--format-order", paramLabel = "LIST",
+            description = "formats to ask for in order, most wanted first, comma separated "
+                    + "(e.g. mp3,flac,wav). Each is a separate pass over what is still "
+                    + "missing, with that format required; a last pass takes anything. "
+                    + "Empty means one pass and no ordering")
+    String formatOrder;
+
     @Option(names = "--no-cache",
             description = "ignore outcomes.tsv completely for this run: search everything and "
                     + "write nothing down, as if the file did not exist")
@@ -258,6 +265,22 @@ public final class Cli implements Callable<Integer> {
         return (Path) values.get(key);
     }
 
+    /**
+     * The wanted formats, in order; the command line wins over the file.
+     *
+     * <p>A list, so it cannot live in {@link Settings#ALL} with the numbers. Blank entries
+     * are dropped rather than passed on as an empty {@code --format}, which sockseek would
+     * read as "no format at all passes".
+     */
+    public List<String> formatOrder() {
+        String given = formatOrder != null ? formatOrder
+                : loaded.paths().getOrDefault(Settings.FORMAT_ORDER, "");
+        return java.util.Arrays.stream(given.split(","))
+                .map(String::strip)
+                .filter(one -> !one.isEmpty())
+                .toList();
+    }
+
     public List<String> splitSockseekArgs() {
         // split on spaces, honour quotes, and keep backslashes as they are: a Windows path
         // inside this string is a path, not an escape sequence
@@ -298,7 +321,7 @@ public final class Cli implements Callable<Integer> {
                 .logsDir(path("logs"))
                 .sockseek(path("sockseek"))
                 .options(new Options(integer("length_tol_s"), preview,
-                        integer("max_sources")))
+                        integer("max_sources"), null))
                 .timeoutMinutes(decimal("playlist_timeout_min"))
                 .retries(integer("retries"))
                 .dryRun(dryRun)
@@ -310,6 +333,7 @@ public final class Cli implements Callable<Integer> {
                 .stallSeconds(decimal("stall_timeout_s"))
                 .skipNotFoundHours(decimal("skip_not_found_hours"))
                 .cache(integer("use_cache") != 0)
+                .formatOrder(formatOrder())
                 .build();
     }
 
@@ -322,6 +346,10 @@ public final class Cli implements Callable<Integer> {
         lines.add("  output_dir = " + path("output") + " [" + sources.get("output") + "]");
         lines.add("  work_dir = " + path("work") + " [" + sources.get("work") + "]");
         lines.add("  logs_dir = " + path("logs") + " [" + sources.get("logs") + "]");
+        if (!formatOrder().isEmpty()) {
+            lines.add("  format_order = " + String.join(",", formatOrder())
+                    + " [" + (formatOrder != null ? "cli" : "config") + "]");
+        }
         lines.add("  sockseek_exe = " + path("sockseek") + " [" + sources.get("sockseek") + "]");
         lines.add("  config_file = " + path("config") + " [" + sources.get("config") + "]");
         for (Setting setting : Settings.ALL) {

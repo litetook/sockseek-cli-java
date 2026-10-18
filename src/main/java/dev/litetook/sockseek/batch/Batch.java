@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import dev.litetook.sockseek.process.Options;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,6 +42,10 @@ import java.util.function.Consumer;
  * skipped.
  */
 public final class Batch {
+
+    /** What a sockseek list file has always ended its lines with. */
+    private static final String NEWLINE = String.valueOf((char) 10);
+
 
     private final RunConfig cfg;
     private final Path logsDir;
@@ -178,28 +183,65 @@ public final class Batch {
             return new Result(entries.size(), before.missing().size(), false);
         }
 
-        Path listFile = workDir.resolve(playlist.name() + ".list.txt");
         Files.createDirectories(workDir);
-        Files.writeString(listFile, wanted.stream().map(Entry::listLine)
-                .reduce((a, b) -> a + "\n" + b).orElse("") + "\n", StandardCharsets.UTF_8);
         Sockseek client = cfg.client();
         Path logFile = cfg.verbose() ? verboseLog(playlist.name()) : null;
-        // one file per playlist per run, beside the list it belongs to
-        Path eventsFile = workDir.resolve(playlist.name() + ".events.txt");
-        Files.deleteIfExists(eventsFile);
-        List<String> command = client.command(listFile, outDir, logFile, null, Runner.INDEX_NAME,
-                eventsFile);
+
+        // One pass per wanted format, most wanted first, then one with no format at all.
+        // sockseek's pref-format is unordered by its own documentation, so this is the only
+        // way to say "mp3 first, then flac, then whatever else": ask for them one at a
+        // time, with the HARD filter, over whatever the pass before left behind.
+        List<String> passes = new ArrayList<>(cfg.formatOrder());
+        passes.add(null);   // and finally, anything
+
+        Path listFile = workDir.resolve(playlist.name() + ".list.txt");
+        Map<String, Events.Event> said = new LinkedHashMap<>();
+        dev.litetook.sockseek.process.Status status =
+                dev.litetook.sockseek.process.Status.OK;
+        List<Entry> left = wanted;
+
+        for (int pass = 0; pass < passes.size() && !left.isEmpty(); pass++) {
+            String format = passes.get(pass);
+            String tag = passes.size() == 1 ? "" : "." + (format == null ? "any" : format);
+            Path passList = workDir.resolve(playlist.name() + tag + ".list.txt");
+            Path eventsFile = workDir.resolve(playlist.name() + tag + ".events.txt");
+            // a bare newline, not the platform separator: this is what sockseek has
+            // always been handed, and the dry-run line is pinned by a test
+            Files.writeString(passList, String.join(NEWLINE,
+                    left.stream().map(Entry::listLine).toList()) + NEWLINE,
+                    StandardCharsets.UTF_8);
+            Files.deleteIfExists(eventsFile);
+            listFile = passList;   // the explain step probes whatever the last pass asked
+            Options options = cfg.options().withFormat(format);
+            List<String> command = client.command(passList, outDir, logFile, options,
+                    Runner.INDEX_NAME, eventsFile);
+            if (cfg.dryRun()) {
+                log.accept("dry run: " + Runs.commandLine(command));
+                continue;
+            }
+            if (passes.size() > 1) {
+                log.accept("pass " + (pass + 1) + " of " + passes.size() + ": "
+                        + (format == null ? "any format" : format + " only") + ", "
+                        + left.size() + " track(s)");
+            }
+            Files.createDirectories(outDir);
+            List<Entry> asked = left;
+            Events.Tail watch = new Events.Tail(eventsFile,
+                    event -> record(event, asked, said, playlist.name()));
+            status = Runner.runWithRetry(command, cfg.appDir(), client.timeoutSeconds(),
+                    cfg.retries(), log, Runner.RETRY_PAUSE_SECONDS, watch, cfg.stallSeconds(),
+                    outDir);
+            if (status == dev.litetook.sockseek.process.Status.ERROR || status.cutShort()) {
+                break;   // a pass that was stopped says nothing about the next one either
+            }
+            // what the folder holds now decides what the next pass asks for
+            Status between = SockseekIndex.playlistStatus(entries, outDir);
+            left = left.stream()
+                    .filter(entry -> !between.files().containsKey(entry.original())).toList();
+        }
         if (cfg.dryRun()) {
-            log.accept("dry run: " + Runs.commandLine(command));
             return new Result(entries.size(), before.missing().size(), false);
         }
-        Files.createDirectories(outDir);
-        Map<String, Events.Event> said = new LinkedHashMap<>();
-        Events.Tail watch = new Events.Tail(eventsFile,
-                event -> record(event, wanted, said, playlist.name()));
-        dev.litetook.sockseek.process.Status status = Runner.runWithRetry(command, cfg.appDir(),
-                client.timeoutSeconds(), cfg.retries(), log, Runner.RETRY_PAUSE_SECONDS,
-                watch, cfg.stallSeconds(), outDir);
         if (cfg.options().preview()) {
             log.accept(status == dev.litetook.sockseek.process.Status.OK ? "preview done"
                     : "FAILED");

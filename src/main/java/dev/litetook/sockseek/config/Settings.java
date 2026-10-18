@@ -31,6 +31,14 @@ public final class Settings {
     public static final String SOCKSEEK_EFFECTIVE_CONF = "sockseek.effective.conf";
 
     public static final List<String> CREDENTIAL_KEYS = List.of("username", "password");
+    /**
+     * Formats to ask for in order, most wanted first; empty means one pass and no ordering.
+     *
+     * <p>A list, so it does not belong among the numbers in {@link #ALL}; it travels with
+     * the other text values instead.
+     */
+    public static final String FORMAT_ORDER = "format_order";
+
     public static final List<String> PATH_KEYS =
             List.of("sockseek", "playlists", "output", "work", "logs");
     private static final Map<String, String> PATH_DEFAULTS = Map.of(
@@ -89,6 +97,18 @@ public final class Settings {
               # with the same code, and this is the only way to tell them apart - which the
               # cache below needs, or it would stop searching for tracks that are there
               explain_tracks: 20
+              # Formats in the order you want them, most wanted first. Each is a separate
+              # pass over whatever is still missing, with that format REQUIRED, and a last
+              # pass with no format at all picks up everything else. This is the only way
+              # to order them: sockseek's own pref-format is unordered by its own
+              # documentation, so "flac,mp3" there means "both equally fine", not "flac
+              # first".
+              #
+              # It costs searches: a track nobody has goes through every pass, so three
+              # formats mean four searches for it instead of one - until the cache has
+              # confirmed it absent and stops looking. Empty means one pass, no ordering.
+              #   format_order: mp3,flac,wav
+              format_order:
               # remember in outcomes.tsv how each track ended; false ignores the file entirely
               use_cache: true
             """;
@@ -139,6 +159,16 @@ public final class Settings {
             fails-to-ignore = 2
 
             # --- quality ---
+            # A HARD ceiling is not set, on purpose: an expensive file should come last,
+            # not be refused, and refusing it can mean the track does not arrive at all.
+            # Uncomment one of these if the disk matters more than the coverage. All three
+            # reject outright; the pref- keys below only reorder.
+            #   max-bitrate = 1411      kbps. 1411 is exactly CD lossless, so this keeps
+            #                           24-bit and hi-res out
+            #   max-samplerate = 48000  Hz. Keeps 96 and 192 kHz out, where the size is
+            #   max-bitdepth = 16       bits. 24-bit is 1.5x the bytes at the same rate
+            #   format = mp3,flac       the formats allowed AT ALL (not an order - see
+            #                           format_order in config.yaml for that)
             # the ONLY hard floor: a file below this bitrate is refused outright
             min-bitrate = 256
             # everything with pref- only RANKS candidates and never refuses one

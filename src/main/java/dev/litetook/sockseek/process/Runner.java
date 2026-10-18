@@ -60,6 +60,9 @@ public final class Runner {
                 "-o", outDir.toString(),
                 "--name-format", NAME_FORMAT,
                 "--index-path", outDir.resolve(indexName).toString()));
+        if (options.format() != null && !options.format().isBlank()) {
+            command.addAll(List.of("--format", options.format()));
+        }
         if (options.preview()) {
             command.addAll(List.of("--print", "results"));
         }

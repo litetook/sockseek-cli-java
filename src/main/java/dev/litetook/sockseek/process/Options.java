@@ -15,15 +15,27 @@ package dev.litetook.sockseek.process;
  *
  * @param lengthTol seconds around the playlist length; -1 turns the filter off
  * @param preview ask sockseek to print the search results instead of downloading
+ * <p>{@code format} is the one hard format of a single pass, and it is null for most of
+ * them. sockseek's {@code pref-format} is unordered by its own documentation - "flac,mp3
+ * does not prioritize flac over mp3" - so the only way to say "mp3 first, then flac, then
+ * whatever else" is to ask for them one at a time, with the hard filter, over whatever is
+ * still missing. See {@code format_order}.
+ *
  * @param maxSources how many uploaders to try for one track
+ * @param format the single format this pass will accept, or null for any
  */
-public record Options(int lengthTol, boolean preview, int maxSources) {
+public record Options(int lengthTol, boolean preview, int maxSources, String format) {
 
     public static Options defaults() {
-        return new Options(3, false, 3);
+        return new Options(3, false, 3, null);
+    }
+
+    /** The same options, asking for one format only; null means any. */
+    public Options withFormat(String only) {
+        return new Options(lengthTol, preview, maxSources, only);
     }
 
     public Options withLengthTol(int seconds) {
-        return new Options(seconds, preview, maxSources);
+        return new Options(seconds, preview, maxSources, format);
     }
 }
