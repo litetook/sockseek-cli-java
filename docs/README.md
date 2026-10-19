@@ -308,15 +308,20 @@ playlists. Empty means one pass and no ordering, which is what the shipped confi
 asked for again, the ones already on disk included, and a copy that arrives is kept only if it
 beats yours.
 
-**What "better" means here, and why it is not more than this.** The tool does not read audio -
-that decision of 2026-10-16 stands - so better is decided from what is visible from outside:
+**What "better" means: the bitrate, which is what the ladder sorts by.** The tool does not
+read audio - that decision of 2026-10-16 stands - and it does not have to: the playlist says
+how long the track is, the file says how many bytes it is, and `bytes x 8 / seconds` is the
+bitrate to within a few percent. So a run can tell that the 128 kbps mp3 it settled for on a
+bad night is beatable today.
 
 | Case | What happens |
 |---|---|
-| lossless arrives over a lossy file (flac over mp3) | replaced |
-| the same format, the newcomer at least 5% bigger and no more than 1.6x | replaced - same track, same format, so more bytes are a higher bitrate |
-| the same format, bigger than 1.6x | **kept yours** - that much bigger is usually a longer edit or a DJ set with your track inside it |
-| two different lossy formats | **kept yours** - there is no honest comparison |
+| the newcomer is at least 10% higher in bitrate | replaced - 128 -> 320 is an upgrade |
+| the newcomer is lower or the same | **kept yours** - a 320 is never replaced by a 128 |
+| lossless arrives over lossy (flac over mp3) | replaced, whatever the numbers say |
+| lossy arrives over lossless | **kept yours** |
+| the newcomer works out above 2800 kbps | **kept yours** - it is not the length the playlist claims, so it is a longer edit or a set, not this track |
+| the playlist gives no length | falls back to size: the same format, 5% to 1.6x bigger |
 | nothing arrived | **kept yours**, untouched |
 
 Every rule is written so that being wrong means keeping what you already had. ⚠ It has not yet

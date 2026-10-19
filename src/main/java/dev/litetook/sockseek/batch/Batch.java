@@ -516,13 +516,16 @@ public final class Batch {
                     continue;   // a plain top-up, not an upgrade: nothing to report
                 }
                 Path old = existing.normalize();
-                if (!Better.worthReplacing(fresh, existing)) {
-                    log.accept("   = " + entry.original() + " - " + Better.say(fresh, existing));
+                java.util.OptionalInt seconds = entry.track().length();
+                if (!Better.worthReplacing(fresh, existing, seconds)) {
+                    log.accept("   = " + entry.original() + " - "
+                            + Better.say(fresh, existing, seconds));
                     Files.deleteIfExists(fresh);
                     kept++;
                     continue;
                 }
-                log.accept("   ^ " + entry.original() + " - " + Better.say(fresh, existing));
+                log.accept("   ^ " + entry.original() + " - "
+                        + Better.say(fresh, existing, seconds));
                 Files.move(fresh, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
                 // only now, and only when the old one is a different file that is still there
                 if (!old.equals(target) && Files.isRegularFile(old)) {

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.OptionalInt;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -240,24 +241,59 @@ class IndexTest {
     }
 
     @Test
-    void betterMeansLosslessOrBiggerAndNothingElse(@TempDir Path dir) throws IOException {
-        Path mp3Small = dir.resolve("a.mp3");
-        Path mp3Big = dir.resolve("b.mp3");
-        Path mp3Huge = dir.resolve("c.mp3");
+    void betterIsTheBitrateTheLadderSortsBy(@TempDir Path dir) throws IOException {
+        // the playlist says 200 s, so bytes * 8 / 200 is the bitrate to within a few percent:
+        // 128 kbps is 3.2 MB, 320 kbps is 8 MB. No file is opened to work that out
+        OptionalInt len = OptionalInt.of(200);
+        Path at128 = dir.resolve("a.mp3");
+        Path at320 = dir.resolve("b.mp3");
+        Path at192 = dir.resolve("c.mp3");
         Path flac = dir.resolve("a.flac");
-        Files.write(mp3Small, new byte[100_000]);
-        Files.write(mp3Big, new byte[130_000]);          // 1.3x - a better bitrate
-        Files.write(mp3Huge, new byte[300_000]);         // 3x - a different recording
-        Files.write(flac, new byte[400_000]);
-        assertTrue(Better.worthReplacing(flac, mp3Small), "lossless replaces lossy");
-        assertFalse(Better.worthReplacing(mp3Big, flac), "lossy never replaces lossless");
-        assertTrue(Better.worthReplacing(mp3Big, mp3Small), "same format, bigger wins");
-        assertFalse(Better.worthReplacing(mp3Small, mp3Big), "smaller never wins");
-        assertFalse(Better.worthReplacing(mp3Huge, mp3Small), "too big to be the same track");
-        // and whatever it decides, it says so in words rather than silently
-        assertTrue(Better.say(mp3Big, mp3Small).contains("bigger mp3"),
-                Better.say(mp3Big, mp3Small));
-        assertTrue(Better.say(mp3Small, mp3Big).contains("kept yours"),
-                Better.say(mp3Small, mp3Big));
+        Files.write(at128, new byte[3_200_000]);
+        Files.write(at320, new byte[8_000_000]);
+        Files.write(at192, new byte[4_800_000]);
+        Files.write(flac, new byte[25_000_000]);
+        assertEquals(OptionalInt.of(128), Better.kbps(at128, len));
+        assertEquals(OptionalInt.of(320), Better.kbps(at320, len));
+
+        assertTrue(Better.worthReplacing(at320, at128, len), "320 beats 128");
+        assertTrue(Better.worthReplacing(at192, at128, len), "192 beats 128");
+        assertFalse(Better.worthReplacing(at128, at320, len), "128 never beats 320");
+        assertFalse(Better.worthReplacing(at320, at320, len), "the same is not better");
+        assertTrue(Better.worthReplacing(flac, at320, len), "lossless beats lossy");
+        assertFalse(Better.worthReplacing(at320, flac, len), "lossy never beats lossless");
+        assertTrue(Better.say(at320, at128, len).contains("128 -> 320 kbps"),
+                Better.say(at320, at128, len));
+    }
+
+    @Test
+    void aFileThatIsNotTheLengthThePlaylistClaimsIsNotCompared(@TempDir Path dir)
+            throws IOException {
+        // a ten-minute set standing in for a four-minute track divides by the wrong number
+        // and comes out as a bitrate nothing real reaches; then the only safe answer is to
+        // keep what is on disk
+        OptionalInt len = OptionalInt.of(200);
+        Path mine = dir.resolve("a.mp3");
+        Path aSet = dir.resolve("b.mp3");
+        Files.write(mine, new byte[3_200_000]);        // 128 kbps
+        Files.write(aSet, new byte[90_000_000]);       // 3600 kbps for 200 s: not a bitrate
+        assertEquals(OptionalInt.empty(), Better.kbps(aSet, len));
+        assertFalse(Better.worthReplacing(aSet, mine, len));
+        assertTrue(Better.say(aSet, mine, len).contains("not the length"),
+                Better.say(aSet, mine, len));
+    }
+
+    @Test
+    void withNoLengthInThePlaylistTheSizeIsAllThereIs(@TempDir Path dir) throws IOException {
+        OptionalInt none = OptionalInt.empty();
+        Path small = dir.resolve("a.mp3");
+        Path big = dir.resolve("b.mp3");
+        Path huge = dir.resolve("c.mp3");
+        Files.write(small, new byte[100_000]);
+        Files.write(big, new byte[130_000]);
+        Files.write(huge, new byte[300_000]);
+        assertTrue(Better.worthReplacing(big, small, none), "bigger, and plausibly the same");
+        assertFalse(Better.worthReplacing(huge, small, none), "too big to be the same track");
+        assertFalse(Better.worthReplacing(small, big, none));
     }
 }
