@@ -39,7 +39,7 @@ public final class Cli implements Callable<Integer> {
      * this is finished enough to use, not a preview of something. The release workflow
      * refuses to publish a tag whose name disagrees with this.
      */
-    public static final String VERSION = "1.6.0";
+    public static final String VERSION = "1.7.0";
 
     @Option(names = "--version", versionHelp = true, description = "print the version and exit")
     boolean version;
@@ -128,6 +128,12 @@ public final class Cli implements Callable<Integer> {
                     + "missing, with that format required; a last pass takes anything. "
                     + "Empty means one pass and no ordering")
     String formatOrder;
+
+    @Option(names = "--replace-if-better",
+            description = "search every track again, on-disk ones included, and keep the new "
+                    + "copy only when it is better - lossless over lossy, or the same format "
+                    + "at a bigger size (config: track.replace_if_better)")
+    boolean replaceIfBetter;
 
     @Option(names = "--no-cache",
             description = "ignore outcomes.tsv completely for this run: search everything and "
@@ -251,6 +257,8 @@ public final class Cli implements Callable<Integer> {
             case "searches_per_window" -> searchesPerWindow;
             case "window_s" -> searchesRenewS;
             case "max_sources" -> maxSources;
+            // a flag that is only ever "on": absent means "whatever the file says"
+            case "replace_if_better" -> replaceIfBetter ? 1 : null;
             // a flag that is only ever "off": absent means "whatever the file says"
             case "enabled" -> noCache ? 0 : null;
             default -> null;
@@ -339,6 +347,7 @@ public final class Cli implements Callable<Integer> {
                 .cache(integer("enabled") != 0)
                 .formatOrder(formatOrder())
                 .rateLimit(integer("searches_per_window"), integer("window_s"))
+                .replaceIfBetter(integer("replace_if_better") != 0)
                 .build();
     }
 

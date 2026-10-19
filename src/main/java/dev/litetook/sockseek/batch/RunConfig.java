@@ -18,7 +18,8 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
                         String only, boolean verbose, String why, List<String> sockseekArgs,
                         Path conf, Path sockseekConf, int runNo, LocalDateTime stamp,
                         double stallSeconds, double skipNotFoundHours, boolean cache,
-                        List<String> formatOrder, int searchesPerWindow, int windowSeconds) {
+                        List<String> formatOrder, int searchesPerWindow, int windowSeconds,
+                        boolean replaceIfBetter) {
 
     public RunConfig {
         sockseekArgs = List.copyOf(sockseekArgs);
@@ -34,14 +35,16 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
         return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir, sockseek,
                 options, timeoutMinutes, retries, dryRun, only, verbose, why,
                 sockseekArgs, conf, sockseekConf, number, stamp, stallSeconds,
-                skipNotFoundHours, cache, formatOrder, searchesPerWindow, windowSeconds);
+                skipNotFoundHours, cache, formatOrder, searchesPerWindow, windowSeconds,
+                replaceIfBetter);
     }
 
     public RunConfig withConf(Path merged) {
         return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir, sockseek,
                 options, timeoutMinutes, retries, dryRun, only, verbose, why,
                 sockseekArgs, merged, sockseekConf, runNo, stamp, stallSeconds,
-                skipNotFoundHours, cache, formatOrder, searchesPerWindow, windowSeconds);
+                skipNotFoundHours, cache, formatOrder, searchesPerWindow, windowSeconds,
+                replaceIfBetter);
     }
 
     public static Builder builder(Path appDir) {
@@ -78,6 +81,7 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
         // put 72 searches in 196 s against a limit of 34 per 220 s
         private int searchesPerWindow = 34;
         private int windowSeconds = 220;
+        private boolean replaceIfBetter;
 
         private Builder(Path appDir) {
             this.appDir = appDir;
@@ -143,6 +147,11 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
             return this;
         }
 
+        public Builder replaceIfBetter(boolean value) {
+            this.replaceIfBetter = value;
+            return this;
+        }
+
         public Builder rateLimit(int perWindow, int seconds) {
             this.searchesPerWindow = perWindow;
             this.windowSeconds = seconds;
@@ -191,7 +200,7 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
                     why, sockseekArgs, null, sockseekConf, 0,
                     LocalDateTime.now(),
                     stallSeconds, skipNotFoundHours, cache, formatOrder, searchesPerWindow,
-                    windowSeconds);
+                    windowSeconds, replaceIfBetter);
         }
     }
 }

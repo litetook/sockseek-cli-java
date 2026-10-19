@@ -269,7 +269,9 @@ public final class SockseekIndex {
             if (relative.isEmpty()) {
                 continue;
             }
-            Path path = located.get(r).folder().resolve(relative);
+            // normalised: the index writes "./Name.mp3", and a path carrying that "." is
+            // not equal to the plain one even when it is the same file
+            Path path = located.get(r).folder().resolve(relative).normalize();
             if (isReal(path)) {
                 files.putIfAbsent(entries.get(e).original(), path);
             }

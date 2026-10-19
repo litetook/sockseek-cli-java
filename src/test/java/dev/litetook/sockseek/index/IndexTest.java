@@ -1,6 +1,7 @@
 package dev.litetook.sockseek.index;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.litetook.sockseek.playlist.Entry;
@@ -236,5 +237,27 @@ class IndexTest {
         // --extract-artist writes the title in two columns; matching puts them back together
         Status status = status(out, List.of("one.mp3,A,,One,60,0,1,0"), "one.mp3");
         assertEquals(List.of("A - One | 1:00"), lines(status.have()));
+    }
+
+    @Test
+    void betterMeansLosslessOrBiggerAndNothingElse(@TempDir Path dir) throws IOException {
+        Path mp3Small = dir.resolve("a.mp3");
+        Path mp3Big = dir.resolve("b.mp3");
+        Path mp3Huge = dir.resolve("c.mp3");
+        Path flac = dir.resolve("a.flac");
+        Files.write(mp3Small, new byte[100_000]);
+        Files.write(mp3Big, new byte[130_000]);          // 1.3x - a better bitrate
+        Files.write(mp3Huge, new byte[300_000]);         // 3x - a different recording
+        Files.write(flac, new byte[400_000]);
+        assertTrue(Better.worthReplacing(flac, mp3Small), "lossless replaces lossy");
+        assertFalse(Better.worthReplacing(mp3Big, flac), "lossy never replaces lossless");
+        assertTrue(Better.worthReplacing(mp3Big, mp3Small), "same format, bigger wins");
+        assertFalse(Better.worthReplacing(mp3Small, mp3Big), "smaller never wins");
+        assertFalse(Better.worthReplacing(mp3Huge, mp3Small), "too big to be the same track");
+        // and whatever it decides, it says so in words rather than silently
+        assertTrue(Better.say(mp3Big, mp3Small).contains("bigger mp3"),
+                Better.say(mp3Big, mp3Small));
+        assertTrue(Better.say(mp3Small, mp3Big).contains("kept yours"),
+                Better.say(mp3Small, mp3Big));
     }
 }

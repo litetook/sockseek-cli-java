@@ -389,7 +389,7 @@ public final class App {
                 if (added.file() == null) {
                     return added.code();
                 }
-                chosen = named(scan(playlistsDir, outputDir), UNSORTED);
+                chosen = named(scan(playlistsDir, outputDir, wantEverything(config, front)), UNSORTED);
                 if (chosen.isEmpty()) {
                     out.accept("Wrote " + added.file().getFileName()
                             + ", but reading it back found nothing. Look at the file.");
@@ -408,14 +408,14 @@ public final class App {
                 if (written.file() == null) {
                     return written.code();
                 }
-                chosen = named(scan(playlistsDir, outputDir), stem(written.file()));
+                chosen = named(scan(playlistsDir, outputDir, wantEverything(config, front)), stem(written.file()));
                 if (chosen.isEmpty()) {
                     out.accept("Wrote " + written.file().getFileName()
                             + ", but reading it back found nothing. Look at the file.");
                     return 1;
                 }
             } else if (front.only() != null) {
-                chosen = named(scan(playlistsDir, outputDir), front.only());
+                chosen = named(scan(playlistsDir, outputDir, wantEverything(config, front)), front.only());
                 if (chosen.isEmpty()) {
                     out.accept("No playlist named '" + front.only() + "' in " + playlistsDir);
                     return 2;
@@ -423,7 +423,7 @@ public final class App {
             } else if (front.all()) {
                 // the unattended run: every playlist, no question at all. --yes alone still
                 // asks WHICH ones, which is one keystroke too many for a scheduled night
-                chosen = scan(playlistsDir, outputDir);
+                chosen = scan(playlistsDir, outputDir, wantEverything(config, front));
                 if (chosen.isEmpty()) {
                     out.accept("No playlist .txt files in " + playlistsDir);
                     return 2;
@@ -432,7 +432,7 @@ public final class App {
                 out.accept("");
                 formatTable(chosen).forEach(out);
             } else {
-                List<Info> infos = scan(playlistsDir, outputDir);
+                List<Info> infos = scan(playlistsDir, outputDir, wantEverything(config, front));
                 if (infos.isEmpty()) {
                     out.accept("No playlist .txt files in " + playlistsDir);
                     return 2;
@@ -654,6 +654,17 @@ public final class App {
         return (int) formats + 1;
     }
 
+    /**
+     * Whether a track already on disk is still worth searching for: that is what
+     * {@code track.replace_if_better} asks for.
+     */
+    static boolean wantEverything(Config config, Front front) {
+        if (front.extra().contains("--replace-if-better")) {
+            return true;
+        }
+        return config.integer("replace_if_better").orElse(0) != 0;
+    }
+
     /** The hard length condition this run would use, -1 when it is off. */
     private static int lengthTol(Config config, Front front) {
         String given = flagValue(front, "--max-length-diff", "--length-tol");
@@ -788,6 +799,17 @@ public final class App {
 
     /** Every playlist in the folder, with what is already downloaded. */
     public static List<Info> scan(Path playlistsDir, Path outputDir) {
+        return scan(playlistsDir, outputDir, false);
+    }
+
+    /**
+     * The same, told whether a track already on disk still counts as wanted.
+     *
+     * <p>It does with {@code track.replace_if_better}: the front end decides what to hand the
+     * engine, and a playlist it thinks has nothing missing never reaches it at all - which is
+     * how the first version of that setting did nothing whatsoever (measured 2026-10-19).
+     */
+    public static List<Info> scan(Path playlistsDir, Path outputDir, boolean wantEverything) {
         List<Path> files;
         try {
             files = Playlists.find(playlistsDir);
@@ -800,8 +822,10 @@ public final class App {
                 Playlist playlist = Playlist.fromFile(file);
                 // the index is read inside the same try on purpose: nothing about one
                 // playlist's files may stop the table that lists all of them
-                Status status = SockseekIndex.playlistStatus(playlist.entries(),
+                Status onDisk = SockseekIndex.playlistStatus(playlist.entries(),
                         outputDir.resolve(stem(file)));
+                Status status = wantEverything
+                        ? new Status(List.of(), playlist.entries(), onDisk.files()) : onDisk;
                 found.add(new Info(stem(file), file, playlist.entries().size(), status,
                         playlist.warnings()));
             } catch (IOException | RuntimeException cannotRead) {

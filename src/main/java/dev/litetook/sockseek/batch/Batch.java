@@ -4,6 +4,7 @@ import dev.litetook.sockseek.Pace;
 import dev.litetook.sockseek.config.Settings;
 import dev.litetook.sockseek.explain.Candidate;
 import dev.litetook.sockseek.explain.Explain;
+import dev.litetook.sockseek.index.Better;
 import dev.litetook.sockseek.index.Failure;
 import dev.litetook.sockseek.index.Failures;
 import dev.litetook.sockseek.index.IndexRow;
@@ -148,11 +149,21 @@ public final class Batch {
         }
         List<Entry> entries = playlist.entries();
         Path outDir = cfg.outputDir().resolve(playlist.name());
-        Status before = SockseekIndex.playlistStatus(entries, outDir);
+        Status onDisk = SockseekIndex.playlistStatus(entries, outDir);
+        // replace_if_better: every track is asked for again, and what arrives lands in a
+        // folder of its own - nothing in the library is touched until a winner is picked
+        Path downloadDir = cfg.replaceIfBetter()
+                ? workDir.resolve(playlist.name() + ".upgrade") : outDir;
+        Status before = cfg.replaceIfBetter()
+                ? new Status(List.of(), entries, onDisk.files()) : onDisk;
         String tol = cfg.options().lengthTol() < 0 ? "off"
                 : "+-" + cfg.options().lengthTol() + " s";
-        log.accept(entries.size() + " tracks, " + before.have().size() + " already here, "
-                + before.missing().size() + " missing, length tolerance " + tol);
+        log.accept(entries.size() + " tracks, " + onDisk.have().size() + " already here, "
+                + onDisk.missing().size() + " missing, length tolerance " + tol);
+        if (cfg.replaceIfBetter()) {
+            log.accept("replace_if_better: asking for all " + entries.size() + " again; a new "
+                    + "copy is kept only if it beats yours, and nothing is deleted otherwise");
+        }
         if (cfg.why() != null) {
             why(playlist, entries, before.missing(), outDir);
             return new Result(entries.size(), before.missing().size(), false);
@@ -240,7 +251,7 @@ public final class Batch {
             Files.deleteIfExists(eventsFile);
             listFile = passList;   // the explain step probes whatever the last pass asked
             Options options = cfg.options().withPass(format, passes.get(pass).floor());
-            List<String> command = client.command(passList, outDir, logFile, options,
+            List<String> command = client.command(passList, downloadDir, logFile, options,
                     Runner.INDEX_NAME, eventsFile);
             if (cfg.dryRun()) {
                 log.accept("dry run: " + Runs.commandLine(command));
@@ -253,7 +264,7 @@ public final class Batch {
                                 ? " at " + passes.get(pass).floor() + "+ kbps" : "")
                         + ", " + left.size() + " track(s)");
             }
-            Files.createDirectories(outDir);
+            Files.createDirectories(downloadDir);
             List<Entry> asked = left;
             Events.Tail watch = new Events.Tail(eventsFile,
                     event -> record(event, asked, said, playlist.name()));
@@ -267,7 +278,7 @@ public final class Batch {
             long passStart = System.nanoTime();
             status = Runner.runWithRetry(command, cfg.appDir(), leftSeconds,
                     cfg.retries(), log, Runner.RETRY_PAUSE_SECONDS, watch, cfg.stallSeconds(),
-                    outDir);
+                    downloadDir);
             int passSearches = Pace.searchesOf(passList, eventsFile);
             spentSearches += passSearches;
             if (status == dev.litetook.sockseek.process.Status.ERROR || status.cutShort()) {
@@ -279,7 +290,7 @@ public final class Batch {
             }
             pauseAfterPass(passSearches, System.nanoTime() - passStart, pass, passes.size());
             // what the folder holds now decides what the next pass asks for
-            Status between = SockseekIndex.playlistStatus(entries, outDir);
+            Status between = SockseekIndex.playlistStatus(entries, downloadDir);
             left = left.stream()
                     .filter(entry -> !between.files().containsKey(entry.original())).toList();
         }
@@ -308,11 +319,14 @@ public final class Batch {
             return new Result(entries.size(), before.missing().size(), true);
         }
 
-        List<Path> indexFiles = SockseekIndex.findIndexFiles(outDir);
+        List<Path> indexFiles = SockseekIndex.findIndexFiles(downloadDir);
         List<Located> located = SockseekIndex.readWithFolders(indexFiles);
         List<IndexRow> rows = located.stream().map(Located::row).toList();
         if (indexFiles.isEmpty()) {
-            log.accept("WARN no " + Runner.INDEX_NAME + " found under " + outDir);
+            log.accept("WARN no " + Runner.INDEX_NAME + " found under " + downloadDir);
+        }
+        if (cfg.replaceIfBetter()) {
+            keepTheBetter(entries, downloadDir, outDir);
         }
         Status after = SockseekIndex.playlistStatus(entries, outDir);
         List<Entry> arrived = before.missing().stream()
@@ -469,6 +483,58 @@ public final class Batch {
             String reason = Failures.reasonOf(event, wideOpen.contains(line), conditions);
             log.accept("  -> " + Failures.explainClass(reason, conditions));
         }
+    }
+
+    /**
+     * Move in what is better and throw away what is not.
+     *
+     * <p>Only reached with {@code replace_if_better}. Everything that arrived is in a folder
+     * of its own, so the library has not been touched yet: for each track, either there is
+     * nothing of ours and the arrival simply moves in, or {@link Better} decides. A track
+     * nobody had leaves yours exactly as it was - which is the whole promise of the setting.
+     */
+    void keepTheBetter(List<Entry> entries, Path downloadDir, Path outDir) {
+        Status arrived = SockseekIndex.playlistStatus(entries, downloadDir);
+        Status mine = SockseekIndex.playlistStatus(entries, outDir);
+        int better = 0;
+        int kept = 0;
+        for (Entry entry : entries) {
+            Path fresh = arrived.files().get(entry.original());
+            if (fresh == null) {
+                continue;   // nothing came for this one; whatever is on disk stays
+            }
+            Path existing = mine.files().get(entry.original());
+            try {
+                // normalised, both of them: the index writes "./Name.mp3", so the path it
+                // resolves to is not equal to the plain one even when it is the same file -
+                // and the first version of this deleted the copy it had just moved in
+                // (measured in mock mode 2026-10-19, before any of it reached a library)
+                Path target = outDir.resolve(fresh.getFileName()).normalize();
+                if (existing == null) {
+                    Files.createDirectories(outDir);
+                    Files.move(fresh, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    continue;   // a plain top-up, not an upgrade: nothing to report
+                }
+                Path old = existing.normalize();
+                if (!Better.worthReplacing(fresh, existing)) {
+                    log.accept("   = " + entry.original() + " - " + Better.say(fresh, existing));
+                    Files.deleteIfExists(fresh);
+                    kept++;
+                    continue;
+                }
+                log.accept("   ^ " + entry.original() + " - " + Better.say(fresh, existing));
+                Files.move(fresh, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                // only now, and only when the old one is a different file that is still there
+                if (!old.equals(target) && Files.isRegularFile(old)) {
+                    Files.deleteIfExists(old);
+                }
+                better++;
+            } catch (IOException cannotMove) {
+                log.accept("WARN " + entry.original() + ": could not put the new copy in "
+                        + "place (" + cannotMove.getMessage() + "); yours is untouched");
+            }
+        }
+        log.accept("replace_if_better: " + better + " upgraded, " + kept + " of yours kept");
     }
 
     /** One pass of the ladder: the format it demands, and the floor it demands, if any. */

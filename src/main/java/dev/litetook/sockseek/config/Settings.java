@@ -111,6 +111,12 @@ public final class Settings {
               format_order:
               max_length_diff_s: 45s       # refuse a file this far off the length; -1 = off
               max_sources: 3               # different uploaders tried for one track
+              # Search EVERY track again, on-disk ones included, and keep the newcomer only
+              # if it is better: lossless beats lossy, and the same format wins on size (at
+              # least 5% bigger, at most 1.6x - more than that is a different recording).
+              # Nothing of yours is touched until a winner is picked, and a track nobody has
+              # leaves your copy alone. Off = what is on disk is not searched for at all.
+              replace_if_better: false
 
             cache:
               enabled: true                # remember how each track ended (outcomes.tsv)
@@ -165,6 +171,16 @@ public final class Settings {
                     "refuse a shared file whose length differs from the playlist by more than "
                             + "this many seconds; HARD condition, -1 disables (default 45)",
                     List.of("tol", "length_tol_s")),
+            // off by default, because on it touches files that are already in the
+            // library. The owner asked for it on 2026-10-19: "прям фул прогон по новій, але
+            // лишає старі треки, якщо нічого не знайшло. тобто чисто покращення якості"
+            new Setting("track", "replace_if_better", "--replace-if-better",
+                    Setting.Kind.BOOLEAN, 0, 0.0,
+                    "search for every track again, even the ones already on disk, and keep "
+                            + "the new copy only when it is better: lossless over lossy, or "
+                            + "the same format at a bigger size. Nothing is deleted until a "
+                            + "winner is picked, and a track nobody had leaves yours alone "
+                            + "(default false)", List.of()),
             new Setting("track", "max_sources", "--max-sources", Setting.Kind.INTEGER, 3, 1.0,
                     "how many different uploaders to try for one track before giving up on "
                             + "it this run (default 3)", List.of()),

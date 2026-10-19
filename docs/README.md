@@ -302,6 +302,35 @@ searches for a track nobody has, until the cache has confirmed it absent. The pr
 one `y` counts the passes and says so, and the brake pauses between passes as well as between
 playlists. Empty means one pass and no ordering, which is what the shipped config carries.
 
+### `track.replace_if_better` — false · `--replace-if-better`
+
+**What it's for.** A run that improves the library instead of filling it. Every track is
+asked for again, the ones already on disk included, and a copy that arrives is kept only if it
+beats yours.
+
+**What "better" means here, and why it is not more than this.** The tool does not read audio -
+that decision of 2026-10-16 stands - so better is decided from what is visible from outside:
+
+| Case | What happens |
+|---|---|
+| lossless arrives over a lossy file (flac over mp3) | replaced |
+| the same format, the newcomer at least 5% bigger and no more than 1.6x | replaced - same track, same format, so more bytes are a higher bitrate |
+| the same format, bigger than 1.6x | **kept yours** - that much bigger is usually a longer edit or a DJ set with your track inside it |
+| two different lossy formats | **kept yours** - there is no honest comparison |
+| nothing arrived | **kept yours**, untouched |
+
+Every rule is written so that being wrong means keeping what you already had. ⚠ It has not yet
+been measured against a real upgrade run; what is certain is the direction of the risk.
+
+**Behind the scenes.** The downloads go into `work/<playlist>.upgrade/` first, not into the
+library, and the swap happens only after the comparison - so an interrupted run leaves your
+files exactly as they were and some rubbish in `work/`, which is safe to delete. The run log
+names every decision: `^` for an upgrade, `=` for yours kept.
+
+**What it costs.** Every track becomes a search again, so a full library pass is the whole
+search bill, not the missing part of it - and with a `format_order` ladder, that bill times the
+number of passes. The price before the one `y` counts it.
+
 ### `playlist.attempt_timeout_min` — 60 minutes · `--attempt-timeout`
 
 **What it's for.** A wall clock on one attempt at one playlist. `0` means none. **Minutes**,
@@ -765,7 +794,8 @@ still asks which playlists, which is one keystroke too many for a scheduled nigh
 
 Engine: `--playlists DIR`, `--music DIR`, `--sockseek FILE`, `--config FILE`,
 `--sockseek-conf FILE`, `--max-length-diff SEC`, `--attempt-timeout MIN`, `--stall-timeout SEC`,
-`--skip-absent HOURS`, `--no-cache`, `--searches-per-window N`, `--attempts N`,
+`--skip-absent HOURS`, `--no-cache`, `--replace-if-better`, `--searches-per-window N`,
+`--attempts N`,
 `--searches-window SEC`,
 `--why TEXT`,
 `--preview`, `--dry-run`,
