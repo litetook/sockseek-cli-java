@@ -163,7 +163,17 @@ name of a setting is `block.key`:
 | `sockseek` | sockseek's own options, passed to it untouched - its names, not ours |
 
 A key found under the wrong block still works and is named in a warning: the blocks group the
-file, they do not decide anything. Everything above `sockseek:` is this tool's; everything
+file, they do not decide anything.
+
+**A value may carry its unit** - `300s`, `60min`, `2h`, and `12000` with `# ms` beside it where
+the key is sockseek's own and cannot be renamed. The unit has to be the one the key counts in:
+`stall_timeout_s: 5min` is not read as five of anything, it is named in a warning and the
+default is used, because reading it as five seconds is the kind of quiet wrong this tool tries
+not to do.
+
+**A `#` starts a comment only after a space.** `music: D:/Rock#1` is a folder called `Rock#1`;
+`music: D:/Rock #1` is the folder `Rock`. Before 2026-10-19 any `#` cut the value and the tool
+warned about it - including on every honest trailing comment, which is why there were none. Everything above `sockseek:` is this tool's; everything
 under it belongs to sockseek and is never interpreted here.
 
 The login is not in this file. It goes in **`config.local.yaml`**, which git never sees and
@@ -264,9 +274,23 @@ a **new sockseek process with a fresh search budget**, which raises the real ris
 ### `track.format_order` — empty · `--format-order`
 
 **What it's for.** The quality ladder. Each entry is a pass over whatever is still missing,
-with that format **required**; `mp3@192` makes that pass refuse anything below 192 kbps. A
+with that format **required**; `mp3@256` makes that pass refuse anything below 256 kbps. A
 last pass always asks for anything at all with no floor, so **nothing is lost** - the ladder
 only decides what is taken first.
+
+The frame is meant to be stepped rather than one cut. What the owner runs since 2026-10-19:
+
+```yaml
+format_order: mp3@256, flac, mp3@128
+```
+
+- **pass 1** a good mp3, 256 kbps or better - small, and plenty for most of what is shared
+- **pass 2** flac at any bitrate, and the hard ceiling keeps it to CD quality
+- **pass 3** any mp3 from 128 up, for the tracks only a modest copy exists of
+- **pass 4** no format, no floor: whatever is out there
+
+The same format may appear twice at different floors; each pass keeps its own list and events
+in `work/`, numbered, so the two mp3 passes do not overwrite each other.
 
 **Why the floor matters.** Without one the ladder runs downhill: `mp3,flac,wav` with no floor
 takes a 96 kbps mp3 in pass 1 and never asks for the flac that was sitting there.

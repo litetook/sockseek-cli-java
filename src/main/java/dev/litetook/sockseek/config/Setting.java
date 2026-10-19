@@ -27,6 +27,28 @@ public record Setting(String section, String key, String flag, Kind kind, Number
     }
 
     /**
+     * The unit this setting is counted in, taken from its own name: {@code stall_timeout_s}
+     * is seconds, {@code attempt_timeout_min} minutes, {@code skip_absent_h} hours. Empty
+     * for a plain count like {@code attempts}.
+     *
+     * <p>The name has carried the unit since the beginning; this just lets the VALUE carry
+     * it too - {@code 300s}, {@code 60min}, {@code 2h} - so the file reads like something a
+     * person wrote. A value with the wrong unit on it is named in a warning rather than read
+     * as a number, which is the whole reason this is not simply stripped and ignored.
+     */
+    public String unit() {
+        int at = key.lastIndexOf('_');
+        if (at < 0) {
+            return "";
+        }
+        String tail = key.substring(at + 1);
+        return switch (tail) {
+            case "ms", "s", "min", "h" -> tail;
+            default -> "";
+        };
+    }
+
+    /**
      * How the value reads in the file.
      *
      * <p>A BOOLEAN still travels as a number - 1 or 0 - so everything downstream keeps

@@ -248,7 +248,8 @@ own options, its names, passed through untouched. The full name of a setting is 
 Every key carries a comment, so you can work in the file without coming back here. Your login
 goes in `config.local.yaml`, which overrides any key and never reaches git. Every value can
 also be given on the command line, and the order is
-**command line > config.local.yaml > config.yaml > built-in default**. The run log opens with
+**command line > config.local.yaml > config.yaml > built-in default**. A value may carry its
+unit (`300s`, `60min`, `2h`) and the wrong unit is a warning, not a silent number. The run log opens with
 each value and where it came from, so "why is it this number?" is never a guess.
 
 The key names changed on 2026-10-18 - `retries` counted goes rather than repeats, and
@@ -272,7 +273,7 @@ flags are still accepted, with a warning naming the new one.
 | `rate_limit.searches_per_window` | `34` | the brake: all playlists together stay under this many searches per `rate_limit.window_s`, by pausing between them; `0` = no pause. The Soulseek server bans an account that goes faster |
 | `rate_limit.window_s` | `220` | the length of that window, in seconds |
 | `track.max_sources` | `3` | how many different uploaders to try for one track before giving up on it this run. sockseek calls this `max-retries`, which sounds like trying the same one again; what it counts is different people |
-| `track.format_order` | *(empty)* | formats you want, most wanted first, comma separated — `mp3@192, flac, wav`. Each is a separate pass over whatever is still missing with that format **required**, and `@192` is a floor for that pass only: without it the ladder runs downhill, because a 96 kbps mp3 taken first means the flac that was there is never asked for. The last pass has no format and no floor, so nothing is lost. The only way to order formats at all: sockseek's own `pref-format` is unordered by its documentation. It costs searches — every pass is a search per still-missing track, and the price before the one `y` says so |
+| `track.format_order` | *(empty)* | formats you want, best first, comma separated — `mp3@256, flac, mp3@128`. Each is a separate pass over whatever is still missing with that format **required**, and `@192` is a floor for that pass only: without it the ladder runs downhill, because a 96 kbps mp3 taken first means the flac that was there is never asked for. The last pass has no format and no floor, so nothing is lost. The only way to order formats at all: sockseek's own `pref-format` is unordered by its documentation. It costs searches — every pass is a search per still-missing track, and the price before the one `y` says so |
 | `cache.enabled` | `true` | `false` makes `outcomes.tsv` not exist for the run: nothing read, nothing written |
 
 > **How a failure knows what it is.** sockseek reports "nobody on the network had it" and

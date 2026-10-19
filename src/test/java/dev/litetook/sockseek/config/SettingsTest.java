@@ -72,6 +72,22 @@ class SettingsTest {
     }
 
     @Test
+    void aHashGluedToAValueBelongsToTheValue() {
+        // a folder really can be called Rock#1, and cutting it down to Rock ended in "No
+        // playlist .txt files in ...\\Rock" with no hint why (2026-10-16). It used to be
+        // warned about; now it is simply read right, which is what let the file carry a short
+        // comment per key without a warning on every line
+        assertEquals(Map.of("paths.music", "D:/Rock#1"),
+                Settings.parseYaml("paths:\n  music: D:/Rock#1\n", null));
+        List<String> said = new ArrayList<>();
+        Settings.parseYaml("paths:\n  music: D:/Rock#1\n", said::add);
+        assertEquals(List.of(), said);
+        // and with a space before it, it is a comment, as in every yaml
+        assertEquals(Map.of("paths.music", "D:/Rock"),
+                Settings.parseYaml("paths:\n  music: D:/Rock #1\n", null));
+    }
+
+    @Test
     void everySettingCarriesAComment() {
         // owner, 2026-10-17, reversing his own call of 2026-10-11 that the file should be a
         // bare list with the explaining left to the manual: "чому не на всіх пропертях є
@@ -84,7 +100,11 @@ class SettingsTest {
                 continue;   // blank, a comment, or a section heading
             }
             String above = n == 0 ? "" : lines.get(n - 1).strip();
-            assertTrue(above.startsWith("#"), line + " has no comment above it");
+            // beside the value or above it - the owner asked for the file to be short on
+            // 2026-10-19, and a unit at the end of the line says more per character than a
+            // sentence above it
+            assertTrue(above.startsWith("#") || line.contains(" # "),
+                    line + " has no comment above it or beside it");
         }
     }
 
@@ -105,13 +125,33 @@ class SettingsTest {
     }
 
     @Test
-    void theHardConditionsAreShippedOffAndSayWhy() {
-        // measured 2026-10-18: min-bitrate = 256 refused every mp3 at 192 or 224, which was
-        // 104 of 135 failures on a real run, and a refusal reads exactly like "nobody had it"
+    void theFloorIsOffAndTheCeilingIsOn(@TempDir Path dir) {
+        // the two are not the same bargain. A floor refuses the COMMON copies - 256 refused
+        // every mp3 at 192 or 224, 104 of 135 failures on a real run. A ceiling refuses the
+        // RARE ones: 6 of 57 files were above CD quality and held 26% of all the bytes
+        Config config = load(dir.resolve(Settings.CONFIG_NAME));
+        assertEquals(null, config.sockseek().get("min-bitrate"));
+        assertEquals("48000", config.sockseek().get("max-samplerate"));
+        assertEquals("16", config.sockseek().get("max-bitdepth"));
+        // and the floor is still there to be switched on, with the reason beside it
         assertTrue(Settings.CONFIG_TEMPLATE.contains("# min-bitrate: 256"));
-        for (String ceiling : List.of("max-bitrate", "max-samplerate", "max-bitdepth")) {
-            assertTrue(Settings.CONFIG_TEMPLATE.contains("# " + ceiling + ":"), ceiling);
-        }
+    }
+
+    @Test
+    void aValueMayCarryItsUnitAndTheWrongOneIsNamed(@TempDir Path dir) throws IOException {
+        Path path = dir.resolve(Settings.CONFIG_NAME);
+        write(path, "playlist:\n  stall_timeout_s: 300s\n  attempt_timeout_min: 90min\n"
+                + "cache:\n  skip_absent_h: 2h\n");
+        Config config = load(path);
+        assertEquals(300.0, config.decimal("stall_timeout_s").orElseThrow());
+        assertEquals(90.0, config.decimal("attempt_timeout_min").orElseThrow());
+        assertEquals(2.0, config.decimal("skip_absent_h").orElseThrow());
+        assertEquals(List.of(), warnings);
+        // the wrong unit is named rather than read as a number: "5min" in a seconds setting
+        // would otherwise be five seconds
+        write(path, "playlist:\n  stall_timeout_s: 5min\n");
+        assertFalse(load(path).has("stall_timeout_s"));
+        assertTrue(said(warnings, "counted in s", "not min"), warnings.toString());
     }
 
     @Test

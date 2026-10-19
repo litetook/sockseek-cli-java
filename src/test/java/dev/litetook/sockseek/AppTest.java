@@ -76,6 +76,18 @@ class AppTest {
         return home;
     }
 
+    /**
+     * The conditions string a run with the shipped config writes down. Built rather than
+     * spelled out, so that turning a hard condition on or off in the template does not quietly
+     * turn this test into one about nothing.
+     */
+    private String shipped() {
+        var config = Settings.loadConfig(home.resolve(Settings.CONFIG_NAME), line -> { });
+        return dev.litetook.sockseek.index.Failures.conditions(
+                config.integer("max_length_diff_s").orElse(45),
+                Settings.hardConditions(config.sockseek()));
+    }
+
     private Path playlist(String name, String... lines) throws IOException {
         Path file = home.resolve("Playlists").resolve(name + ".txt");
         Files.createDirectories(file.getParent());
@@ -607,7 +619,7 @@ class AppTest {
         // a run asking the same way - otherwise the price would promise a skip the run
         // would not make
         Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
-                LocalDateTime.now().toString(), Failures.CONFIRMED_ABSENT, "1", "len=45",
+                LocalDateTime.now().toString(), Failures.CONFIRMED_ABSENT, "1", shipped(),
                 "one", "Artist - A")
                 + NEWLINE);
         Run run = run(List.of(), "1", "1", "n");

@@ -225,7 +225,11 @@ public final class Batch {
         int spentSearches = 0;
         for (int pass = 0; pass < passes.size() && !left.isEmpty(); pass++) {
             String format = passes.get(pass).format();
-            String tag = passes.size() == 1 ? "" : "." + (format == null ? "any" : format);
+            // the pass number is in the name, not just the format: a ladder may ask for one
+            // format twice at different floors (mp3@256 ... mp3@128), and without it the
+            // second pass would overwrite the first one's list and events
+            String tag = passes.size() == 1 ? ""
+                    : "." + (pass + 1) + "-" + (format == null ? "any" : format);
             Path passList = workDir.resolve(playlist.name() + tag + ".list.txt");
             Path eventsFile = workDir.resolve(playlist.name() + tag + ".events.txt");
             // a bare newline, not the platform separator: this is what sockseek has

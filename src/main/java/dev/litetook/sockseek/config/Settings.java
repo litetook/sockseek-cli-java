@@ -71,159 +71,91 @@ public final class Settings {
      * config.local.yaml, which the owner writes himself and git never sees.
      */
     public static final String CONFIG_TEMPLATE = """
-            # Sections say what a value affects, and the full name of a setting is
-            # section.key - playlist.attempts, track.max_sources. A key found under the
-            # wrong section still works and is named in a warning; an unknown key is named
-            # and ignored. Everything under "sockseek:" is sockseek's own and is passed to
-            # it untouched.
+            # Blocks say what a value affects; the full name of a setting is block.key. A key
+            # under the wrong block still works and is named in a warning. Everything under
+            # "sockseek:" is sockseek's own and goes to it untouched.
             #
-            # The Soulseek login does not live here. Put it in config.local.yaml, which is
-            # git-ignored and overrides any key below:
+            # A value may carry its unit - 300s, 60min, 2h - and the wrong unit is a warning,
+            # not a silent number. The manual has the why and the measurements behind each
+            # default; this file says what the key IS.
             #
+            # The login is NOT here: it goes in config.local.yaml, which git never sees.
             #     sockseek:
             #       username: your-login
             #       password: your-password
 
-            # ======================================================================
-            # WHERE THINGS ARE
-            # ======================================================================
             paths:
-              # the sockseek program; .exe is added or dropped to match what is there
-              sockseek_bin: sockseek.exe
-              # input: one playlist .txt per playlist
-              playlists: Playlists
-              # output: the audio, one sub-folder per playlist
-              music: output
-              # scratch: generated list files and the merged sockseek config, rebuilt every
-              # run and safe to delete - but it holds the login while a run is going
-              work: work
-              # run logs, session logs and the run counter
-              logs: logs
+              sockseek_bin: sockseek.exe   # .exe added or dropped to match what is there
+              playlists: Playlists         # input, one .txt per playlist
+              music: output                # output, one sub-folder per playlist
+              work: work                   # scratch, rebuilt every run, safe to delete
+              logs: logs                   # run logs, session logs, the run counter
 
-            # ======================================================================
-            # THE BRAKE - all playlists together, because the server counts per account
-            # ======================================================================
+            # all playlists together, because the server counts per account and bans an
+            # account that goes faster; 0 = no brake
             rate_limit:
-              # more searches than this in one window and the server bans the account for
-              # half an hour. sockseek counts inside ONE process and a run is many of them,
-              # so this is the only count that matches what the server sees; 0 = no pause
-              searches_per_window: 34
-              # the length of that window, in seconds
-              window_s: 220
+              searches_per_window: 34       # searches all playlists share per window
+              window_s: 220s                # the window they share
 
-            # ======================================================================
-            # ONE PLAYLIST - when to give up on it
-            # ======================================================================
             playlist:
-              # how many goes at one playlist; 1 means one go and no repeat. Each is a
-              # fresh sockseek
-              attempts: 1
-              # kill ONE go after this many minutes, 0 = never. Two attempts can take twice
-              # this long
-              attempt_timeout_min: 60
-              # kill a go when nothing has finished AND nothing has arrived on disk for this
-              # many seconds, 0 = never
-              stall_timeout_s: 300
+              attempts: 1                  # goes at one playlist; 1 = one go, no repeat
+              attempt_timeout_min: 60min   # the WHOLE playlist, every pass inside it; 0 = none
+              stall_timeout_s: 300s        # nothing finished AND nothing on disk; 0 = never
 
-            # ======================================================================
-            # ONE TRACK - which file is the right one, and how hard to try
-            # ======================================================================
             track:
-              # Formats you want, most wanted first. Each is a separate pass over whatever
-              # is still missing with that format REQUIRED, and a last pass takes anything
-              # else. This is the only way to order them: sockseek's own pref-format is
-              # unordered by its own documentation, so "flac,mp3" there means "both are
-              # fine", not "flac first".
-              #
-              # An entry may carry a floor for ITS pass: "mp3@192" takes mp3 only, and only
-              # at 192 kbps or better. Without one the ladder runs downhill - a 96 kbps mp3
-              # taken in the first pass means the flac that was there is never asked for.
-              # The last pass has no format and no floor, so nothing is lost.
-              #
-              # It costs searches: a track nobody has goes through every pass, so three
-              # formats mean four searches for it instead of one - until the cache has
-              # confirmed it absent and stops looking. Empty means one pass, no ordering.
-              #   format_order: mp3,flac,wav
+              # A pass each over whatever is still missing, best first; "@256" is a floor for
+              # THAT pass only, in kbps. The last pass always takes anything at all, so
+              # nothing is lost - this only decides what is taken first. Every pass costs one
+              # search per missing track, and the price before the one y says how many.
+              #   format_order: mp3@256, flac, mp3@128
               format_order:
-              # HARD condition and the only one we own: a shared file whose length differs
-              # from the playlist by more than this many seconds is refused outright.
-              # -1 turns it off. A refused track looks exactly like a missing one
-              max_length_diff_s: 45
-              # how many different uploaders to try for one track before giving up this run
-              max_sources: 3
+              max_length_diff_s: 45s       # refuse a file this far off the length; -1 = off
+              max_sources: 3               # different uploaders tried for one track
 
-            # ======================================================================
-            # MEMORY BETWEEN RUNS - outcomes.tsv
-            # ======================================================================
             cache:
-              # remember how each track ended; false ignores the file entirely - searches
-              # everything and writes nothing down
-              enabled: true
-              # do not search again for a track confirmed absent - nobody on the network had
-              # it - if that was within this many hours; 0 = always search. Fractions are
-              # fine. Only a confirmed absence counts: a track refused by a hard condition
-              # is written down WITH that condition and is never skipped, so turning the
-              # condition off makes the tool ask about it again at once
-              skip_absent_h: 2
+              enabled: true                # remember how each track ended (outcomes.tsv)
+              # skip a track confirmed absent if it was asked for this recently, under the
+              # same conditions; 0 = always search. Fractions are fine
+              skip_absent_h: 2h
 
-            # ======================================================================
-            # SOCKSEEK - handed to sockseek untouched. The key names are ITS, not ours,
-            # which is why they carry dashes and no units. `sockseek --help` is the full
-            # list. The sub-blocks are ours, for reading only: they are flattened away on
-            # the way out, and a line pasted in sockseek's own "key = value" form is read
-            # just as well as "key: value".
-            # ======================================================================
+            # ---------------------------------------------------------------------------
+            # sockseek's own options, its names, passed through untouched. The four blocks
+            # below are ours, for reading only - they are flattened away on the way out, and
+            # a line pasted in sockseek's "key = value" form is read just as well.
+            # `sockseek --help` is the full list.
+            # ---------------------------------------------------------------------------
             sockseek:
 
-              # -- REFUSE: a file failing any of these is not downloaded AT ALL ------
-              # all off on purpose: a refusal is indistinguishable from "nobody had it",
-              # and min-bitrate = 256 refused every mp3 at 192 or 224 - a large part of
-              # what Soulseek actually has, and 104 of 135 failures on a real run
+              # a hard condition can mean the track does not arrive AT ALL
               refuse:
-                # min-bitrate: 256       # worse than this -> never, even if nothing else exists
-                # max-bitrate: 1411      # better than this -> never (1411 kbps = CD lossless)
-                # max-samplerate: 48000  # above 48 kHz -> never
-                # max-bitdepth: 16       # 24-bit -> never
-                # format: mp3,flac       # the only formats allowed at all - not an order
+                # the floor is off on purpose: 256 refused every mp3 at 192 or 224, which was
+                # 104 of 135 failures on a real run. A floor refuses the COMMON copies
+                # min-bitrate: 256       # kbps
+                # the ceiling refuses the RARE ones instead - 24-bit and hi-res, which held
+                # 26% of all bytes. 16 bit / 48 kHz is exactly CD, so no CD copy is refused
+                max-samplerate: 48000    # Hz
+                max-bitdepth: 16         # bit
+                # max-bitrate: 1411      # kbps, the same cut said less directly
+                # format: mp3,flac       # allowed AT ALL - not an order
 
-              # -- PREFER: the same ideas as an ORDER. Nothing here ever refuses -----
+              # ranking only; nothing here ever refuses a file
               prefer:
-                # 320+ comes first; worse still downloads when that is all there is
-                pref-min-bitrate: 320
-                # above CD lossless comes last: 24-bit and hi-res cost a lot of bytes for
-                # little gain, and still arrive when there is nothing cheaper
-                pref-max-bitrate: 1411
-                # flac and mp3 equally; wav is unlisted, so it comes last
-                pref-format: flac,mp3
-                # files whose path contains the track title come first
-                pref-strict-title: true
-                # and the same for the artist
-                pref-strict-artist: true
+                pref-min-bitrate: 320    # kbps
+                pref-max-bitrate: 1411   # kbps, CD lossless; above it ranks last
+                pref-format: flac,mp3    # unordered by sockseek's own docs - see format_order
+                pref-strict-title: true  # the track title in the FILE NAME
+                pref-strict-artist: true # the artist anywhere in the PATH
 
-              # -- PICK A SOURCE: how long to shop around before committing ----------
               pick_source:
-                # take the first candidate that fits instead of waiting for the whole
-                # search to end
-                fast-search: true
-                # milliseconds spent collecting candidates first, so "the first" is not
-                # simply the only one
-                fast-search-delay: 2000
-                # the speed a candidate needs to qualify for that shortcut; a slower one
-                # stays in the normal queue. The unit is undocumented and unproven -
-                # sockseek's own default is 1
-                fast-search-min-up-speed: 200
+                fast-search: true             # take the first candidate that fits
+                fast-search-delay: 2000       # ms spent collecting candidates first
+                fast-search-min-up-speed: 200 # unit undocumented and unproven
 
-              # -- DROP A SOURCE: when to stop waiting on one that is not delivering --
               drop_source:
-                # milliseconds connected with no bytes arriving before this candidate is
-                # dropped and the next uploader is tried
-                max-stale-time: 12000
-                # one failure pushes an uploader down the ranking
-                fails-to-downrank: 1
-                # two failures and it is left out for the rest of the run
-                fails-to-ignore: 2
-                # how many DIFFERENT uploaders a track is offered to is track.max_sources
-                # above: sockseek calls that max-retries, which counts something else
+                max-stale-time: 12000    # ms with no bytes, then the next uploader
+                fails-to-downrank: 1     # failures before an uploader ranks lower
+                fails-to-ignore: 2       # failures before it is left out for the run
+                # how many DIFFERENT uploaders per track is track.max_sources above
             """;
 
     public static final List<Setting> ALL = List.of(
@@ -339,15 +271,6 @@ public final class Settings {
                 }
                 continue;                            // a deeper one is a reading aid only
             }
-            if (!value.isEmpty() && !value.equals(given) && given.indexOf('#') >= 0
-                    && warn != null) {
-                // a folder really can be called Rock#1, and cutting it down to Rock without a
-                // word ended in "No playlist .txt files in ...\Rock" with no hint why (found
-                // by an independent review, 2026-10-16)
-                warn.accept("line " + number + ": '" + given + "' was read as '" + value
-                        + "' - everything after # is taken as a comment; put the value in "
-                        + "quotes if the # belongs to it");
-            }
             if (!key.isEmpty() && !value.isEmpty()) {
                 values.put(block.isEmpty() ? key : block + "." + key, value);
             } else if (warn != null) {
@@ -377,7 +300,15 @@ public final class Settings {
         return line.substring(0, end);
     }
 
-    /** One scalar: quotes stripped, and a trailing {@code # comment} removed only OUTSIDE them. */
+    /**
+     * One scalar: quotes stripped, and a trailing {@code # comment} removed.
+     *
+     * <p>A {@code #} only starts a comment when something blank comes before it, which is how
+     * yaml itself reads one. Before 2026-10-19 any {@code #} did, so a folder really called
+     * {@code Rock#1} was cut down to {@code Rock} - the tool warned about it, and then warned
+     * about every honest trailing comment as well, which made a short comment per key
+     * unusable. Now the glued form is simply part of the value and no warning is needed.
+     */
     private static String scalar(String text) {
         String value = text.strip();
         for (char quote : new char[] {'"', '\''}) {
@@ -388,8 +319,33 @@ public final class Settings {
                 }
             }
         }
-        int hash = value.indexOf('#');
-        return (hash >= 0 ? value.substring(0, hash) : value).strip();
+        for (int at = 0; at < value.length(); at++) {
+            if (value.charAt(at) == '#' && (at == 0 || isBlank(value.charAt(at - 1)))) {
+                return value.substring(0, at).strip();
+            }
+        }
+        return value;
+    }
+
+    private static boolean isBlank(char character) {
+        return character == ' ' || character == '\t';
+    }
+
+    /**
+     * The unit written at the end of a value - {@code 300s}, {@code 60min} - or empty.
+     *
+     * <p>Only the four this project counts in. Anything else is left on the value, where the
+     * number parser will refuse it and say so by name.
+     */
+    static String unitOf(String written) {
+        String value = written.strip().toLowerCase(java.util.Locale.ROOT);
+        for (String unit : List.of("ms", "min", "h", "s")) {   // ms before s, min before h
+            if (value.length() > unit.length() && value.endsWith(unit)
+                    && Character.isDigit(value.charAt(value.length() - unit.length() - 1))) {
+                return written.strip().substring(value.length() - unit.length());
+            }
+        }
+        return "";
     }
 
     /** A message when the value is outside the legal range, else empty. */
@@ -481,7 +437,16 @@ public final class Settings {
                 say.accept("WARN: " + name + ": '" + full + "' belongs under "
                         + setting.section() + ", read as '" + setting.fullName() + "'");
             }
-            Optional<Number> value = setting.kind().parse(pair.getValue());
+            String written = pair.getValue();
+            String unit = unitOf(written);
+            if (!unit.isEmpty() && !unit.equalsIgnoreCase(setting.unit())) {
+                say.accept("WARN: " + name + ": '" + full + "' is counted in "
+                        + (setting.unit().isEmpty() ? "plain numbers" : setting.unit())
+                        + ", not " + unit + " - value ignored, using the default");
+                continue;
+            }
+            Optional<Number> value = setting.kind().parse(
+                    written.substring(0, written.length() - unit.length()));
             if (value.isEmpty()) {
                 say.accept("WARN: " + name + ": invalid value for '" + full
                         + "', using the default");
