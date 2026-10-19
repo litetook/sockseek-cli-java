@@ -75,9 +75,11 @@ public final class Settings {
             # under the wrong block still works and is named in a warning. Everything under
             # "sockseek:" is sockseek's own and goes to it untouched.
             #
-            # A value may carry its unit - 300s, 60min, 2h - and the wrong unit is a warning,
-            # not a silent number. The manual has the why and the measurements behind each
-            # default; this file says what the key IS.
+            # A setting carries its unit in its NAME - stall_timeout_s, max-stale-time-ms -
+            # and may carry it in the value too: 300s, 60min, 2h. A wrong unit is a warning,
+            # not a silent number. sockseek's own keys may be written either way here; the
+            # suffix comes off before it sees them, so a line pasted out of its help works.
+            # Every comment says the DEFAULT; the manual has the measurements behind it.
             #
             # The login is NOT here: it goes in config.local.yaml, which git never sees.
             #     sockseek:
@@ -94,13 +96,17 @@ public final class Settings {
             # all playlists together, because the server counts per account and bans an
             # account that goes faster; 0 = no brake
             rate_limit:
-              searches_per_window: 34       # searches all playlists share per window
-              window_s: 220s                # the window they share
+              searches_per_window: 34      # default 34. Higher = 30-minute bans from the
+                                           # server. 0 = no brake at all
+              window_s: 220s               # default 220s. 34 per 220s is sockseek's own
 
             playlist:
-              attempts: 1                  # goes at one playlist; 1 = one go, no repeat
-              attempt_timeout_min: 60min   # the WHOLE playlist, every pass inside it; 0 = none
-              stall_timeout_s: 300s        # nothing finished AND nothing on disk; 0 = never
+              attempts: 1                  # default 1 = one go, no repeat. 2-3 for a bad night
+              attempt_timeout_min: 60min   # default 60min, 0 = no ceiling. The WHOLE playlist,
+                                           # every pass inside it
+              stall_timeout_s: 300s        # default 300s, 0 = never. Nothing finished AND
+                                           # nothing on disk. The longest normal pause is the
+                                           # limiter's 220s, so stay above that
 
             track:
               # A pass each over whatever is still missing, best first; "@256" is a floor for
@@ -109,8 +115,10 @@ public final class Settings {
               # search per missing track, and the price before the one y says how many.
               #   format_order: mp3@256, flac, mp3@128
               format_order:
-              max_length_diff_s: 45s       # refuse a file this far off the length; -1 = off
-              attempts_per_pass: 3         # download tries per track inside ONE pass
+              max_length_diff_s: 45s       # default 45s, -1 = off. 30-60s is the usual range
+              attempts_per_pass: 3         # default 3. Tries for ONE track inside ONE pass,
+                                           # each the next candidate that fits. sockseek's
+                                           # own default for this is 10
               # Search EVERY track again, on-disk ones included, and keep the newcomer only
               # if it is better: lossless beats lossy, and the same format wins on size (at
               # least 5% bigger, at most 1.6x - more than that is a different recording).
@@ -119,7 +127,8 @@ public final class Settings {
               replace_if_better: false
 
             cache:
-              enabled: true                # remember how each track ended (outcomes.tsv)
+              enabled: true                # default true. Remembers how each track ended
+                                           # (outcomes.tsv)
               # skip a track confirmed absent if it was asked for this recently, under the
               # same conditions; 0 = always search. Fractions are fine
               skip_absent_h: 2h
@@ -136,31 +145,36 @@ public final class Settings {
               refuse:
                 # the floor is off on purpose: 256 refused every mp3 at 192 or 224, which was
                 # 104 of 135 failures on a real run. A floor refuses the COMMON copies
-                # min-bitrate: 256       # kbps
+                # min-bitrate-kbps: 256   # no default; unset means no floor
                 # the ceiling refuses the RARE ones instead - 24-bit and hi-res, which held
                 # 26% of all bytes. 16 bit / 48 kHz is exactly CD, so no CD copy is refused
-                max-samplerate: 48000    # Hz
-                max-bitdepth: 16         # bit
-                # max-bitrate: 1411      # kbps, the same cut said less directly
-                # format: mp3,flac       # allowed AT ALL - not an order
+                max-samplerate-hz: 48000 # no default. 48000 = CD and below
+                max-bitdepth-bit: 16     # no default. 16 = CD; 24 lets studio files in
+                # max-bitrate-kbps: 1411 # no default. The same cut said less directly
+                # format: mp3,flac       # no default. Allowed AT ALL - not an order
 
               # ranking only; nothing here ever refuses a file
               prefer:
-                pref-min-bitrate: 320    # kbps
-                pref-max-bitrate: 1411   # kbps, CD lossless; above it ranks last
-                pref-format: flac,mp3    # unordered by sockseek's own docs - see format_order
-                pref-strict-title: true  # the track title in the FILE NAME
-                pref-strict-artist: true # the artist anywhere in the PATH
+                pref-min-bitrate-kbps: 320  # sockseek default 200
+                pref-max-bitrate-kbps: 1411 # sockseek default 2500; above it ranks last
+                pref-format: flac,mp3    # sockseek default mp3. Unordered by its own docs -
+                                         # the order is track.format_order above
+                pref-strict-title: true  # off by default. The track title in the FILE NAME
+                pref-strict-artist: true # off by default. The artist anywhere in the PATH
 
               pick_source:
-                fast-search: true             # take the first candidate that fits
-                fast-search-delay: 2000       # ms spent collecting candidates first
-                fast-search-min-up-speed: 200 # unit undocumented and unproven
+                fast-search: true           # off by default. Take the first candidate that
+                                            # fits instead of collecting them all
+                fast-search-delay-ms: 500   # sockseek default 300
+                # fast-search-min-up-speed: 1   # sockseek default 1, and its unit is
+                                            # undocumented - leave it alone unless measured
 
               drop_source:
-                max-stale-time: 12000    # ms with no bytes, then the next uploader
-                fails-to-downrank: 1     # failures before an uploader ranks lower
-                fails-to-ignore: 2       # failures before it is left out for the run
+                max-stale-time-ms: 12000 # sockseek default 30000. With no bytes at all for
+                                         # this long, the next candidate is tried
+                fails-to-downrank: 1     # sockseek default 1. Then the uploader ranks lower
+                fails-to-ignore: 2       # sockseek default 2. Then it is left out for the
+                                         # rest of THIS run; nothing is remembered after it
                 # how many tries per track inside one pass is track.attempts_per_pass
             """;
 
@@ -425,9 +439,12 @@ public final class Settings {
             String full = pair.getKey();
             String section = sectionOf(full);
             String key = leafOf(full);
-            // sockseek's own block: not ours to understand, so not ours to check either
+            // sockseek's own block: not ours to understand, so not ours to check either.
+            // The unit a key may be written with here comes off at once, so everything
+            // downstream - the hard conditions, the page, the block before a run - sees the
+            // one name sockseek itself uses
             if (section.equals(SOCKSEEK_SECTION)) {
-                sockseek.put(key, pair.getValue());
+                sockseek.put(withoutUnit(key), pair.getValue());
                 continue;
             }
             String folder = PATH_OLD_KEYS.get(key);
@@ -734,9 +751,43 @@ public final class Settings {
     public static String sockseekConf(Map<String, String> block) {
         StringBuilder out = new StringBuilder();
         for (Map.Entry<String, String> pair : block.entrySet()) {
-            out.append(pair.getKey()).append(" = ").append(pair.getValue()).append('\n');
+            out.append(withoutUnit(pair.getKey())).append(" = ").append(pair.getValue())
+                    .append('\n');
         }
         return out.toString();
+    }
+
+    /**
+     * Unit endings a sockseek key may be written with here; sockseek never sees them.
+     *
+     * <p>Only endings that cannot be the real end of an option name. A bare {@code -s} is not
+     * on the list on purpose: it would turn some future {@code --allowed-users} into
+     * {@code allowed-user}, and a setting mangled in silence is worse than one written long.
+     */
+    private static final List<String> UNIT_ENDINGS =
+            List.of("-ms", "-sec", "-khz", "-hz", "-kbps", "-bit");
+
+    /**
+     * A sockseek key with the unit taken back off its name.
+     *
+     * <p>Our own settings have carried their unit in the name from the beginning -
+     * {@code stall_timeout_s}, {@code attempt_timeout_min} - and the owner asked on
+     * 2026-10-20 for sockseek's to read the same way: {@code max-stale-time-ms: 12000} rather
+     * than a number whose unit lives in a comment.
+     *
+     * <p>They cannot simply be renamed: these are sockseek's own names and it would not know
+     * them. So both spellings are accepted and the suffix is stripped on the way out. That
+     * keeps a line pasted straight out of {@code sockseek --help} working, which is the
+     * reason the block exists in the first place.
+     */
+    public static String withoutUnit(String key) {
+        String name = key == null ? "" : key.strip();
+        for (String ending : UNIT_ENDINGS) {
+            if (name.length() > ending.length() && name.endsWith(ending)) {
+                return name.substring(0, name.length() - ending.length());
+            }
+        }
+        return name;
     }
 
     /**

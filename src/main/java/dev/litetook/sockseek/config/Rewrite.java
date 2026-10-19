@@ -72,8 +72,14 @@ public final class Rewrite {
                 sectionEnd = at;
                 sectionIndent = indent;
             }
-            if (inSection && wanted.contains(name)) {
-                lines.set(at, written(line, indent, key, value));
+            // the line may carry its unit in the name - max-stale-time-ms - and the key
+            // asked for is the bare one
+            if (inSection && (wanted.contains(name)
+                    || wanted.contains(Settings.withoutUnit(name)))) {
+                // written back under the name the line already had, so a file that says
+                // max-stale-time-ms keeps saying it
+                lines.set(at, written(line, indent, name.equals(key) ? key
+                        : Settings.withoutUnit(name).equals(key) ? name : key, value));
                 return String.join("\n", lines);
             }
             if (isMap(bare)) {

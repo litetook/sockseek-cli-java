@@ -244,6 +244,18 @@ a guess.
 
 ## Settings: `config.yaml`
 
+Every setting carries its unit in its **name** - `stall_timeout_s`, `attempt_timeout_min`,
+`skip_absent_h` - and a value may carry it too (`300s`, `60min`, `2h`), where a wrong unit is
+a warning rather than a silent number.
+
+sockseek's own keys in the `sockseek:` block may be written the same way:
+`max-stale-time-ms: 12000`, `max-samplerate-hz: 48000`, `pref-min-bitrate-kbps: 320`. The
+suffix (`-ms`, `-sec`, `-hz`, `-khz`, `-kbps`, `-bit`) comes off before sockseek ever sees the
+key, so both spellings work and a line pasted straight out of `sockseek --help` still does.
+
+Each line in the shipped file says the **default** next to what the key is for, and where a
+value is sockseek's own, whose default it is.
+
 One file, in blocks, since 2026-10-18. A block says **what a value affects**, and the full
 name of a setting is `block.key`:
 

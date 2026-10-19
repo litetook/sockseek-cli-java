@@ -134,7 +134,7 @@ class SettingsTest {
         assertEquals("48000", config.sockseek().get("max-samplerate"));
         assertEquals("16", config.sockseek().get("max-bitdepth"));
         // and the floor is still there to be switched on, with the reason beside it
-        assertTrue(Settings.CONFIG_TEMPLATE.contains("# min-bitrate: 256"));
+        assertTrue(Settings.CONFIG_TEMPLATE.contains("# min-bitrate-kbps: 256"));
     }
 
     @Test
@@ -542,6 +542,24 @@ class SettingsTest {
         assertEquals(OptionalInt.of(5), config.integer("attempts_per_pass"));
         assertTrue(said.stream().anyMatch(line -> line.contains("attempts_per_pass")),
                 said.toString());
+    }
+
+    @Test
+    void aUnitInTheNameOfASockseekKeyComesOffBeforeItSeesIt(@TempDir Path dir)
+            throws IOException {
+        // the owner asked on 2026-10-20 for the unit to be in the name, as it is in ours.
+        // sockseek would not know max-stale-time-ms, so both spellings are read and only
+        // its own name is written out
+        write(dir.resolve(Settings.CONFIG_NAME), "sockseek:\n  drop_source:\n"
+                + "    max-stale-time-ms: 12000\n  refuse:\n    max-samplerate-hz: 48000\n"
+                + "    max-bitdepth-bit: 16\n");
+        Config config = load(dir.resolve(Settings.CONFIG_NAME));
+        assertEquals("12000", config.sockseek().get("max-stale-time"));
+        assertTrue(Settings.sockseekConf(config.sockseek())
+                .contains("max-samplerate = 48000"));
+        // and the hard conditions still recognise it, which is what the cache keys on
+        assertTrue(Settings.hardConditions(config.sockseek()).toString()
+                .contains("max-bitdepth=16"));
     }
 
     @Test
