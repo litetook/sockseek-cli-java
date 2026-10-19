@@ -67,9 +67,10 @@ class AppTest {
 
     private final Fake engine = new Fake();
 
-    /** A folder that has been through a first run: the three files and a sockseek binary. */
+    /** A folder that has been through a first run: the files, the login, a sockseek binary. */
     private Path ready() throws IOException {
         Settings.ensureFiles(home, line -> { });
+        Settings.writeLogin(home, "gate", "gate");
         Files.createDirectories(home.resolve("Playlists"));
         Files.writeString(home.resolve("sockseek.exe"), "", StandardCharsets.UTF_8);
         return home;
@@ -370,15 +371,51 @@ class AppTest {
     }
 
     @Test
-    void theFirstRunAsksForTheLoginAndStops() {
-        Run run = run(List.of());
-        assertEquals(2, run.code());
-        assertTrue(run.said("Put your Soulseek login in "), run.printed().toString());
-        assertTrue(run.said("Then run this again. Nothing can be downloaded until then."),
-                run.printed().toString());
-        // and the file it asks for is NOT written for you: a placeholder file looks filled in
+    void theFirstRunAsksForTheLoginAndThenCarriesOn() throws IOException {
+        // what the owner asked for on 2026-10-19: the login is typed into the tool and the
+        // same run goes on to the menu, instead of "now edit this file and start again"
+        Files.createDirectories(home.resolve("Playlists"));
+        Files.writeString(home.resolve("sockseek.exe"), "", StandardCharsets.UTF_8);
+        playlist("mix", "Artist - One");
+        Run run = run(List.of(), "me", "secret", "1", "1", "n");
+        assertEquals(0, run.code(), run.printed().toString());
+        assertTrue(run.said("Username: "), run.printed().toString());
+        assertTrue(run.said("Password: "), run.printed().toString());
+        assertEquals(List.of("sockseek:", "  username: me", "  password: secret"),
+                Files.readAllLines(home.resolve(Settings.LOCAL_CONFIG_NAME)).stream()
+                        .filter(line -> !line.isBlank() && !line.startsWith("#")).toList());
+        // and the password is never printed back
+        assertFalse(run.said("secret"), run.printed().toString());
+        // the same run reaches the menu
+        assertTrue(run.said("Where from?"), run.printed().toString());
+    }
+
+    @Test
+    void anInvisibleByteOrderMarkDoesNotBecomePartOfTheLogin() throws IOException {
+        // it rides in on piped UTF-8 input, and a login that is wrong by one invisible
+        // character is the worst kind of wrong (measured 2026-10-19)
+        Files.createDirectories(home.resolve("Playlists"));
+        run(List.of(), "\uFEFFme", "\uFEFFsecret", "");
+        assertEquals(List.of("sockseek:", "  username: me", "  password: secret"),
+                Files.readAllLines(home.resolve(Settings.LOCAL_CONFIG_NAME)).stream()
+                        .filter(line -> !line.isBlank() && !line.startsWith("#")).toList());
+    }
+
+    @Test
+    void aLoginThatIsAlreadyThereIsNotAskedAbout() throws IOException {
+        ready();
+        playlist("mix", "Artist - One");
+        Run run = run(List.of(), "1", "1", "n");
+        assertFalse(run.said("Username: "), run.printed().toString());
+    }
+
+    @Test
+    void withNobodyToAskItSaysWhereTheLoginGoes() {
+        // a scheduled run, a pipe: there is no console to type into, so the old message is
+        // still the right one
+        int code = App.run(new String[] {"--all", "--yes"}, null, line -> { }, wiring());
+        assertEquals(2, code);
         assertFalse(Files.exists(home.resolve(Settings.LOCAL_CONFIG_NAME)));
-        assertTrue(Files.isRegularFile(home.resolve(Settings.CONFIG_NAME)));
     }
 
     @Test

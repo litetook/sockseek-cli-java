@@ -152,6 +152,17 @@ public final class App {
     @FunctionalInterface
     public interface Ask {
         Optional<String> ask(String prompt);
+
+        /**
+         * The same question, with the typing hidden - for the password and nothing else.
+         *
+         * <p>The default is to ask it in the open: a pipe and a test have no console to hide
+         * anything from, and refusing to work there would mean no test could cover the one
+         * flow that writes the login file.
+         */
+        default Optional<String> secret(String prompt) {
+            return ask(prompt);
+        }
     }
 
     /** The engine, which is {@link Cli}. Injected so a test can watch what it was handed. */
@@ -245,11 +256,35 @@ public final class App {
         System.setOut(out);
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(System.in, StandardCharsets.UTF_8));
-        System.exit(run(args, prompt -> {
-            out.print(prompt);
-            out.flush();
-            return readLine(in);
-        }, out::println));
+        Ask console_ask = new Ask() {
+            @Override
+            public Optional<String> ask(String prompt) {
+                out.print(prompt);
+                out.flush();
+                return readLine(in);
+            }
+
+            @Override
+            public Optional<String> secret(String prompt) {
+                // System.console() is null when the output is piped - the gates do that -
+                // and then there is nothing to hide the typing from anyway
+                java.io.Console real = System.console();
+                if (real == null) {
+                    return ask(prompt);
+                }
+                out.print(prompt);
+                out.flush();
+                char[] typed = real.readPassword();
+                if (typed == null) {
+                    return Optional.empty();
+                }
+                String value = new String(typed);
+                java.util.Arrays.fill(typed, '\0');
+                out.println();
+                return Optional.of(value);
+            }
+        };
+        System.exit(run(args, console_ask, out::println));
     }
 
     /**
@@ -285,18 +320,24 @@ public final class App {
         }
 
         Path appDir = wiring.appDir();
-        if (!Settings.ensureFiles(appDir, out).isEmpty()
-                && !Files.exists(appDir.resolve(Settings.LOCAL_CONFIG_NAME))) {
-            // a fresh clone: config.yaml has just been written, and the one thing it does
-            // not carry is the login. The file for it is never created here - see ensureFiles
-            out.accept("");
-            out.accept("Put your Soulseek login in "
-                    + appDir.resolve(Settings.LOCAL_CONFIG_NAME) + ":");
-            out.accept("    sockseek:");
-            out.accept("      username: your-login");
-            out.accept("      password: your-password");
-            out.accept("Then run this again. Nothing can be downloaded until then.");
-            return 2;
+        Settings.ensureFiles(appDir, out);
+        // The login, asked for here rather than left as homework in a file. Not for an
+        // --import, which downloads nothing and needs no account.
+        if (front.importSource() == null && Settings.missingLogin(appDir)) {
+            if (ask == null) {
+                // a scheduled run, a pipe: there is nobody to ask, so say where it goes
+                out.accept("");
+                out.accept("Put your Soulseek login in "
+                        + appDir.resolve(Settings.LOCAL_CONFIG_NAME) + ":");
+                out.accept("    sockseek:");
+                out.accept("      username: your-login");
+                out.accept("      password: your-password");
+                out.accept("Then run this again. Nothing can be downloaded until then.");
+                return 2;
+            }
+            if (!askForLogin(appDir, ask, out)) {
+                return 2;
+            }
         }
         Config config = Settings.loadConfig(front.config() != null ? front.config()
                 : appDir.resolve(Settings.CONFIG_NAME), out);
@@ -814,6 +855,48 @@ public final class App {
         return List.copyOf(lines);
     }
 
+    /**
+     * Ask for the Soulseek login and write it into config.local.yaml.
+     *
+     * <p>False when there is nothing to go on with: the person pressed Enter instead of
+     * typing, or the file could not be written. The password is never printed, never logged
+     * and never echoed - {@link Ask#secret} hides the typing where there is a console.
+     *
+     * <p>The file stays a plain file on purpose: it can still be edited by hand, which is
+     * how a password with a character this prompt mangles gets fixed, and how a second
+     * machine gets set up by copying one file.
+     */
+    static boolean askForLogin(Path appDir, Ask ask, Consumer<String> out) {
+        out.accept("");
+        out.accept("Your Soulseek login, once: it is written to "
+                + Settings.LOCAL_CONFIG_NAME + " and never asked again.");
+        out.accept("(the same account you use in the Soulseek client; "
+                + "git never sees that file)");
+        String username = ask.ask("Username: ").map(App::strip).orElse("");
+        if (username.isEmpty()) {
+            out.accept("Nothing typed, so nothing was saved. Run it again when you have it.");
+            return false;
+        }
+        // not stripped: a password may legitimately start or end with a space. Only the
+        // invisible byte-order mark goes, for the reason above
+        String password = ask.secret("Password: ").orElse("").replace("\uFEFF", "");
+        if (password.isEmpty()) {
+            out.accept("No password typed, so nothing was saved. Run it again when you "
+                    + "have it.");
+            return false;
+        }
+        try {
+            Settings.writeLogin(appDir, username, password);
+        } catch (IOException cannotWrite) {
+            out.accept("Could not write " + Settings.LOCAL_CONFIG_NAME + ": "
+                    + cannotWrite.getMessage());
+            return false;
+        }
+        out.accept("Saved to " + appDir.resolve(Settings.LOCAL_CONFIG_NAME)
+                + " - edit that file if it ever changes.");
+        return true;
+    }
+
     /** The opening question. Empty means quit, and quitting is not an error. */
     static Optional<Source> sourceMenu(Ask ask, Consumer<String> out) {
         out.accept("Where from?");
@@ -1281,7 +1364,12 @@ public final class App {
     }
 
     private static boolean isSpace(char character) {
-        return Character.isWhitespace(character) || Character.isSpaceChar(character);
+        // U+FEFF is neither, by Java's reckoning: it is a zero-width no-break space, and it
+        // arrives at the front of the first typed line whenever something upstream wrote the
+        // input as UTF-8 with a BOM. Measured 2026-10-19: it rode into a username and would
+        // have been a login that is wrong for a reason nobody can see on screen
+        return Character.isWhitespace(character) || Character.isSpaceChar(character)
+                || character == '\uFEFF';
     }
 
     private static Optional<String> readLine(BufferedReader in) {

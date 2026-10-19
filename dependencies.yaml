@@ -29,3 +29,18 @@ yt-dlp.linux-x64.asset: yt-dlp
 yt-dlp.linux-x64.sha256: 1fa6733c37ea6fb51c99ad8fe785e7b7e5f3246c9b980230329d4fb72ed8d4d6
 yt-dlp.linux-arm.asset: yt-dlp
 yt-dlp.linux-arm.sha256: 1fa6733c37ea6fb51c99ad8fe785e7b7e5f3246c9b980230329d4fb72ed8d4d6
+
+# Java itself, for a machine that has none: a PRIVATE copy, unpacked into jdk/ beside the
+# jar and used by nothing else. The launchers (run.cmd, run.sh) read these three keys before
+# any Java exists, which is why nothing here goes through Tools.java - that is Java code.
+# A JRE, not a JDK: the tool only runs a jar. Pins taken from the Adoptium API 2026-10-19.
+java.version: 21.0.12.1_1
+java.url: https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/{asset}
+java.windows.asset: OpenJDK21U-jre_x64_windows_hotspot_21.0.12.1_1.zip
+java.windows.sha256: d35f31e712f0fcf6ac5a093edc90204fbff22f720ba3950bd09d331d5e621636
+java.macos-arm64.asset: OpenJDK21U-jre_aarch64_mac_hotspot_21.0.12.1_1.tar.gz
+java.macos-arm64.sha256: dec50fc6f9fcd4fe3ae8cabf5a5fa68f6afc48841f7698e468e9aa5d54beed84
+java.macos-x64.asset: OpenJDK21U-jre_x64_mac_hotspot_21.0.12.1_1.tar.gz
+java.macos-x64.sha256: 6717ec641fd9ce0bb209ca083ee23b42202ac68cb6fcc5753496e0e4a0f41989
+java.linux-x64.asset: OpenJDK21U-jre_x64_linux_hotspot_21.0.12.1_1.tar.gz
+java.linux-x64.sha256: 2413149700df0f7d440500a84a8f764c535f21e5a5e87d38328b64eec2c5b500

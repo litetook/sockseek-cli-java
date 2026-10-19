@@ -44,68 +44,83 @@ Five minutes from nothing to that, below.
 
 ## Before you start
 
-| What | Why | Check it |
-|---|---|---|
-| **Java 21 or newer** | the tool is one jar and nothing else | `java -version` says `21` or higher. [Temurin](https://adoptium.net/temurin/releases/?version=21) is the usual build; on Windows the installer is enough, no `JAVA_HOME` needed |
-| **A Soulseek account** | the network only answers to a logged-in user. Make one in the [Soulseek client](https://www.slsknet.org/) if you have none | you can sign in there with the same login you will put in `config.local.yaml` |
-| **About 300 MB free** | 20 MB for the jar and sockseek, the rest is the music | - |
-| **Outgoing internet** | first run fetches sockseek from GitHub; after that only Soulseek itself | a corporate proxy that blocks GitHub means fetching sockseek by hand, below |
+Two things, and only one of them is on you:
 
-**sockseek itself you do NOT install.** On the first run that needs it, the tool downloads the
-version pinned in the jar (3.0.5 today) from
-[its releases](https://github.com/fiso64/sockseek/releases), checks the SHA-256 it was built
-with, and puts `sockseek.exe` in the same folder:
+| What | Why |
+|---|---|
+| **A Soulseek account** | the network only answers to a logged-in user. Make one in the [Soulseek client](https://www.slsknet.org/) if you have none |
+| **About 300 MB free, and outgoing internet** | 70 MB of it is Java, sockseek and the jar; the rest is music |
 
-```
-sockseek is not at ...\sockseek.exe
-downloading https://github.com/fiso64/sockseek/releases/download/v3.0.5/sockseek_3.0.5_win-x64.zip
-sha256 ok (sockseek 3.0.5)
-installed sockseek 3.0.5 -> ...\sockseek.exe
-```
+**Java you do not install. sockseek you do not install.** The launcher fetches whatever is
+missing, each download pinned and checked against its SHA-256 before it is used, and says on
+screen exactly what it is doing. Everything lands in the one folder: nothing goes into the
+registry, nothing needs admin rights or `sudo`, and deleting the folder undoes all of it.
 
-It asks first unless you passed `--yes`. To do it by hand instead - no internet on that
-machine, or you want another version - put the `sockseek` binary in the folder yourself, or
-point `paths.sockseek_bin` at it.
-
-Windows is the only platform this has been run on. The jar is platform-independent and the
-pins cover macOS and Linux, but neither has ever been tried.
+Windows is the only platform this has been run on. The jar is platform-independent and
+`run.sh` covers macOS and Linux from the same pins, but neither has been tried.
 
 ## Quick start
 
-**1. Get Java 21.** Nothing else to install: sockseek comes down on the first run, as above.
-`java -version` should say 21 or higher.
+**1. Make a folder and put the launcher in it** - `run.cmd` on Windows, `run.sh` on macOS or
+Linux (`chmod +x run.sh`). It needs `dependencies.yaml` and the `tools/` folder beside it,
+so the simplest honest way is to download this repository's zip and keep those names.
 
-**2. Download the jar** from
-[Releases](https://github.com/litetook/sockseek-cli-java/releases) and put it in a folder of
-its own. That folder becomes the tool's home: playlists, downloads, logs and settings all
-live there.
-
-**3. Run it once.** It writes `config.yaml` and stops with the message below, because it
-cannot download anything until it knows who you are.
-
-```
-WARN created config.yaml from the built-in template
-
-Put your Soulseek login in ...\config.local.yaml:
-    sockseek:
-      username: your-login
-      password: your-password
-Then run this again. Nothing can be downloaded until then.
-```
+**2. Run it.** One command, and it pulls the rest itself:
 
 ```bash
-java -jar sockseek-cli.jar
+run.cmd
 ```
 
-**4. Put your Soulseek login in `config.local.yaml`.** You write this file yourself; it is
-git-ignored, it is the only file you put a secret into, and it overrides any key of
-`config.yaml`.
+```
+Java 21 was not found, so this fetches a private copy into ...\jdk.
+About 47 MB, pinned and sha256-checked, nothing installed system-wide, no admin
+rights needed. Deleting that folder undoes it. The log is ...\logs\install.log.
+downloading Java 21.0.12.1_1 (about 47 MB)
+  https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/...zip
+sha256 ok (Java 21.0.12.1_1)
+installed Java 21.0.12.1_1 -> ...\jdk
+sockseek-cli.jar is not here yet; taking it from the latest release.
+downloading v1.4.0 sockseek-cli.jar (5.4 MB)
+installed sockseek-cli.jar -> ...\sockseek-cli.jar
+WARN created config.yaml from the built-in template
+```
+
+The same lines go into `logs/install.log`, so a download that went wrong is readable
+afterwards. Java already on the machine (21 or newer) is used as it is and nothing is fetched.
+
+**3. Type your login, once.** The tool asks on the first run and writes it to
+`config.local.yaml` itself. The password is not echoed while you type it.
+
+```
+Your Soulseek login, once: it is written to config.local.yaml and never asked again.
+(the same account you use in the Soulseek client; git never sees that file)
+Username: your-login
+Password:
+Saved to ...\config.local.yaml - edit that file if it ever changes.
+```
+
+That file stays yours to edit by hand - that is how a password this prompt would mangle gets
+fixed, and how a second machine is set up by copying one file:
 
 ```yaml
 sockseek:
   username: your-login
   password: your-password
 ```
+
+**4. And it goes straight on** to the same menu every later run opens with - no "now start it
+again". sockseek itself is fetched here, the first time a download needs it, pinned and
+sha256-checked the same way.
+
+```
+Where from?
+
+  1  download a playlist from a .txt file
+  2  save a .txt from a Spotify link, then download it
+  3  save a .txt from a SoundCloud link, then download it
+  4  one track from a link, into unsorted
+```
+
 
 **5. Write a playlist.** One `.txt` file per playlist in `Playlists/`. The file name becomes
 the name of the playlist and of its download folder; one track per line, the length after a
@@ -126,8 +141,10 @@ searched without a length filter. Lines starting with `#` are ignored.
 **6. Run it.**
 
 ```bash
-java -jar sockseek-cli.jar --only starter --yes
+run.cmd --only starter --yes
 ```
+
+(`java -jar sockseek-cli.jar --only starter --yes` is the same thing, once Java is there.)
 
 That is the run printed at the top of this page. The first time, this is also where
 sockseek is fetched. Files land in `output/starter/`, and running the same command again will

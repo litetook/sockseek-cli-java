@@ -3,6 +3,12 @@
 build/
 *.class
 
+# What the launcher fetches so that a bare folder can run: a private Java and the
+# released jar. Both are downloads, not sources - a checkout builds its own jar in build/.
+/jdk/
+/jdk.part/
+/sockseek-cli.jar
+
 # The pinned external tools. Anchored with a leading slash on purpose: a bare
 # "sockseek" matches ANY path component, and it silently swallowed the whole
 # dev/litetook/sockseek package once already.

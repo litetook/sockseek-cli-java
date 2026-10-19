@@ -954,7 +954,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [1/24] ambient-night: searching 17 missing track(s)
 [time] run #0001
 [time] WARN run_seq.txt is missing or not a number, run counter rebuilt from the log file names in <DIR>\logs: highest number found 0
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -984,7 +984,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [2/24] breaks: searching 19 missing track(s)
 [time] run #0002
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1015,7 +1015,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [3/24] chill: searching 45 missing track(s)
 [time] run #0003
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1050,7 +1050,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [4/24] classics: searching 7 missing track(s)
 [time] run #0004
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1080,7 +1080,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [5/24] dnb: searching 28 missing track(s)
 [time] run #0005
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1110,7 +1110,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [6/24] dubstep-bass: searching 30 missing track(s)
 [time] run #0006
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1144,7 +1144,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [7/24] example: searching 3 missing track(s)
 [time] run #0007
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1173,7 +1173,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [8/24] hip-hop: searching 40 missing track(s)
 [time] run #0008
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1203,7 +1203,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [9/24] house: searching 59 missing track(s)
 [time] run #0009
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1243,7 +1243,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [10/24] nothing-here: searching 17 missing track(s)
 [time] run #0010
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1272,7 +1272,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [11/24] one-track: searching 1 missing track(s)
 [time] run #0011
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1300,7 +1300,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [12/24] other: searching 24 missing track(s)
 [time] run #0012
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1332,7 +1332,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [13/24] phonk-dark: searching 19 missing track(s)
 [time] run #0013
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1365,7 +1365,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [14/24] pop: searching 61 missing track(s)
 [time] run #0014
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1403,7 +1403,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [15/24] rock-metal: searching 32 missing track(s)
 [time] run #0015
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1435,7 +1435,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [16/24] techno-acid: searching 20 missing track(s)
 [time] run #0016
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1468,7 +1468,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [17/24] techno-hard: searching 79 missing track(s)
 [time] run #0017
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1508,7 +1508,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [18/24] techno-melodic: searching 50 missing track(s)
 [time] run #0018
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1541,7 +1541,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [19/24] techno: searching 29 missing track(s)
 [time] run #0019
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1571,7 +1571,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [20/24] trance: searching 19 missing track(s)
 [time] run #0020
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1604,7 +1604,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [21/24] ukrainian: searching 102 missing track(s)
 [time] run #0021
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1646,7 +1646,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [22/24] wanted: searching 4 missing track(s)
 [time] run #0022
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1675,7 +1675,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [23/24] weird-edges: searching 8 missing track(s)
 [time] run #0023
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1705,7 +1705,7 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 
 [24/24] with-links: searching 3 missing track(s)
 [time] run #0024
-[time] effective configuration of sockseek-cli 1.3.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]

@@ -657,6 +657,60 @@ public final class Settings {
     }
 
     /**
+     * Whether this folder still has no usable Soulseek login.
+     *
+     * <p>True both when config.local.yaml is not there at all and when it is there without
+     * the two keys - somebody half-edited it, and being asked beats a run that gets as far
+     * as sockseek and dies on INVALIDPASS.
+     */
+    public static boolean missingLogin(Path appDir) {
+        Config config = loadConfig(appDir.resolve(CONFIG_NAME), null);
+        return !missingCredentials(sockseekConf(config.sockseek())).isEmpty();
+    }
+
+    /**
+     * Write the login into config.local.yaml, keeping whatever else that file holds.
+     *
+     * <p>The values are never logged or returned anywhere; this is the only place they are
+     * written, and the file is git-ignored.
+     */
+    public static void writeLogin(Path appDir, String username, String password)
+            throws IOException {
+        Path file = appDir.resolve(LOCAL_CONFIG_NAME);
+        List<String> kept = new ArrayList<>();
+        if (Files.exists(file)) {
+            for (String raw : readUtf8(file).lines().toList()) {
+                String line = raw.strip();
+                // the two keys are replaced, everything else the person put there stays
+                if (line.startsWith("username:") || line.startsWith("password:")
+                        || line.equals(SOCKSEEK_SECTION + ":")) {
+                    continue;
+                }
+                kept.add(raw);
+            }
+        }
+        StringBuilder text = new StringBuilder();
+        if (kept.isEmpty()) {
+            text.append("# Your Soulseek login. Git never sees this file (.gitignore), and "
+                    + "it overrides\n");
+            text.append("# any key of ").append(CONFIG_NAME)
+                    .append(" - so it is also the place for a machine-only tweak.\n\n");
+        } else {
+            for (String line : kept) {
+                text.append(line).append('\n');
+            }
+            if (!text.isEmpty() && text.charAt(text.length() - 1) != '\n') {
+                text.append('\n');
+            }
+        }
+        text.append(SOCKSEEK_SECTION).append(":\n");
+        text.append("  username: ").append(username).append('\n');
+        text.append("  password: ").append(password).append('\n');
+        Files.createDirectories(appDir);
+        Files.writeString(file, text.toString(), StandardCharsets.UTF_8);
+    }
+
+    /**
      * Create the files a fresh clone needs, and name the ones that were created.
      *
      * <p>Only config.yaml: the login file is deliberately NOT written. A file full of
