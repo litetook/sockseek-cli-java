@@ -35,7 +35,9 @@ class BriefTest {
                 .contains("7 per track per pass"));
         String ladder = say(Map.of(), Map.of(), List.of("mp3@256", "flac"));
         assertTrue(ladder.contains("1  mp3 at 256+ kbps"), ladder);
-        assertTrue(ladder.contains("3  any format"), ladder);   // the last one is always there
+        assertTrue(ladder.contains("2  flac"), ladder);
+        // and nothing else: the pass that took anything at all undid every floor above it
+        assertFalse(ladder.contains("any format"), ladder);
     }
 
     @Test

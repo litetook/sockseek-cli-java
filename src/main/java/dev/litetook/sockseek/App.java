@@ -717,12 +717,7 @@ public final class App {
      */
     /** The ladder this run would climb, from the flag if there is one and the file if not. */
     static List<String> formatOrderOf(Config config, Front front) {
-        String given = flagValue(front, "--format-order");
-        String order = given != null ? given : config.text(Settings.FORMAT_ORDER, "");
-        return java.util.Arrays.stream(order.split(","))
-                .map(String::strip)
-                .filter(one -> !one.isEmpty())
-                .toList();
+        return Settings.ladder(config, flagValue(front, "--format-order"));
     }
 
     /**
@@ -747,13 +742,7 @@ public final class App {
     }
 
     static int passCount(Config config, Front front) {
-        String given = flagValue(front, "--format-order");
-        String order = given != null ? given : config.text(Settings.FORMAT_ORDER, "");
-        long formats = java.util.Arrays.stream(order.split(","))
-                .map(String::strip)
-                .filter(one -> !one.isEmpty())
-                .count();
-        return (int) formats + 1;
+        return Math.max(1, formatOrderOf(config, front).size());
     }
 
     /**

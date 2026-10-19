@@ -113,7 +113,7 @@ class SettingsTest {
         // one file since 2026-10-18, but still two namespaces: ours above, sockseek own
         // below, and a key of its never mirrored into a setting of ours
         Config config = load(dir.resolve(Settings.CONFIG_NAME));
-        assertEquals("flac,mp3", config.sockseek().get("pref-format"));
+        assertEquals("320", config.sockseek().get("pref-min-bitrate"));
         assertEquals("12000", config.sockseek().get("max-stale-time"));
         for (String ours : List.of("stale_time_s", "fast_search", "min_bitrate", "pref_format",
                 "searches_per_time", "remove_brackets")) {
@@ -581,14 +581,35 @@ class SettingsTest {
         // it was dropped as an unknown key until 2026-10-18, so only --format-order worked
         // and the config line did nothing at all
         Path path = dir.resolve(Settings.CONFIG_NAME);
-        write(path, "track:\n  format_order: mp3,flac,wav\n");
-        assertEquals("mp3,flac,wav", load(path).text(Settings.FORMAT_ORDER, ""));
+        write(path, "track:\n  formats: mp3,flac,wav\n");
+        assertEquals("mp3,flac,wav", load(path).text(Settings.FORMATS, ""));
+        assertEquals(List.of(), warnings);
+    }
+
+    @Test
+    void theOldFormatOrderIsStillReadAndSaysSo(@TempDir Path dir) throws IOException {
+        Path path = dir.resolve(Settings.CONFIG_NAME);
+        write(path, "track:\n  format_order: mp3@256, flac\n");
+        assertEquals("mp3@256, flac", load(path).text(Settings.FORMATS, ""));
+        assertTrue(warnings.toString().contains("formats"), warnings.toString());
+    }
+
+    @Test
+    void theFloorOfOneFormatIsReadAndJoinedToTheOrder(@TempDir Path dir) throws IOException {
+        // the owner's shape since 2026-10-20: the order has no numbers in it, and the worst
+        // acceptable quality of a format is a key of its own. flac and wav have none
+        Path path = dir.resolve(Settings.CONFIG_NAME);
+        write(path, "track:\n  formats: flac, wav, mp3\n  mp3-min-kbps: 256\n");
+        Config config = load(path);
+        assertEquals(List.of("flac", "wav", "mp3@256"), Settings.ladder(config, null));
+        // and the flag still wins over the file, floors and all
+        assertEquals(List.of("mp3@128"), Settings.ladder(config, "mp3@128"));
         assertEquals(List.of(), warnings);
     }
 
     @Test
     void anAbsentFormatOrderIsNoOrderAtAll(@TempDir Path dir) {
-        assertEquals("", load(dir.resolve(Settings.CONFIG_NAME)).text(Settings.FORMAT_ORDER, ""));
+        assertEquals("", load(dir.resolve(Settings.CONFIG_NAME)).text(Settings.FORMATS, ""));
     }
 
     // ------------------------------------------------------------------ a fresh clone

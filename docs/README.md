@@ -328,7 +328,8 @@ playlist:
   stall_timeout_s: 300         # kill a go that has stopped getting anywhere
 
 track:
-  format_order: mp3@192, flac, wav   # a pass each, "@192" = a floor for that pass only
+  formats: flac, wav, mp3      # a pass each, in this order; nothing else is taken
+  mp3-min-kbps: 256            # the worst mp3 accepted; flac and wav have no floor
   max_length_diff_s: 45        # refuse a file this far off the playlist length; -1 = off
   attempts_per_pass: 3         # download tries per track inside ONE pass
 
@@ -385,36 +386,49 @@ the first attempt delivered on the second — but it doubles the wall clock, and
 a **new sockseek process with a fresh search budget**, which raises the real risk of the
 30-minute server ban. That is why the shipped file asks for one.
 
-### `track.format_order` — empty · `--format-order`
+### `track.formats` — empty · `--format-order`
 
-**What it's for.** The quality ladder. Each entry is a pass over whatever is still missing,
-with that format **required**; `mp3@256` makes that pass refuse anything below 256 kbps. A
-last pass always asks for anything at all with no floor, so **nothing is lost** - the ladder
-only decides what is taken first.
-
-The frame is meant to be stepped rather than one cut. What the owner runs since 2026-10-19:
+**What it's for.** Which formats are taken, and in what order. Each one is a pass over
+whatever is still missing, with that format **required**. Nothing outside the list is taken
+at all.
 
 ```yaml
-format_order: mp3@256, flac, mp3@128
+track:
+  formats: flac, wav, mp3
+  mp3-min-kbps: 256
 ```
 
-- **pass 1** a good mp3, 256 kbps or better - small, and plenty for most of what is shared
-- **pass 2** flac at any bitrate, and the hard ceiling keeps it to CD quality
-- **pass 3** any mp3 from 128 up, for the tracks only a modest copy exists of
-- **pass 4** no format, no floor: whatever is out there
+- **pass 1** flac at any bitrate; the hard ceiling keeps it to CD quality
+- **pass 2** wav, same
+- **pass 3** mp3, but only at 256 kbps or better
+- **and that is all.** An mp3 at 192 is not taken, now or later
 
-The same format may appear twice at different floors; each pass keeps its own list and events
-in `work/`, numbered, so the two mp3 passes do not overwrite each other.
+**There is no last-resort pass.** Until 2026-10-20 a final pass asked for anything at all
+with no floor, "so nothing is lost" - which quietly undid every floor above it: the 128 kbps
+mp3 refused by pass one arrived in pass four regardless. The owner settled it that night -
+"міняю свідомо кількість на якість" - and the honest trade is written below.
 
-**Why the floor matters.** Without one the ladder runs downhill: `mp3,flac,wav` with no floor
-takes a 96 kbps mp3 in pass 1 and never asks for the flac that was sitting there.
-`pref-min-bitrate` cannot save it - `pref-` only ranks, and inside an mp3-only pass there may
-be nothing better to rank above.
+**What it costs.** One search per still-missing track per pass, and now one fewer pass than
+before. The measurement to keep in mind: on a real run a 256 floor accounted for **104 of
+135** failures. Quality has a price in tracks that never arrive; `mp3-min-kbps: 192` is the
+middle, and removing the key is the old behaviour.
 
-**What it costs.** One search per still-missing track per pass. Three formats mean four
-searches for a track nobody has, until the cache has confirmed it absent. The price before the
-one `y` counts the passes and says so, and the brake pauses between passes as well as between
-playlists. Empty means one pass and no ordering, which is what the shipped config carries.
+Empty means one pass that takes anything, which is "no preference" rather than "refuse
+everything", and is what the shipped config carries.
+
+### `track.<format>-min-kbps` — none
+
+**What it's for.** The worst quality accepted **of one format**. `mp3-min-kbps: 256` refuses
+every mp3 below it, in every pass; a format with no such key has no floor at all, which is
+what flac and wav want - their quality is not a bitrate, and the ceiling
+(`sockseek.refuse.max-samplerate-hz` and `max-bitdepth-bit`) is what limits them.
+
+It is a key of its own rather than a number inside the order - `mp3@256` - because those are
+two different things: the order says what is tried first, this says what is acceptable at
+all. The old `format_order: mp3@256, flac` is still read, with a warning naming the new keys.
+
+**Why not `pref-min-bitrate`?** That one only ranks; inside an mp3-only pass there may be
+nothing better to rank above, and the 96 kbps copy is taken anyway. A floor refuses.
 
 ### `track.replace_if_better` — false · `--replace-if-better`
 
@@ -447,7 +461,7 @@ files exactly as they were and some rubbish in `work/`, which is safe to delete.
 names every decision: `^` for an upgrade, `=` for yours kept.
 
 **What it costs.** Every track becomes a search again, so a full library pass is the whole
-search bill, not the missing part of it - and with a `format_order` ladder, that bill times the
+search bill, not the missing part of it - and with a `track.formats` ladder, that bill times the
 number of passes. The price before the one `y` counts it.
 
 ### `playlist.attempt_timeout_min` — 60 minutes · `--attempt-timeout`
@@ -455,7 +469,7 @@ number of passes. The price before the one `y` counts it.
 **What it's for.** A wall clock on one attempt at one playlist. `0` means none. **Minutes**,
 and **per attempt**: with 40 and `attempts: 2`, a playlist can run 80 minutes.
 
-⚠ Until 2026-10-19 it was a wall clock per **pass**, so `format_order: mp3,flac,wav` quietly
+⚠ Until 2026-10-19 it was a wall clock per **pass**, so `formats: mp3,flac,wav` quietly
 turned 60 minutes into four hours for one playlist. It is now one budget for the playlist,
 shared out between its passes: when it runs out the remaining passes do not start, and the
 run says so.
@@ -903,7 +917,7 @@ uses three numbers.
 
 - **Upgrade what is already on disk.** A line with a file beside it is never reconsidered,
   whatever its quality and whatever the config now says - the quality rules apply once per
-  track, when it arrives. Turning the ceiling on, or changing `format_order`, does nothing for
+  track, when it arrives. Turning the ceiling on, or changing `track.formats`, does nothing for
   the library you already have. Doing better needs knowing the quality of the files on disk,
   which means reading them, which this tool deliberately does not do.
 - **Notice a file somebody renamed.** "Already here" is the index's own `filepath` plus the

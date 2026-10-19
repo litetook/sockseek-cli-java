@@ -714,7 +714,15 @@ public final class Batch {
                 passes.add(new Pass(name, floor));
             }
         }
-        passes.add(new Pass(null, -1));   // and finally, anything at all
+        // No catch-all pass at the end any more. It used to take anything at all "so that
+        // nothing is lost", which quietly undid the floors: a 128 kbps mp3 refused by pass
+        // one arrived in pass four regardless. The owner settled it on 2026-10-20 - "міняю
+        // свідомо кількість на якість" - so a format below its floor is simply not taken.
+        // An empty list still means one pass that takes anything: that is "no preference",
+        // not "refuse everything".
+        if (passes.isEmpty()) {
+            passes.add(new Pass(null, -1));
+        }
         return List.copyOf(passes);
     }
 

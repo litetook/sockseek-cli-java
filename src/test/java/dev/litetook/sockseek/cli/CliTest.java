@@ -155,10 +155,13 @@ class CliTest {
     void theFormatOrderOfTheConfigFileIsUsed(@TempDir Path app) throws IOException {
         // until 2026-10-18 the key was dropped as unknown and only the flag worked, so a
         // config that said mp3,flac,wav quietly made one unordered pass
-        Files.writeString(app.resolve("config.yaml"), "track:\n  format_order: mp3,flac,wav\n");
+        Files.writeString(app.resolve("config.yaml"),
+                "track:\n  formats: mp3,flac,wav\n  mp3-min-kbps: 256\n");
         Cli cli = parsed(app);
-        assertEquals(List.of("mp3", "flac", "wav"), cli.formatOrder());
-        assertTrue(block(cli).contains("track.format_order = mp3,flac,wav [config]"), block(cli));
+        // the order carries no numbers; the floor of a format is joined on here
+        assertEquals(List.of("mp3@256", "flac", "wav"), cli.formatOrder());
+        assertTrue(block(cli).contains("track.formats = mp3@256,flac,wav [config]"),
+                block(cli));
     }
 
     @Test

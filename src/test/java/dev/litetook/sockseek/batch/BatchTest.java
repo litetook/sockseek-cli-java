@@ -200,13 +200,15 @@ class BatchTest {
 
     @Test
     void theLadderIsReadAsPassesWithTheirOwnFloors() {
-        // "mp3@192, flac" means: mp3 at 192+, then flac at any bitrate, then anything at all
+        // "mp3@192, flac" means: mp3 at 192+, then flac at any bitrate, and NOTHING else.
+        // The catch-all pass went on 2026-10-20: it undid every floor above it, since an
+        // mp3 refused at 192 arrived in it regardless
         List<Batch.Pass> passes = Batch.passesOf(List.of("mp3@192", "flac"));
-        assertEquals(3, passes.size());
+        assertEquals(2, passes.size());
         assertEquals(new Batch.Pass("mp3", 192), passes.get(0));
         assertEquals(new Batch.Pass("flac", -1), passes.get(1));
-        assertEquals(new Batch.Pass(null, -1), passes.get(2));
-        // and a config with no ladder at all is one pass that takes anything
+        // a config with no formats at all is still one pass that takes anything: that is
+        // "no preference", not "refuse everything"
         assertEquals(List.of(new Batch.Pass(null, -1)), Batch.passesOf(List.of()));
     }
 

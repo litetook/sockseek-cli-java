@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Locale;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -45,6 +46,19 @@ public final class Settings {
      * the other text values instead.
      */
     public static final String FORMAT_ORDER = "format_order";
+
+    /** The formats we take, best first. The name {@link #FORMAT_ORDER} had until 2026-10-20. */
+    public static final String FORMATS = "formats";
+
+    /**
+     * The end of a key that sets the worst quality we accept of one format:
+     * {@code mp3-min-kbps: 256}.
+     *
+     * <p>Per format and not one number for everything, because the owner wanted exactly
+     * that on 2026-10-20: "для mp3 це буде 256, а для flac та wav обмежень не має бути". A
+     * format with no such key has no floor, which is how flac and wav are left alone.
+     */
+    public static final String FLOOR_SUFFIX = "-min-kbps";
 
     public static final List<String> PATH_KEYS =
             List.of("sockseek_bin", "playlists", "music", "work", "logs");
@@ -109,12 +123,15 @@ public final class Settings {
                                            # limiter's 220s, so stay above that
 
             track:
-              # A pass each over whatever is still missing, best first; "@256" is a floor for
-              # THAT pass only, in kbps. The last pass always takes anything at all, so
-              # nothing is lost - this only decides what is taken first. Every pass costs one
-              # search per missing track, and the price before the one y says how many.
-              #   format_order: mp3@256, flac, mp3@128
-              format_order:
+              # The formats to take, best first. A pass each over whatever is still missing,
+              # so each format costs one search per missing track. Nothing outside the list
+              # is taken at all; empty = one pass that takes anything.
+              #   formats: flac, wav, mp3
+              formats:
+              # The worst acceptable quality OF ONE FORMAT, in kbps. A format with no line
+              # here has no floor, which is what flac and wav want. There is no last-resort
+              # pass: below its floor, a format is not taken at all.
+              #   mp3-min-kbps: 256
               max_length_diff_s: 45s       # default 45s, -1 = off. 30-60s is the usual range
               attempts_per_pass: 3         # default 3. Tries for ONE track inside ONE pass,
                                            # each the next candidate that fits. sockseek's
@@ -154,14 +171,11 @@ public final class Settings {
                 max-samplerate-hz: 48000 # no default. 48000 = CD and below
                 max-bitdepth-bit: 16     # no default. 16 = CD; 24 lets studio files in
                 # max-bitrate-kbps: 1411 # no default. The same cut said less directly
-                # format: mp3,flac       # no default. Allowed AT ALL - not an order
 
               # ranking only; nothing here ever refuses a file
               prefer:
                 pref-min-bitrate-kbps: 320  # sockseek default 200
                 pref-max-bitrate-kbps: 1411 # sockseek default 2500; above it ranks last
-                pref-format: flac,mp3    # sockseek default mp3. Unordered by its own docs -
-                                         # the order is track.format_order above
                 pref-strict-title: true  # off by default. The track title in the FILE NAME
                 pref-strict-artist: true # off by default. The artist anywhere in the PATH
 
@@ -470,8 +484,24 @@ public final class Settings {
                 paths.put(key, pair.getValue());
                 continue;
             }
-            if (key.equals(FORMAT_ORDER)) {
-                words.put(FORMAT_ORDER, pair.getValue());
+            if (key.equals(FORMATS) || key.equals(FORMAT_ORDER)) {
+                if (key.equals(FORMAT_ORDER)) {
+                    say.accept("WARN: " + name + ": key '" + FORMAT_ORDER + "' is deprecated, "
+                            + "use 'track." + FORMATS + "' (the floors moved to "
+                            + "track.<format>" + FLOOR_SUFFIX + ")");
+                }
+                words.put(FORMATS, pair.getValue());
+                continue;
+            }
+            // track.mp3-min-kbps and its like: the worst we accept of ONE format. Read
+            // without a Setting of their own, because the list of formats is open
+            if (key.endsWith(FLOOR_SUFFIX) && key.length() > FLOOR_SUFFIX.length()) {
+                try {
+                    numbers.put(key, Integer.valueOf(pair.getValue().strip()));
+                } catch (NumberFormatException notANumber) {
+                    say.accept("WARN: " + name + ": '" + full + "' is not a number of kbps, "
+                            + "ignored: '" + pair.getValue() + "'");
+                }
                 continue;
             }
             Optional<Setting> found = byKey(key);
@@ -855,6 +885,35 @@ public final class Settings {
     public static final List<String> HARD_KEYS = List.of(
             "min-bitrate", "max-bitrate", "min-samplerate", "max-samplerate",
             "min-bitdepth", "max-bitdepth", "format", "min-length", "max-length");
+
+    /**
+     * The formats to try, best first, each with the floor its own key sets.
+     *
+     * <p>The engine has always taken a list of {@code format@floor} items, and still does;
+     * this is where the two halves of the file - the order, and the worst acceptable quality
+     * of each format - are put back together. One place, because the run and the block
+     * printed before it must agree about what the ladder is.
+     *
+     * @param given a {@code --format-order} from the command line, or null for the file
+     */
+    public static List<String> ladder(Config config, String given) {
+        String order = given != null ? given : config.text(FORMATS, "");
+        List<String> rungs = new ArrayList<>();
+        for (String raw : order.split(",")) {
+            String format = raw.strip();
+            if (format.isEmpty()) {
+                continue;
+            }
+            if (format.indexOf('@') >= 0) {
+                rungs.add(format);   // written the old way, floor and all
+                continue;
+            }
+            OptionalInt floor = config.integer(format.toLowerCase(Locale.ROOT) + FLOOR_SUFFIX);
+            rungs.add(floor.isPresent() && floor.getAsInt() > 0
+                    ? format + "@" + floor.getAsInt() : format);
+        }
+        return List.copyOf(rungs);
+    }
 
     /** The same, from the sockseek block of config.yaml rather than the merged file. */
     public static List<String> hardConditions(Map<String, String> block) {

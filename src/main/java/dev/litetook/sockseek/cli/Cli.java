@@ -39,7 +39,7 @@ public final class Cli implements Callable<Integer> {
      * this is finished enough to use, not a preview of something. The release workflow
      * refuses to publish a tag whose name disagrees with this.
      */
-    public static final String VERSION = "2.2.0";
+    public static final String VERSION = "2.3.0";
 
     @Option(names = "--version", versionHelp = true, description = "print the version and exit")
     boolean version;
@@ -291,12 +291,7 @@ public final class Cli implements Callable<Integer> {
      * read as "no format at all passes".
      */
     public List<String> formatOrder() {
-        String given = formatOrder != null ? formatOrder
-                : loaded.text(Settings.FORMAT_ORDER, "");
-        return java.util.Arrays.stream(given.split(","))
-                .map(String::strip)
-                .filter(one -> !one.isEmpty())
-                .toList();
+        return Settings.ladder(loaded, formatOrder);
     }
 
     /**
@@ -385,7 +380,7 @@ public final class Cli implements Callable<Integer> {
         lines.add("  paths.work = " + path("work") + " [" + sources.get("work") + "]");
         lines.add("  paths.logs = " + path("logs") + " [" + sources.get("logs") + "]");
         if (!formatOrder().isEmpty()) {
-            lines.add("  track.format_order = " + String.join(",", formatOrder())
+            lines.add("  track.formats = " + String.join(",", formatOrder())
                     + " [" + (formatOrder != null ? "cli" : "config") + "]");
         }
         lines.add("  paths.sockseek_bin = " + path("sockseek_bin")
