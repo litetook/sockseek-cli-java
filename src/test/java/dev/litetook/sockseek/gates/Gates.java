@@ -188,7 +188,13 @@ public final class Gates {
         return into;
     }
 
-    /** An empty file wherever the index claims one arrived, so "here" means something. */
+    /**
+     * A file wherever the index claims one arrived, so "here" means something.
+     *
+     * <p>A kilobyte, not zero bytes, since 2026-10-19: an all-but-empty file no longer counts
+     * as a track that arrived, which is the point of SMALLEST_REAL_FILE - a zero-byte
+     * leftover used to read as "already here" for ever.
+     */
     private static void placeholders(Path index) throws IOException {
         List<String> lines = Files.readAllLines(index, StandardCharsets.UTF_8);
         if (lines.isEmpty()) {
@@ -214,7 +220,7 @@ public final class Gates {
             }
             Files.createDirectories(file.getParent());
             if (!Files.exists(file)) {
-                Files.write(file, new byte[0]);
+                Files.write(file, new byte[2048]);
             }
         }
     }

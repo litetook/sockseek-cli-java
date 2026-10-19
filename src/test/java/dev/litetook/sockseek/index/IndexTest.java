@@ -169,7 +169,9 @@ class IndexTest {
                     HEADER + String.join("\n", rows) + "\n");
         }
         for (String name : files) {
-            Files.write(out.resolve(name), "xxxxxxxxxx".getBytes(StandardCharsets.UTF_8));
+            // a kilobyte, not ten bytes: an all-but-empty file no longer counts as a
+            // track that arrived (SMALLEST_REAL_FILE)
+            Files.write(out.resolve(name), new byte[2048]);
         }
         return SockseekIndex.playlistStatus(entries(LINES), out);
     }

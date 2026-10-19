@@ -492,7 +492,8 @@ public final class App {
         out.accept("");
         int perWindow = searchesPerWindow(config, front);
         int windowSeconds = windowSeconds(config, front);
-        formatPrice(work, held, perWindow, windowSeconds).forEach(out);
+        formatPrice(work, held, perWindow, windowSeconds, passCount(config, front))
+                .forEach(out);
         if (!front.yes() && !confirm(ask, wanted(work) - total(held))) {
             out.accept("Skipped.");
             return worst;
@@ -535,8 +536,10 @@ public final class App {
                 code = 1;
             }
             Path made = folders.get("work");
-            pace.spent(Pace.searchesOf(made.resolve(info.name() + ".list.txt"),
-                    made.resolve(info.name() + ".events.txt")));
+            // the engine writes down what it really spent. Reconstructing the file name here
+            // stopped working the day format passes gave those files a tag (.mp3., .flac.),
+            // and a brake that charges nothing is a brake that is off - measured 2026-10-19
+            pace.spent(Pace.spentBy(made, info.name()));
             // counted here rather than asked of the engine, which answers with an exit code
             // only: the folder is the truth either way, and it is the same reading the menu did
             int arrived = info.missing().size() - stillMissing(info, outputDir);
@@ -637,6 +640,20 @@ public final class App {
         return held;
     }
 
+    /**
+     * How many times each still-missing track will be searched for: one pass per format in
+     * {@code track.format_order}, plus the last one that takes anything.
+     */
+    static int passCount(Config config, Front front) {
+        String given = flagValue(front, "--format-order");
+        String order = given != null ? given : config.text(Settings.FORMAT_ORDER, "");
+        long formats = java.util.Arrays.stream(order.split(","))
+                .map(String::strip)
+                .filter(one -> !one.isEmpty())
+                .count();
+        return (int) formats + 1;
+    }
+
     /** The hard length condition this run would use, -1 when it is off. */
     private static int lengthTol(Config config, Front front) {
         String given = flagValue(front, "--max-length-diff", "--length-tol");
@@ -701,8 +718,22 @@ public final class App {
      */
     public static List<String> formatPrice(List<Info> work, Map<String, Integer> held,
                                            int perWindow, int windowSeconds) {
+        return formatPrice(work, held, perWindow, windowSeconds, 1);
+    }
+
+    /**
+     * The same, told how many passes each track goes through.
+     *
+     * <p>A format ladder asks for every still-missing track once per format and once more
+     * with no format at all, so the bill is that many times the number of tracks. Until
+     * 2026-10-19 this number was the track count, and the owner was quoted 135 searches for
+     * a set that was about to make 540 - the one number he says yes to, wrong by 4x.
+     */
+    public static List<String> formatPrice(List<Info> work, Map<String, Integer> held,
+                                           int perWindow, int windowSeconds, int passes) {
+        int rounds = Math.max(1, passes);
         int missing = wanted(work);
-        int tracks = missing - total(held);
+        int tracks = (missing - total(held)) * rounds;
         List<String> lines = new ArrayList<>();
         lines.add("To download: " + work.size() + " playlist(s), " + missing
                 + " missing track(s)."
@@ -713,13 +744,16 @@ public final class App {
         // budget of its own. Counting the set as a single budget overstated the wait badly -
         // twenty playlists of seventeen tracks each wait for nothing at all.
         int minutes = work.stream()
-                .mapToInt(info -> searchMinutes(info.missing().size()
-                        - held.getOrDefault(info.name(), 0), perWindow, windowSeconds))
+                .mapToInt(info -> searchMinutes((info.missing().size()
+                        - held.getOrDefault(info.name(), 0)) * rounds, perWindow,
+                        windowSeconds))
                 .sum();
-        lines.add("That is about " + tracks + " search(es); sockseek is allowed "
-                + perWindow + " per " + windowSeconds + " s and each playlist gets "
-                + "its own budget, so waiting for the limiter adds about " + minutes
-                + " min in all. Searching and downloading themselves come on top.");
+        lines.add("That is about " + tracks + " search(es)"
+                + (rounds > 1 ? " - " + rounds + " passes over every missing track, because "
+                        + "track.format_order asks for one format at a time" : "")
+                + "; sockseek is allowed " + perWindow + " per " + windowSeconds + " s and "
+                + "each playlist gets its own budget, so waiting for the limiter adds about "
+                + minutes + " min in all. Searching and downloading themselves come on top.");
         return List.copyOf(lines);
     }
 

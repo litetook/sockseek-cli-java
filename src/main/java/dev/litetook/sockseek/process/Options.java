@@ -23,19 +23,25 @@ package dev.litetook.sockseek.process;
  *
  * @param maxSources how many uploaders to try for one track
  * @param format the single format this pass will accept, or null for any
+ * @param minBitrate kbps this pass refuses anything below, or -1 for no floor. Per pass and
+ *                   not in the conf on purpose: the point of a ladder is "mp3, but only a
+ *                   decent one; flac at any bitrate; and then anything at all", which one
+ *                   global floor cannot say. The last pass never carries one, so a floor
+ *                   here costs no coverage - it only decides what is taken FIRST
  */
-public record Options(int lengthTol, boolean preview, int maxSources, String format) {
+public record Options(int lengthTol, boolean preview, int maxSources, String format,
+                      int minBitrate) {
 
     public static Options defaults() {
-        return new Options(3, false, 3, null);
+        return new Options(3, false, 3, null, -1);
     }
 
-    /** The same options, asking for one format only; null means any. */
-    public Options withFormat(String only) {
-        return new Options(lengthTol, preview, maxSources, only);
+    /** The same options, asking for one format only; null means any, -1 no floor. */
+    public Options withPass(String only, int floor) {
+        return new Options(lengthTol, preview, maxSources, only, floor);
     }
 
     public Options withLengthTol(int seconds) {
-        return new Options(seconds, preview, maxSources, format);
+        return new Options(seconds, preview, maxSources, format, minBitrate);
     }
 }

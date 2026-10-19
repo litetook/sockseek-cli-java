@@ -101,6 +101,28 @@ public final class Pace {
      * only estimate there is. Erring high there is the safe direction: it waits too long
      * rather than risking the ban.
      */
+    /**
+     * What the engine wrote down as spent for that playlist, or the old estimate.
+     *
+     * <p>The engine knows exactly: it counts the events of every pass it ran. The fallback is
+     * for a run that died before writing the number, and for the shape this had before
+     * 2026-10-19, when the front end guessed at the file names - and guessed wrong the moment
+     * a format ladder tagged them .mp3., .flac., .any., which left the brake charging zero.
+     */
+    public static int spentBy(Path workDir, String playlist) {
+        Path said = workDir.resolve(playlist + ".searches.txt");
+        try {
+            int number = Integer.parseInt(java.nio.file.Files.readString(said).strip());
+            if (number >= 0) {
+                return number;
+            }
+        } catch (IOException | RuntimeException notThere) {
+            // no number: fall back to the estimate below
+        }
+        return searchesOf(workDir.resolve(playlist + ".list.txt"),
+                workDir.resolve(playlist + ".events.txt"));
+    }
+
     public static int searchesOf(Path listFile, Path eventsFile) {
         int made = lines(eventsFile);
         return made > 0 ? made : lines(listFile);

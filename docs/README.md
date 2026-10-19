@@ -212,7 +212,7 @@ playlist:
   stall_timeout_s: 300         # kill a go that has stopped getting anywhere
 
 track:
-  format_order: mp3,flac,wav   # one pass per format, then a pass that takes anything
+  format_order: mp3@192, flac, wav   # a pass each, "@192" = a floor for that pass only
   max_length_diff_s: 45        # refuse a file this far off the playlist length; -1 = off
   max_sources: 3               # different uploaders tried for one track
 
@@ -261,10 +261,32 @@ the first attempt delivered on the second — but it doubles the wall clock, and
 a **new sockseek process with a fresh search budget**, which raises the real risk of the
 30-minute server ban. That is why the shipped file asks for one.
 
+### `track.format_order` — empty · `--format-order`
+
+**What it's for.** The quality ladder. Each entry is a pass over whatever is still missing,
+with that format **required**; `mp3@192` makes that pass refuse anything below 192 kbps. A
+last pass always asks for anything at all with no floor, so **nothing is lost** - the ladder
+only decides what is taken first.
+
+**Why the floor matters.** Without one the ladder runs downhill: `mp3,flac,wav` with no floor
+takes a 96 kbps mp3 in pass 1 and never asks for the flac that was sitting there.
+`pref-min-bitrate` cannot save it - `pref-` only ranks, and inside an mp3-only pass there may
+be nothing better to rank above.
+
+**What it costs.** One search per still-missing track per pass. Three formats mean four
+searches for a track nobody has, until the cache has confirmed it absent. The price before the
+one `y` counts the passes and says so, and the brake pauses between passes as well as between
+playlists. Empty means one pass and no ordering, which is what the shipped config carries.
+
 ### `playlist.attempt_timeout_min` — 60 minutes · `--attempt-timeout`
 
 **What it's for.** A wall clock on one attempt at one playlist. `0` means none. **Minutes**,
 and **per attempt**: with 40 and `attempts: 2`, a playlist can run 80 minutes.
+
+⚠ Until 2026-10-19 it was a wall clock per **pass**, so `format_order: mp3,flac,wav` quietly
+turned 60 minutes into four hours for one playlist. It is now one budget for the playlist,
+shared out between its passes: when it runs out the remaining passes do not start, and the
+run says so.
 
 **Behind the scenes.** It is a limit on the whole sockseek process, never on one track. When it
 fires, the process tree is killed and the log says so in a sentence that stands out — because
@@ -305,6 +327,13 @@ together under this many per `rate_limit.window_s` seconds, by pausing between p
 `searches-renew-time`, and **neither is set in the shipped file** - it uses its own defaults
 inside each process, while these two are what the brake across processes goes by. Set them in
 the `sockseek:` block if you change these, or the two are pacing to different limits.
+
+⚠ Every **pass** is a new process with a budget of its own as well. Measured 2026-10-19 on a
+real run: 18 tracks over 4 passes put 72 searches inside 196 s against a limit of 34 per
+220 s. So the brake pauses between passes too, and the engine writes down what it really
+spent (`work/<playlist>.searches.txt`) instead of the front end guessing at a file name - a
+guess that stopped matching the day passes tagged those files, which left the brake charging
+nothing at all.
 
 **Behind the scenes.** sockseek has the same budget, but it lives inside **one process**, and
 this tool runs one process per playlist. Every new playlist therefore starts with a full
@@ -669,6 +698,16 @@ uses three numbers.
 ---
 
 ## What this tool cannot do
+
+- **Upgrade what is already on disk.** A line with a file beside it is never reconsidered,
+  whatever its quality and whatever the config now says - the quality rules apply once per
+  track, when it arrives. Turning the ceiling on, or changing `format_order`, does nothing for
+  the library you already have. Doing better needs knowing the quality of the files on disk,
+  which means reading them, which this tool deliberately does not do.
+- **Notice a file somebody renamed.** "Already here" is the index's own `filepath` plus the
+  file being there, so tidying the output folder by hand makes the track read as missing and
+  it is fetched again. That folder is the tool's record, not a library to reorganise.
+
 
 Kept here on purpose, so nobody goes looking for a switch that does not exist.
 

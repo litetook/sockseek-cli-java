@@ -1,5 +1,6 @@
 package dev.litetook.sockseek.batch;
 
+import dev.litetook.sockseek.Pace;
 import dev.litetook.sockseek.config.Settings;
 import dev.litetook.sockseek.explain.Candidate;
 import dev.litetook.sockseek.explain.Explain;
@@ -200,8 +201,12 @@ public final class Batch {
         // sockseek's pref-format is unordered by its own documentation, so this is the only
         // way to say "mp3 first, then flac, then whatever else": ask for them one at a
         // time, with the HARD filter, over whatever the pass before left behind.
-        List<String> passes = new ArrayList<>(cfg.formatOrder());
-        passes.add(null);   // and finally, anything
+        //
+        // Each pass may carry its own floor - "mp3@192" - because without one the ladder
+        // runs downhill: a 96 kbps mp3 taken in pass 1 means the flac that was sitting there
+        // is never asked for. The last pass carries neither format nor floor, so nothing is
+        // lost; the ladder only decides what is taken FIRST.
+        List<Pass> passes = passesOf(cfg.formatOrder());
 
         Path listFile = workDir.resolve(playlist.name() + ".list.txt");
         Map<String, Events.Event> said = new LinkedHashMap<>();
@@ -212,8 +217,14 @@ public final class Batch {
                 dev.litetook.sockseek.process.Status.OK;
         List<Entry> left = wanted;
 
+        // one wall clock for the PLAYLIST, shared out between its passes: the setting is
+        // called attempt_timeout_min, and until 2026-10-19 it was a timeout per pass, so a
+        // playlist with four passes could legitimately run four times the number set
+        long attemptNanos = (long) (cfg.timeoutMinutes() * 60 * 1_000_000_000L);
+        long attemptStart = System.nanoTime();
+        int spentSearches = 0;
         for (int pass = 0; pass < passes.size() && !left.isEmpty(); pass++) {
-            String format = passes.get(pass);
+            String format = passes.get(pass).format();
             String tag = passes.size() == 1 ? "" : "." + (format == null ? "any" : format);
             Path passList = workDir.resolve(playlist.name() + tag + ".list.txt");
             Path eventsFile = workDir.resolve(playlist.name() + tag + ".events.txt");
@@ -224,7 +235,7 @@ public final class Batch {
                     StandardCharsets.UTF_8);
             Files.deleteIfExists(eventsFile);
             listFile = passList;   // the explain step probes whatever the last pass asked
-            Options options = cfg.options().withFormat(format);
+            Options options = cfg.options().withPass(format, passes.get(pass).floor());
             List<String> command = client.command(passList, outDir, logFile, options,
                     Runner.INDEX_NAME, eventsFile);
             if (cfg.dryRun()) {
@@ -233,16 +244,28 @@ public final class Batch {
             }
             if (passes.size() > 1) {
                 log.accept("pass " + (pass + 1) + " of " + passes.size() + ": "
-                        + (format == null ? "any format" : format + " only") + ", "
-                        + left.size() + " track(s)");
+                        + (format == null ? "any format" : format + " only")
+                        + (passes.get(pass).floor() > 0
+                                ? " at " + passes.get(pass).floor() + "+ kbps" : "")
+                        + ", " + left.size() + " track(s)");
             }
             Files.createDirectories(outDir);
             List<Entry> asked = left;
             Events.Tail watch = new Events.Tail(eventsFile,
                     event -> record(event, asked, said, playlist.name()));
-            status = Runner.runWithRetry(command, cfg.appDir(), client.timeoutSeconds(),
+            double leftSeconds = attemptNanos <= 0 ? client.timeoutSeconds()
+                    : (attemptNanos - (System.nanoTime() - attemptStart)) / 1e9;
+            if (attemptNanos > 0 && leftSeconds <= 0) {
+                log.accept("out of time for this playlist after " + (pass) + " pass(es) - "
+                        + "attempt_timeout_min is the budget for the whole playlist");
+                break;
+            }
+            long passStart = System.nanoTime();
+            status = Runner.runWithRetry(command, cfg.appDir(), leftSeconds,
                     cfg.retries(), log, Runner.RETRY_PAUSE_SECONDS, watch, cfg.stallSeconds(),
                     outDir);
+            int passSearches = Pace.searchesOf(passList, eventsFile);
+            spentSearches += passSearches;
             if (status == dev.litetook.sockseek.process.Status.ERROR || status.cutShort()) {
                 break;   // a pass that was stopped says nothing about the next one either
             }
@@ -250,6 +273,7 @@ public final class Batch {
                 // it ran to the end, and it asked for any format at all
                 asked.forEach(entry -> wideOpen.add(entry.original()));
             }
+            pauseAfterPass(passSearches, System.nanoTime() - passStart, pass, passes.size());
             // what the folder holds now decides what the next pass asks for
             Status between = SockseekIndex.playlistStatus(entries, outDir);
             left = left.stream()
@@ -257,6 +281,15 @@ public final class Batch {
         }
         if (cfg.dryRun()) {
             return new Result(entries.size(), before.missing().size(), false);
+        }
+        // what the front end charges the brake with. It used to reconstruct a file name,
+        // which stopped matching the moment passes gave those files a tag - and a brake that
+        // charges nothing is a brake that is off (measured 2026-10-19)
+        try {
+            Files.writeString(workDir.resolve(playlist.name() + ".searches.txt"),
+                    spentSearches + System.lineSeparator(), StandardCharsets.UTF_8);
+        } catch (IOException cannotWrite) {
+            log.accept("WARN cannot write the search count: " + cannotWrite.getMessage());
         }
         if (cfg.options().preview()) {
             log.accept(status == dev.litetook.sockseek.process.Status.OK ? "preview done"
@@ -351,8 +384,12 @@ public final class Batch {
         }
         String line = wanted.get(event.row() - 1).original();
         said.put(line, event);
-        int done = said.size();
-        long got = said.values().stream().filter(Events.Event::succeeded).count();
+        // against THIS pass, not the whole run: said is run-wide and every pass re-asks the
+        // same lines, so from pass 2 on it printed a frozen "18 of 18" - 55 times in the
+        // owner's run of 2026-10-18 15:26
+        int done = (int) wanted.stream().filter(one -> said.containsKey(one.original())).count();
+        long got = wanted.stream().map(one -> said.get(one.original()))
+                .filter(one -> one != null && one.succeeded()).count();
         // the window title is the only place that is reliably visible while sockseek draws
         Screen.title(playlistName + "  " + done + "/" + wanted.size() + "  " + got
                 + " downloaded");
@@ -427,6 +464,73 @@ public final class Batch {
             }
             String reason = Failures.reasonOf(event, wideOpen.contains(line), conditions);
             log.accept("  -> " + Failures.explainClass(reason, conditions));
+        }
+    }
+
+    /** One pass of the ladder: the format it demands, and the floor it demands, if any. */
+    record Pass(String format, int floor) {
+    }
+
+    /**
+     * The ladder as passes: {@code mp3@192, flac} becomes mp3 at 192+, then flac at any
+     * bitrate, then one last pass with no format and no floor.
+     *
+     * <p>A floor is written with an {@code @}: it belongs to that pass and nothing else. An
+     * entry that is only a name has no floor, which is the shape every config had before
+     * 2026-10-19 and still means the same thing.
+     */
+    static List<Pass> passesOf(List<String> order) {
+        List<Pass> passes = new ArrayList<>();
+        for (String raw : order) {
+            String item = raw == null ? "" : raw.strip();
+            if (item.isEmpty()) {
+                continue;
+            }
+            int at = item.indexOf('@');
+            if (at < 0) {
+                passes.add(new Pass(item, -1));
+                continue;
+            }
+            String name = item.substring(0, at).strip();
+            int floor;
+            try {
+                floor = Integer.parseInt(item.substring(at + 1).strip());
+            } catch (NumberFormatException notANumber) {
+                floor = -1;   // "mp3@fast" is a typo, not a floor; the format still stands
+            }
+            if (!name.isEmpty()) {
+                passes.add(new Pass(name, floor));
+            }
+        }
+        passes.add(new Pass(null, -1));   // and finally, anything at all
+        return List.copyOf(passes);
+    }
+
+    /**
+     * Hold the next pass back the way the front end holds the next playlist back.
+     *
+     * <p>Every pass is a new sockseek with a fresh budget of its own, and the server counts
+     * per account: four passes over eighteen tracks put 72 searches inside 196 s on a limit
+     * of 34 per 220 s (measured from the owner's run of 2026-10-18 15:26). Without this the
+     * ladder is a way to get the account banned.
+     */
+    void pauseAfterPass(int searches, long elapsedNanos, int pass, int passCount) {
+        if (searches <= 0 || cfg.searchesPerWindow() <= 0 || pass >= passCount - 1) {
+            return;   // nothing spent, no limit set, or that was the last pass
+        }
+        long earnedNanos = (long) ((double) searches / cfg.searchesPerWindow()
+                * cfg.windowSeconds() * 1_000_000_000L);
+        long waitNanos = earnedNanos - elapsedNanos;
+        if (waitNanos <= 0) {
+            return;
+        }
+        log.accept("pausing " + (waitNanos / 1_000_000_000L) + " s before the next pass so "
+                + "that all of them together stay under " + cfg.searchesPerWindow()
+                + " searches per " + cfg.windowSeconds() + " s");
+        try {
+            Thread.sleep(waitNanos / 1_000_000L);
+        } catch (InterruptedException stop) {
+            Thread.currentThread().interrupt();
         }
     }
 

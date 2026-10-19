@@ -59,7 +59,7 @@ class RunnerTest {
     @Test
     void minusOneIsJoinedWithAnEqualsSign() {
         // sockseek rejects "--length-tol -1": it reads the -1 as another option
-        List<String> command = command(new Options(-1, false, 3, null));
+        List<String> command = command(new Options(-1, false, 3, null, -1));
         assertTrue(command.contains("--length-tol=-1"));
         assertFalse(command.contains("--length-tol"));
         assertFalse(command.contains("-1"));
@@ -67,7 +67,7 @@ class RunnerTest {
 
     @Test
     void noQualityOptionIsEverPassedByUs() {
-        for (Options options : List.of(Options.defaults(), new Options(-1, true, 3, null))) {
+        for (Options options : List.of(Options.defaults(), new Options(-1, true, 3, null, -1))) {
             for (String gone : List.of("--min-bitrate", "--max-bitrate", "--pref-min-bitrate",
                     "--pref-max-bitrate", "--pref-format", "--strict-conditions")) {
                 assertTrue(command(options).stream().noneMatch(part -> part.startsWith(gone)),
@@ -78,7 +78,7 @@ class RunnerTest {
 
     @Test
     void previewAsksForResultsInsteadOfDownloading() {
-        assertTrue(command(new Options(3, true, 3, null)).contains("--print"));
+        assertTrue(command(new Options(3, true, 3, null, -1)).contains("--print"));
     }
 
     @Test
@@ -195,7 +195,7 @@ class RunnerTest {
         assertTrue(with.get(with.indexOf("--on-complete") + 1).contains("{row};{state}"));
         // a preview downloads nothing, so no track ever completes and the action is pointless
         List<String> preview = Runner.buildCommand(Path.of("s.exe"), Path.of("l.txt"),
-                Path.of("out"), new Options(3, true, 3, null), null, List.of(), Runner.INDEX_NAME, null,
+                Path.of("out"), new Options(3, true, 3, null, -1), null, List.of(), Runner.INDEX_NAME, null,
                 events);
         assertFalse(preview.contains("--on-complete"));
     }

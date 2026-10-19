@@ -175,7 +175,7 @@ public final class Explain {
             return Map.of();
         }
         // every condition off, and one source is enough: nothing is downloaded here
-        Options options = new Options(-1, true, 1, null);
+        Options options = new Options(-1, true, 1, null, -1);
         List<String> command = sockseek.command(probe, outDir, null, options,
                 dev.litetook.sockseek.process.Runner.INDEX_NAME);
         try {

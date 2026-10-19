@@ -25,7 +25,7 @@ class BatchTest {
         Files.createDirectories(app.resolve("Playlists"));
         return RunConfig.builder(app)
                 .sockseek(app.resolve("sockseek.exe"))
-                .options(new Options(-1, false, 3, null))
+                .options(new Options(-1, false, 3, null, -1))
                 .retries(1)
                 .timeoutMinutes(2);
     }
@@ -196,5 +196,35 @@ class BatchTest {
         assertEquals(1, code, said.toString());
         assertTrue(saidSomethingWith("could not be started"), said.toString());
         assertTrue(saidSomethingWith("this run broke on: mix"), said.toString());
+    }
+
+    @Test
+    void theLadderIsReadAsPassesWithTheirOwnFloors() {
+        // "mp3@192, flac" means: mp3 at 192+, then flac at any bitrate, then anything at all
+        List<Batch.Pass> passes = Batch.passesOf(List.of("mp3@192", "flac"));
+        assertEquals(3, passes.size());
+        assertEquals(new Batch.Pass("mp3", 192), passes.get(0));
+        assertEquals(new Batch.Pass("flac", -1), passes.get(1));
+        assertEquals(new Batch.Pass(null, -1), passes.get(2));
+        // and a config with no ladder at all is one pass that takes anything
+        assertEquals(List.of(new Batch.Pass(null, -1)), Batch.passesOf(List.of()));
+    }
+
+    @Test
+    void aPassFloorReachesTheCommandLine() {
+        List<String> command = new dev.litetook.sockseek.process.Sockseek(
+                Path.of("sockseek.exe"), Path.of("."),
+                new Options(-1, false, 3, "mp3", 192), List.of(), 1, 1, null)
+                .command(Path.of("list.txt"), Path.of("out"), null,
+                        new Options(-1, false, 3, "mp3", 192),
+                        dev.litetook.sockseek.process.Runner.INDEX_NAME);
+        assertTrue(command.contains("--min-bitrate"), command.toString());
+        assertEquals("192", command.get(command.indexOf("--min-bitrate") + 1));
+        // and no floor means the flag is simply absent
+        assertFalse(new dev.litetook.sockseek.process.Sockseek(
+                Path.of("sockseek.exe"), Path.of("."), Options.defaults(), List.of(), 1, 1, null)
+                .command(Path.of("list.txt"), Path.of("out"), null, Options.defaults(),
+                        dev.litetook.sockseek.process.Runner.INDEX_NAME)
+                .contains("--min-bitrate"));
     }
 }

@@ -39,7 +39,7 @@ public final class Cli implements Callable<Integer> {
      * this is finished enough to use, not a preview of something. The release workflow
      * refuses to publish a tag whose name disagrees with this.
      */
-    public static final String VERSION = "1.4.0";
+    public static final String VERSION = "1.5.0";
 
     @Option(names = "--version", versionHelp = true, description = "print the version and exit")
     boolean version;
@@ -325,7 +325,7 @@ public final class Cli implements Callable<Integer> {
                 .logsDir(path("logs"))
                 .sockseek(path("sockseek_bin"))
                 .options(new Options(integer("max_length_diff_s"), preview,
-                        integer("max_sources"), null))
+                        integer("max_sources"), null, -1))
                 .timeoutMinutes(decimal("attempt_timeout_min"))
                 .retries(integer("attempts"))
                 .dryRun(dryRun)
@@ -338,6 +338,7 @@ public final class Cli implements Callable<Integer> {
                 .skipNotFoundHours(decimal("skip_absent_h"))
                 .cache(integer("enabled") != 0)
                 .formatOrder(formatOrder())
+                .rateLimit(integer("searches_per_window"), integer("window_s"))
                 .build();
     }
 

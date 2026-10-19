@@ -63,6 +63,12 @@ public final class Runner {
         if (options.format() != null && !options.format().isBlank()) {
             command.addAll(List.of("--format", options.format()));
         }
+        // a floor for THIS pass only. It is a hard condition, so it can refuse a file - which
+        // is the point: the pass after it has no floor, and the last pass has no format
+        // either, so nothing is lost, it is only taken in a worse order
+        if (options.minBitrate() > 0) {
+            command.addAll(List.of("--min-bitrate", Integer.toString(options.minBitrate())));
+        }
         if (options.preview()) {
             command.addAll(List.of("--print", "results"));
         }

@@ -18,7 +18,7 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
                         String only, boolean verbose, String why, List<String> sockseekArgs,
                         Path conf, Path sockseekConf, int runNo, LocalDateTime stamp,
                         double stallSeconds, double skipNotFoundHours, boolean cache,
-                        List<String> formatOrder) {
+                        List<String> formatOrder, int searchesPerWindow, int windowSeconds) {
 
     public RunConfig {
         sockseekArgs = List.copyOf(sockseekArgs);
@@ -34,14 +34,14 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
         return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir, sockseek,
                 options, timeoutMinutes, retries, dryRun, only, verbose, why,
                 sockseekArgs, conf, sockseekConf, number, stamp, stallSeconds,
-                skipNotFoundHours, cache, formatOrder);
+                skipNotFoundHours, cache, formatOrder, searchesPerWindow, windowSeconds);
     }
 
     public RunConfig withConf(Path merged) {
         return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir, sockseek,
                 options, timeoutMinutes, retries, dryRun, only, verbose, why,
                 sockseekArgs, merged, sockseekConf, runNo, stamp, stallSeconds,
-                skipNotFoundHours, cache, formatOrder);
+                skipNotFoundHours, cache, formatOrder, searchesPerWindow, windowSeconds);
     }
 
     public static Builder builder(Path appDir) {
@@ -72,6 +72,12 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
         private double skipNotFoundHours = 2;
         private boolean cache = true;
         private List<String> formatOrder = List.of();
+        // the same budget the front end paces playlists by. The engine needs it too, because
+        // each format pass is a fresh sockseek with a fresh per-process budget while the
+        // server keeps counting per account - measured 2026-10-19: 18 tracks over 4 passes
+        // put 72 searches in 196 s against a limit of 34 per 220 s
+        private int searchesPerWindow = 34;
+        private int windowSeconds = 220;
 
         private Builder(Path appDir) {
             this.appDir = appDir;
@@ -137,6 +143,12 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
             return this;
         }
 
+        public Builder rateLimit(int perWindow, int seconds) {
+            this.searchesPerWindow = perWindow;
+            this.windowSeconds = seconds;
+            return this;
+        }
+
         public Builder why(String value) {
             this.why = value;
             return this;
@@ -178,7 +190,8 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
                     sockseek, options, timeoutMinutes, retries, dryRun, only, verbose,
                     why, sockseekArgs, null, sockseekConf, 0,
                     LocalDateTime.now(),
-                    stallSeconds, skipNotFoundHours, cache, formatOrder);
+                    stallSeconds, skipNotFoundHours, cache, formatOrder, searchesPerWindow,
+                    windowSeconds);
         }
     }
 }

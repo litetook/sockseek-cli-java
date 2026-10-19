@@ -211,15 +211,36 @@ public final class SockseekIndex {
                 }
             }
         }
-        if (rows.size() == entries.size()) {
-            for (int r = 0; r < rows.size(); r++) {
-                if (!mapping.containsKey(r) && !taken.contains(r)) {
-                    mapping.put(r, r);
-                    taken.add(r);
-                }
-            }
-        }
+        // There was a positional fallback here until 2026-10-19: when the counts matched, an
+        // unmatched row r was bound to entry r. It compared a ROW number against `taken`,
+        // which holds ENTRY numbers, so with one leftover row in the file it could bind a
+        // junk row to an innocent playlist line - and a line whose junk row says state=1
+        // with a filepath that exists reads as "already here" and is never searched again.
+        // Leftover rows are not exotic: fixing a typo in a line that had already been
+        // downloaded leaves one. Title matching carries the load; guessing cost more than it
+        // ever earned.
         return Map.copyOf(mapping);
+    }
+
+    /**
+     * Smallest file that counts as a track that arrived.
+     *
+     * <p>1 KB, and the number is deliberately small: what this catches is the zero-byte or
+     * all-but-empty leftover that {@code isRegularFile} said yes to, which then counted as
+     * "already here" for ever - the one hole the top-up exists to close. It does NOT claim to
+     * judge audio: nothing here opens or decodes the file, that decision (2026-10-16) stands,
+     * and a transfer cut off halfway is normally not under its final name at all, because
+     * sockseek writes to .incomplete and renames when it is done.
+     */
+    static final long SMALLEST_REAL_FILE = 1024;
+
+    /** On disk, and big enough to be a track rather than the start of one. */
+    private static boolean isReal(Path path) {
+        try {
+            return Files.isRegularFile(path) && Files.size(path) >= SMALLEST_REAL_FILE;
+        } catch (IOException cannotTell) {
+            return false;
+        }
     }
 
     private static Set<String> keys(String artist, String title) {
@@ -249,7 +270,7 @@ public final class SockseekIndex {
                 continue;
             }
             Path path = located.get(r).folder().resolve(relative);
-            if (Files.isRegularFile(path)) {
+            if (isReal(path)) {
                 files.putIfAbsent(entries.get(e).original(), path);
             }
         }

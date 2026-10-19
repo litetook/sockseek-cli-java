@@ -135,6 +135,11 @@ public final class Settings {
               # unordered by its own documentation, so "flac,mp3" there means "both are
               # fine", not "flac first".
               #
+              # An entry may carry a floor for ITS pass: "mp3@192" takes mp3 only, and only
+              # at 192 kbps or better. Without one the ladder runs downhill - a 96 kbps mp3
+              # taken in the first pass means the flac that was there is never asked for.
+              # The last pass has no format and no floor, so nothing is lost.
+              #
               # It costs searches: a track nobody has goes through every pass, so three
               # formats mean four searches for it instead of one - until the cache has
               # confirmed it absent and stops looking. Empty means one pass, no ordering.

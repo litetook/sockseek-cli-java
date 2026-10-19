@@ -25,7 +25,7 @@ Playlists:
  20  trance              33    14       19
  21  ukrainian          146    44      102
  22  wanted               4     0        4
- 23  weird-edges         12     4        8
+ 23  weird-edges         12     3        9
  24  with-links           8     5        3
 
 ambient-night: 25 tracks, 8 here, 17 missing
@@ -926,17 +926,18 @@ Missing:
    4  Midnight Sorter - Wharf Iron | 1:07:43
 WARN line 3: no valid length, searching without length filter
 
-weird-edges: 12 tracks, 4 here, 8 missing
+weird-edges: 12 tracks, 3 here, 9 missing
 
 Missing:
    1  Quiet Harbour - Harbour | 38:37
-   2  Quiet Harbour - Fracture Yellowline Northline / B-side | 39:28
-   3  Echo & The Mechanics - Yellowline (feat. Núria Vega) | 2:18:40
-   4  Quiet Harbour - Tideline Daylight very very very very very very very very very very very very very very very very very very very very long | 1:22:54
-   5  Kettle Drum Jones - Zephyr Lantern Harbour / B-side | 7:42
-   6  Hollow Coast - Amber Ember | 1:21:06
-   7  Iris Morningstar - Harbour (Extended Mix) | 49:57
-   8  Midnight Sorter - Jetty (Extended Mix) | 1:48:30
+   2  Kettle Drum Jones - Amber Slipstream Drift | 2:26:36
+   3  Quiet Harbour - Fracture Yellowline Northline / B-side | 39:28
+   4  Echo & The Mechanics - Yellowline (feat. Núria Vega) | 2:18:40
+   5  Quiet Harbour - Tideline Daylight very very very very very very very very very very very very very very very very very very very very long | 1:22:54
+   6  Kettle Drum Jones - Zephyr Lantern Harbour / B-side | 7:42
+   7  Hollow Coast - Amber Ember | 1:21:06
+   8  Iris Morningstar - Harbour (Extended Mix) | 49:57
+   9  Midnight Sorter - Jetty (Extended Mix) | 1:48:30
 WARN line 7: no valid length, searching without length filter
 WARN 1 duplicate line(s) dropped
 
@@ -948,13 +949,13 @@ Missing:
    3  Quiet Harbour - Cathedral Harbour (Extended Mix) | 15:18
 WARN 1 duplicate line(s) dropped
 
-To download: 24 playlist(s), 716 missing track(s).
-That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist gets its own budget, so waiting for the limiter adds about 36 min in all. Searching and downloading themselves come on top.
+To download: 24 playlist(s), 717 missing track(s).
+That is about 717 search(es); sockseek is allowed 34 per 220 s and each playlist gets its own budget, so waiting for the limiter adds about 36 min in all. Searching and downloading themselves come on top.
 
 [1/24] ambient-night: searching 17 missing track(s)
 [time] run #0001
 [time] WARN run_seq.txt is missing or not a number, run counter rebuilt from the log file names in <DIR>\logs: highest number found 0
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -980,11 +981,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 25 tracks, 8 already here, 17 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\ambient-night.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\ambient-night --name-format "{artist( - )title|filename}" --index-path <DIR>\output\ambient-night\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\ambient-night.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0001)
-[1/24] ambient-night: 0 of 17 arrived - 0 of 716 in all
+[1/24] ambient-night: 0 of 17 arrived - 0 of 717 in all
 
 [2/24] breaks: searching 19 missing track(s)
 [time] run #0002
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1011,11 +1012,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 29 tracks, 10 already here, 19 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\breaks.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\breaks --name-format "{artist( - )title|filename}" --index-path <DIR>\output\breaks\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\breaks.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0002)
-[2/24] breaks: 0 of 19 arrived - 0 of 716 in all
+[2/24] breaks: 0 of 19 arrived - 0 of 717 in all
 
 [3/24] chill: searching 45 missing track(s)
 [time] run #0003
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1046,11 +1047,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 69 tracks, 24 already here, 45 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\chill.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\chill --name-format "{artist( - )title|filename}" --index-path <DIR>\output\chill\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\chill.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0003)
-[3/24] chill: 0 of 45 arrived - 0 of 716 in all
+[3/24] chill: 0 of 45 arrived - 0 of 717 in all
 
 [4/24] classics: searching 7 missing track(s)
 [time] run #0004
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1076,11 +1077,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 10 tracks, 3 already here, 7 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\classics.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\classics --name-format "{artist( - )title|filename}" --index-path <DIR>\output\classics\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\classics.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0004)
-[4/24] classics: 0 of 7 arrived - 0 of 716 in all
+[4/24] classics: 0 of 7 arrived - 0 of 717 in all
 
 [5/24] dnb: searching 28 missing track(s)
 [time] run #0005
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1106,11 +1107,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 38 tracks, 10 already here, 28 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\dnb.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\dnb --name-format "{artist( - )title|filename}" --index-path <DIR>\output\dnb\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\dnb.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0005)
-[5/24] dnb: 0 of 28 arrived - 0 of 716 in all
+[5/24] dnb: 0 of 28 arrived - 0 of 717 in all
 
 [6/24] dubstep-bass: searching 30 missing track(s)
 [time] run #0006
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1140,11 +1141,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 45 tracks, 15 already here, 30 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\dubstep-bass.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\dubstep-bass --name-format "{artist( - )title|filename}" --index-path <DIR>\output\dubstep-bass\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\dubstep-bass.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0006)
-[6/24] dubstep-bass: 0 of 30 arrived - 0 of 716 in all
+[6/24] dubstep-bass: 0 of 30 arrived - 0 of 717 in all
 
 [7/24] example: searching 3 missing track(s)
 [time] run #0007
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1169,11 +1170,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 3 tracks, 0 already here, 3 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\example.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\example --name-format "{artist( - )title|filename}" --index-path <DIR>\output\example\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\example.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0007)
-[7/24] example: 0 of 3 arrived - 0 of 716 in all
+[7/24] example: 0 of 3 arrived - 0 of 717 in all
 
 [8/24] hip-hop: searching 40 missing track(s)
 [time] run #0008
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1199,11 +1200,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 54 tracks, 14 already here, 40 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\hip-hop.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\hip-hop --name-format "{artist( - )title|filename}" --index-path <DIR>\output\hip-hop\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\hip-hop.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0008)
-[8/24] hip-hop: 0 of 40 arrived - 0 of 716 in all
+[8/24] hip-hop: 0 of 40 arrived - 0 of 717 in all
 
 [9/24] house: searching 59 missing track(s)
 [time] run #0009
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1239,11 +1240,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 84 tracks, 25 already here, 59 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\house.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\house --name-format "{artist( - )title|filename}" --index-path <DIR>\output\house\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\house.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0009)
-[9/24] house: 0 of 59 arrived - 0 of 716 in all
+[9/24] house: 0 of 59 arrived - 0 of 717 in all
 
 [10/24] nothing-here: searching 17 missing track(s)
 [time] run #0010
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1268,11 +1269,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 17 tracks, 0 already here, 17 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\nothing-here.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\nothing-here --name-format "{artist( - )title|filename}" --index-path <DIR>\output\nothing-here\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\nothing-here.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0010)
-[10/24] nothing-here: 0 of 17 arrived - 0 of 716 in all
+[10/24] nothing-here: 0 of 17 arrived - 0 of 717 in all
 
 [11/24] one-track: searching 1 missing track(s)
 [time] run #0011
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1296,11 +1297,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 1 tracks, 0 already here, 1 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\one-track.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\one-track --name-format "{artist( - )title|filename}" --index-path <DIR>\output\one-track\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\one-track.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0011)
-[11/24] one-track: 0 of 1 arrived - 0 of 716 in all
+[11/24] one-track: 0 of 1 arrived - 0 of 717 in all
 
 [12/24] other: searching 24 missing track(s)
 [time] run #0012
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1328,11 +1329,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 36 tracks, 12 already here, 24 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\other.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\other --name-format "{artist( - )title|filename}" --index-path <DIR>\output\other\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\other.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0012)
-[12/24] other: 0 of 24 arrived - 0 of 716 in all
+[12/24] other: 0 of 24 arrived - 0 of 717 in all
 
 [13/24] phonk-dark: searching 19 missing track(s)
 [time] run #0013
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1361,11 +1362,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 31 tracks, 12 already here, 19 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\phonk-dark.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\phonk-dark --name-format "{artist( - )title|filename}" --index-path <DIR>\output\phonk-dark\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\phonk-dark.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0013)
-[13/24] phonk-dark: 0 of 19 arrived - 0 of 716 in all
+[13/24] phonk-dark: 0 of 19 arrived - 0 of 717 in all
 
 [14/24] pop: searching 61 missing track(s)
 [time] run #0014
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1399,11 +1400,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 90 tracks, 29 already here, 61 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\pop.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\pop --name-format "{artist( - )title|filename}" --index-path <DIR>\output\pop\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\pop.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0014)
-[14/24] pop: 0 of 61 arrived - 0 of 716 in all
+[14/24] pop: 0 of 61 arrived - 0 of 717 in all
 
 [15/24] rock-metal: searching 32 missing track(s)
 [time] run #0015
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1431,11 +1432,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 43 tracks, 11 already here, 32 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\rock-metal.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\rock-metal --name-format "{artist( - )title|filename}" --index-path <DIR>\output\rock-metal\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\rock-metal.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0015)
-[15/24] rock-metal: 0 of 32 arrived - 0 of 716 in all
+[15/24] rock-metal: 0 of 32 arrived - 0 of 717 in all
 
 [16/24] techno-acid: searching 20 missing track(s)
 [time] run #0016
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1464,11 +1465,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 27 tracks, 7 already here, 20 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\techno-acid.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\techno-acid --name-format "{artist( - )title|filename}" --index-path <DIR>\output\techno-acid\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\techno-acid.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0016)
-[16/24] techno-acid: 0 of 20 arrived - 0 of 716 in all
+[16/24] techno-acid: 0 of 20 arrived - 0 of 717 in all
 
 [17/24] techno-hard: searching 79 missing track(s)
 [time] run #0017
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1504,11 +1505,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 107 tracks, 28 already here, 79 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\techno-hard.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\techno-hard --name-format "{artist( - )title|filename}" --index-path <DIR>\output\techno-hard\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\techno-hard.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0017)
-[17/24] techno-hard: 0 of 79 arrived - 0 of 716 in all
+[17/24] techno-hard: 0 of 79 arrived - 0 of 717 in all
 
 [18/24] techno-melodic: searching 50 missing track(s)
 [time] run #0018
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1537,11 +1538,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 61 tracks, 11 already here, 50 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\techno-melodic.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\techno-melodic --name-format "{artist( - )title|filename}" --index-path <DIR>\output\techno-melodic\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\techno-melodic.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0018)
-[18/24] techno-melodic: 0 of 50 arrived - 0 of 716 in all
+[18/24] techno-melodic: 0 of 50 arrived - 0 of 717 in all
 
 [19/24] techno: searching 29 missing track(s)
 [time] run #0019
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1567,11 +1568,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 40 tracks, 11 already here, 29 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\techno.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\techno --name-format "{artist( - )title|filename}" --index-path <DIR>\output\techno\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\techno.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0019)
-[19/24] techno: 0 of 29 arrived - 0 of 716 in all
+[19/24] techno: 0 of 29 arrived - 0 of 717 in all
 
 [20/24] trance: searching 19 missing track(s)
 [time] run #0020
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1600,11 +1601,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 33 tracks, 14 already here, 19 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\trance.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\trance --name-format "{artist( - )title|filename}" --index-path <DIR>\output\trance\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\trance.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0020)
-[20/24] trance: 0 of 19 arrived - 0 of 716 in all
+[20/24] trance: 0 of 19 arrived - 0 of 717 in all
 
 [21/24] ukrainian: searching 102 missing track(s)
 [time] run #0021
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1642,11 +1643,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 146 tracks, 44 already here, 102 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\ukrainian.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\ukrainian --name-format "{artist( - )title|filename}" --index-path <DIR>\output\ukrainian\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\ukrainian.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0021)
-[21/24] ukrainian: 0 of 102 arrived - 0 of 716 in all
+[21/24] ukrainian: 0 of 102 arrived - 0 of 717 in all
 
 [22/24] wanted: searching 4 missing track(s)
 [time] run #0022
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1671,11 +1672,11 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 4 tracks, 0 already here, 4 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\wanted.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\wanted --name-format "{artist( - )title|filename}" --index-path <DIR>\output\wanted\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\wanted.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0022)
-[22/24] wanted: 0 of 4 arrived - 0 of 716 in all
+[22/24] wanted: 0 of 4 arrived - 0 of 717 in all
 
-[23/24] weird-edges: searching 8 missing track(s)
+[23/24] weird-edges: searching 9 missing track(s)
 [time] run #0023
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1698,14 +1699,14 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] === weird-edges
 [time] WARN line 7: no valid length, searching without length filter
 [time] WARN 1 duplicate line(s) dropped
-[time] 12 tracks, 4 already here, 8 missing, length tolerance +-45 s
+[time] 12 tracks, 3 already here, 9 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\weird-edges.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\weird-edges --name-format "{artist( - )title|filename}" --index-path <DIR>\output\weird-edges\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\weird-edges.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0023)
-[23/24] weird-edges: 0 of 8 arrived - 0 of 716 in all
+[23/24] weird-edges: 0 of 9 arrived - 0 of 717 in all
 
 [24/24] with-links: searching 3 missing track(s)
 [time] run #0024
-[time] effective configuration of sockseek-cli 1.4.0 (key = value [source: cli | config | default]):
+[time] effective configuration of sockseek-cli 1.5.0 (key = value [source: cli | config | default]):
 [time]   paths.playlists = <DIR>\Playlists [config]
 [time]   paths.music = <DIR>\output [config]
 [time]   paths.work = <DIR>\work [config]
@@ -1730,6 +1731,6 @@ That is about 716 search(es); sockseek is allowed 34 per 220 s and each playlist
 [time] 8 tracks, 5 already here, 3 missing, length tolerance +-45 s
 [time] dry run: <DIR>\sockseek.exe <DIR>\work\with-links.list.txt --input-type list --length-tol=45 --max-retries 3 -o <DIR>\output\with-links --name-format "{artist( - )title|filename}" --index-path <DIR>\output\with-links\_index.csv --config <DIR>\work\sockseek.effective.conf --on-complete "when=any hidden lock -- cmd /c >> \"<DIR>\work\with-links.events.txt\" echo {row};{state};{failure-reason}"
 [time] all done, nothing downloaded (run #0024)
-[24/24] with-links: 0 of 3 arrived - 0 of 716 in all
+[24/24] with-links: 0 of 3 arrived - 0 of 717 in all
 
 [exit 0]
