@@ -82,12 +82,14 @@ class RunnerTest {
     }
 
     @Test
-    void theVerboseLogAndTheExtraArgumentsGoLast() {
+    void theLogFileAndTheExtraArgumentsGoLast() {
         List<String> command = Runner.buildCommand(Path.of("s.exe"), Path.of("l.txt"),
                 Path.of("out"), Options.defaults(), Path.of("v.log"),
                 List.of("--no-config", "--no-listen"), Runner.INDEX_NAME, null);
         assertEquals("v.log", command.get(command.indexOf("--log-file") + 1));
-        assertTrue(command.contains("--verbose"));
+        // the log is written on every run now - it is where the login result and the
+        // candidate counts are read from - so it no longer drags --verbose along with it
+        assertFalse(command.contains("--verbose"));
         assertEquals(List.of("--no-config", "--no-listen"),
                 command.subList(command.size() - 2, command.size()));
     }

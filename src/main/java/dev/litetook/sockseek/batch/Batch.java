@@ -19,6 +19,7 @@ import dev.litetook.sockseek.process.ProcessRunner;
 import dev.litetook.sockseek.process.Runner;
 import dev.litetook.sockseek.process.Screen;
 import dev.litetook.sockseek.process.Sockseek;
+import dev.litetook.sockseek.process.Trace;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -206,7 +207,10 @@ public final class Batch {
 
         Files.createDirectories(workDir);
         Sockseek client = cfg.client();
-        Path logFile = cfg.verbose() ? verboseLog(playlist.name()) : null;
+        // written every run now, not only with --verbose: the auth line and the candidate
+        // counts are read back out of it while the run is going. One file per pass, because
+        // a pass that appended to the previous one's log would be counted twice
+        Trace.Login signedIn = Trace.Login.UNKNOWN;
 
         // One pass per wanted format, most wanted first, then one with no format at all.
         // sockseek's pref-format is unordered by its own documentation, so this is the only
@@ -218,6 +222,10 @@ public final class Batch {
         // is never asked for. The last pass carries neither format nor floor, so nothing is
         // lost; the ladder only decides what is taken FIRST.
         List<Pass> passes = passesOf(cfg.formatOrder());
+        // which pass each track came down to: the ladder is an experiment, and this is its
+        // result. A track that only arrives on the last pass is a track nobody had at the
+        // quality asked for first, which is worth saying out loud
+        Map<String, Integer> arrivedOn = new LinkedHashMap<>();
 
         Path listFile = workDir.resolve(playlist.name() + ".list.txt");
         Map<String, Events.Event> said = new LinkedHashMap<>();
@@ -243,6 +251,7 @@ public final class Batch {
                     : "." + (pass + 1) + "-" + (format == null ? "any" : format);
             Path passList = workDir.resolve(playlist.name() + tag + ".list.txt");
             Path eventsFile = workDir.resolve(playlist.name() + tag + ".events.txt");
+            Path logFile = verboseLog(playlist.name() + tag);
             // a bare newline, not the platform separator: this is what sockseek has
             // always been handed, and the dry-run line is pinned by a test
             Files.writeString(passList, String.join(NEWLINE,
@@ -268,6 +277,17 @@ public final class Batch {
             List<Entry> asked = left;
             Events.Tail watch = new Events.Tail(eventsFile,
                     event -> record(event, asked, said, playlist.name()));
+            // sockseek's own log, for the one thing only it knows: whether the account
+            // got in at all
+            Trace.Login was = signedIn;
+            Trace.Tail trace = new Trace.Tail(logFile, heard -> {
+                if (heard.login() == Trace.Login.IN && was != Trace.Login.IN) {
+                    log.accept("auth: logged in as " + heard.about());
+                }
+                if (heard.login() == Trace.Login.OUT) {
+                    log.accept("auth: LOGIN FAILED - " + heard.about());
+                }
+            });
             double leftSeconds = attemptNanos <= 0 ? client.timeoutSeconds()
                     : (attemptNanos - (System.nanoTime() - attemptStart)) / 1e9;
             if (attemptNanos > 0 && leftSeconds <= 0) {
@@ -278,7 +298,10 @@ public final class Batch {
             long passStart = System.nanoTime();
             status = Runner.runWithRetry(command, cfg.appDir(), leftSeconds,
                     cfg.retries(), log, Runner.RETRY_PAUSE_SECONDS, watch, cfg.stallSeconds(),
-                    downloadDir);
+                    downloadDir, trace);
+            if (trace.login() != Trace.Login.UNKNOWN) {
+                signedIn = trace.login();
+            }
             int passSearches = Pace.searchesOf(passList, eventsFile);
             spentSearches += passSearches;
             if (status == dev.litetook.sockseek.process.Status.ERROR || status.cutShort()) {
@@ -291,6 +314,10 @@ public final class Batch {
             pauseAfterPass(passSearches, System.nanoTime() - passStart, pass, passes.size());
             // what the folder holds now decides what the next pass asks for
             Status between = SockseekIndex.playlistStatus(entries, downloadDir);
+            int thisPass = pass + 1;
+            left.stream()
+                    .filter(entry -> between.files().containsKey(entry.original()))
+                    .forEach(entry -> arrivedOn.putIfAbsent(entry.original(), thisPass));
             left = left.stream()
                     .filter(entry -> !between.files().containsKey(entry.original())).toList();
         }
@@ -356,7 +383,9 @@ public final class Batch {
                 .filter(entry -> !skip.contains(entry.original())).toList();
         if (!reportable.isEmpty() && !broke) {
             report(reportable, entries, rows, said, wideOpen, conditions);
+            tally(reportable, said, wideOpen, conditions);
         }
+        ladder(arrived, arrivedOn, passes);
         if (cfg.cache()) {
             remember(cacheFile, remembered, playlist.name(), said, wideOpen, conditions);
         }
@@ -483,6 +512,75 @@ public final class Batch {
             String reason = Failures.reasonOf(event, wideOpen.contains(line), conditions);
             log.accept("  -> " + Failures.explainClass(reason, conditions));
         }
+    }
+
+    /**
+     * The same failures counted by cause, after they have been listed one by one.
+     *
+     * <p>A list of 35 lines says what happened to each track and nothing about the run. The
+     * owner asked on 2026-10-19 for the other half: whether this was a bad night on the
+     * network, a quality bar nobody could meet, or uploaders that would not deliver - which
+     * is three different things to do about it.
+     */
+    void tally(List<Entry> still, Map<String, Events.Event> said, Set<String> wideOpen,
+               String conditions) {
+        Map<String, Integer> byCause = new LinkedHashMap<>();
+        for (Entry entry : still) {
+            Events.Event event = said.get(entry.original());
+            String cause = event == null ? "never finished in this run, so nothing is known"
+                    : shortCause(Failures.reasonOf(event, wideOpen.contains(entry.original()),
+                            conditions), conditions);
+            byCause.merge(cause, 1, Integer::sum);
+        }
+        if (byCause.size() <= 1 && still.size() < 2) {
+            return;   // one track with one cause is already said above, in full
+        }
+        log.accept("why " + still.size() + " did not arrive:");
+        byCause.entrySet().stream()
+                .sorted((one, two) -> Integer.compare(two.getValue(), one.getValue()))
+                .forEach(cause -> log.accept(String.format("  %4d  %s", cause.getValue(),
+                        cause.getKey())));
+    }
+
+    /** The cause in a handful of words, for counting; the full sentence is in Failures. */
+    private static String shortCause(String reason, String conditions) {
+        if (reason.equals(Failures.CONFIRMED_ABSENT)) {
+            return "nobody on the network has it";
+        }
+        if (reason.equals(Failures.REFUSED_OR_ABSENT)) {
+            return "nothing matched under " + conditions + " - absent, or refused by them";
+        }
+        if (reason.equals(Events.Event.NOT_FOUND)) {
+            return "never asked with nothing in the way - the run was cut short";
+        }
+        return "found, but the upload never came through";
+    }
+
+    /**
+     * Which rung of the ladder each arrival came down to.
+     *
+     * <p>Only printed when there is more than one pass, and only about passes that brought
+     * something: on a one-pass run it would say what the line above already said.
+     */
+    void ladder(List<Entry> arrived, Map<String, Integer> arrivedOn, List<Pass> passes) {
+        if (passes.size() < 2 || arrived.isEmpty()) {
+            return;
+        }
+        Map<Integer, Integer> perPass = new java.util.TreeMap<>();
+        arrived.forEach(entry -> perPass.merge(
+                arrivedOn.getOrDefault(entry.original(), passes.size()), 1, Integer::sum));
+        if (perPass.size() < 2) {
+            return;   // everything came from the same pass; the pass line already said so
+        }
+        log.accept("where the " + arrived.size() + " that arrived came from:");
+        perPass.forEach((pass, many) -> log.accept(String.format("  %4d  %s", many,
+                passName(passes.get(Math.min(pass, passes.size()) - 1), pass, passes.size()))));
+    }
+
+    private static String passName(Pass pass, int number, int total) {
+        String what = pass.format() == null ? "any format" : pass.format() + " only";
+        String floor = pass.floor() > 0 ? " at " + pass.floor() + "+ kbps" : "";
+        return "pass " + number + " of " + total + ": " + what + floor;
     }
 
     /**

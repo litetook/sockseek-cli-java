@@ -45,7 +45,7 @@ document.querySelectorAll("nav button").forEach((tab) => {
       other.classList.toggle("on", other === tab));
     document.querySelectorAll(".page").forEach((page) =>
       page.classList.toggle("on", page.id === "p-" + tab.dataset.go));
-    if (tab.dataset.go === "config") loadConfig();
+    if (tab.dataset.go === "config") { loadConfig(); loadSettings(); }
   };
 });
 
@@ -190,6 +190,7 @@ function resetCounters() {
 }
 
 function count(text) {
+  readAuth(text);
   const done = text.match(/^>> (\d+) of (\d+) done, (\d+) downloaded/);
   if (done) {
     $("c-done").textContent = done[1] + " of " + done[2];
@@ -239,6 +240,7 @@ async function openPlaylist(name) {
     const file = await call("/api/playlists/" + encodeURIComponent(name));
     editing = name;
     loadedText = file.text;
+    showFound(file.found);
     $("plName").textContent = name + ".txt";
     $("plText").value = file.text;
     $("plText").disabled = false;
@@ -250,19 +252,34 @@ async function openPlaylist(name) {
   }
 }
 
-$("plSave").onclick = async () => {
+async function savePlaylist(anyway) {
   try {
     const saved = await call("/api/playlists/" + encodeURIComponent(editing),
-      { method: "PUT", body: JSON.stringify({ text: $("plText").value }) });
+      { method: "PUT",
+        body: JSON.stringify({ text: $("plText").value, anyway }) });
     loadedText = $("plText").value;
+    showFound(saved.found);
     say($("plMsg"), "good", "Saved. " + saved.lines + " track line(s)"
       + (saved.backup ? ", backup <code>" + saved.backup + "</code>" : "") + ".");
     refresh();
   } catch (problem) {
-    say($("plMsg"), "err", problem.message);
+    const data = problem.data || {};
+    showFound(data.found);
+    say($("plMsg"), "err", (data.errors
+        ? data.errors + " line(s) would be searched for as something else. Nothing written."
+        : problem.message)
+      + ' <button class="btn" id="plForce">Save anyway</button>');
+    const force = document.getElementById("plForce");
+    if (force) force.onclick = () => savePlaylist(true);
   }
+}
+$("plSave").onclick = () => savePlaylist(false);
+$("plRevert").onclick = () => {
+  $("plText").value = loadedText;
+  $("plMsg").hidden = true;
+  showFound(lint(loadedText));
 };
-$("plRevert").onclick = () => { $("plText").value = loadedText; $("plMsg").hidden = true; };
+$("plText").oninput = () => showFound(lint($("plText").value));
 
 $("newFile").onclick = async () => {
   const name = $("newName").value.trim();
@@ -374,4 +391,305 @@ if (!KEY) {
     + "it prints.");
 } else {
   refresh().then(listen);
+}
+
+/* ---------------------------------------------------------------- the settings form
+ *
+ * Nothing about the settings is written here: /api/settings describes every category and
+ * every field - its type, its help, and what the file says today - and this draws it. A
+ * setting added in Java turns up on this page by itself, with its own explanation.
+ */
+
+const changes = new Map();
+let described = null;
+
+document.querySelectorAll(".tab[data-cfg]").forEach((tab) => {
+  tab.onclick = () => {
+    document.querySelectorAll(".tab[data-cfg]").forEach((other) =>
+      other.classList.toggle("on", other === tab));
+    $("cfgForm").hidden = tab.dataset.cfg !== "form";
+    $("cfgRawBox").hidden = tab.dataset.cfg !== "raw";
+  };
+});
+
+async function loadSettings() {
+  try {
+    described = await call("/api/settings");
+    changes.clear();
+    drawSettings();
+  } catch (problem) {
+    say($("cfgMsg"), "err", problem.message);
+  }
+}
+
+function drawSettings() {
+  const box = $("cfgFields");
+  box.innerHTML = "";
+  described.categories.forEach((category) => {
+    if (!category.fields.length) return;
+    const group = document.createElement("div");
+    group.className = "group";
+    const head = document.createElement("h3");
+    const title = document.createElement("span");
+    title.textContent = category.title;
+    const help = document.createElement("em");
+    help.textContent = category.help;
+    head.appendChild(title);
+    head.appendChild(help);
+    group.appendChild(head);
+    const rows = document.createElement("div");
+    rows.className = "rows";
+    category.fields.forEach((field) => rows.appendChild(row(field)));
+    group.appendChild(rows);
+    box.appendChild(group);
+  });
+  countChanges();
+}
+
+function row(field) {
+  const line = document.createElement("div");
+  line.className = "rowf";
+  line.dataset.path = field.path;
+
+  const name = document.createElement("div");
+  name.className = "name";
+  const bold = document.createElement("b");
+  bold.textContent = field.label;
+  name.appendChild(bold);
+  if (!field.set && field.fallback !== undefined) {
+    const dim = document.createElement("i");
+    dim.textContent = " not set, " + field.fallback;
+    name.appendChild(dim);
+  }
+  line.appendChild(name);
+
+  line.appendChild(field.kind === "ladder" ? ladderBox(field)
+    : field.kind === "boolean" ? switchBox(field) : textBox(field));
+
+  const why = document.createElement("div");
+  why.className = "why";
+  why.textContent = field.help;
+  line.appendChild(why);
+  return line;
+}
+
+function mark(path, value, original) {
+  if (value === original) changes.delete(path); else changes.set(path, value);
+  document.querySelectorAll(".rowf").forEach((one) => {
+    if (one.dataset.path === path) one.classList.toggle("changed", changes.has(path));
+  });
+  countChanges();
+}
+
+function countChanges() {
+  const many = changes.size;
+  $("cfgApply").disabled = many === 0;
+  $("cfgDrop").disabled = many === 0;
+  $("cfgCount").textContent = many === 0
+    ? "Nothing changed yet. The comments in the file are kept."
+    : many + " change(s) ready. Only those lines are rewritten; the rest of the file, "
+      + "comments included, is left alone.";
+}
+
+function textBox(field) {
+  const wrap = document.createElement("div");
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = field.value;
+  input.placeholder = field.fallback === undefined ? "" : String(field.fallback);
+  input.oninput = () => mark(field.path, input.value.trim(), field.value);
+  wrap.appendChild(input);
+  return wrap;
+}
+
+function switchBox(field) {
+  const wrap = document.createElement("label");
+  wrap.className = "switch";
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.checked = /^(true|yes|on|1)$/i.test(field.value);
+  const text = document.createElement("span");
+  text.textContent = box.checked ? "on" : "off";
+  box.onchange = () => {
+    text.textContent = box.checked ? "on" : "off";
+    mark(field.path, String(box.checked), field.value);
+  };
+  wrap.appendChild(box);
+  wrap.appendChild(text);
+  return wrap;
+}
+
+/* The ladder is the one setting that is a list: "mp3@256, flac, mp3@128" is three rungs,
+ * and a rung is a format with an optional floor. The pass that takes anything at all is
+ * always there and is not editable - that is what keeps the ladder from losing tracks. */
+function ladderBox(field) {
+  const wrap = document.createElement("div");
+  wrap.className = "ladder";
+  const rungs = field.value.split(",").map((one) => one.trim()).filter(Boolean);
+  const push = () => mark(field.path, rungs.filter(Boolean).join(", "), field.value);
+
+  const redraw = () => {
+    wrap.innerHTML = "";
+    rungs.forEach((rung, at) => {
+      const step = document.createElement("div");
+      step.className = "rung";
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = rung;
+      input.placeholder = "mp3@256";
+      input.oninput = () => { rungs[at] = input.value.trim(); push(); };
+      const drop = document.createElement("button");
+      drop.className = "mini";
+      drop.textContent = "remove";
+      drop.onclick = () => { rungs.splice(at, 1); redraw(); push(); };
+      step.appendChild(input);
+      step.appendChild(drop);
+      wrap.appendChild(step);
+    });
+    const add = document.createElement("button");
+    add.className = "mini";
+    add.textContent = "+ pass";
+    add.onclick = () => { rungs.push(""); redraw(); push(); };
+    wrap.appendChild(add);
+    const last = document.createElement("div");
+    last.className = "last";
+    last.textContent = "then one last pass that takes anything at all - always, so nothing "
+      + "is lost";
+    wrap.appendChild(last);
+  };
+  redraw();
+  return wrap;
+}
+
+$("cfgDrop").onclick = () => { changes.clear(); drawSettings(); $("cfgMsg").hidden = true; };
+
+async function applySettings(anyway) {
+  try {
+    const sent = Object.fromEntries(changes);
+    const saved = await call("/api/settings",
+      { method: "PUT", body: JSON.stringify({ changes: sent, anyway }) });
+    say($("cfgMsg"), "good", "Saved " + Object.keys(sent).length + " change(s)"
+      + (saved.backup ? ", backup <code>" + saved.backup + "</code>" : "") + ".");
+    await loadSettings();
+    loadConfig();
+    refresh();
+  } catch (problem) {
+    const warnings = (problem.data && problem.data.warnings) || [problem.message];
+    say($("cfgMsg"), "err", "Not written:<ul>"
+      + warnings.map((warning) => "<li>" + warning + "</li>").join("") + "</ul>"
+      + '<button class="btn" id="cfgForce">Save anyway</button>');
+    $("cfgForce").onclick = () => applySettings(true);
+  }
+}
+$("cfgApply").onclick = () => applySettings(false);
+
+/* ---------------------------------------------------------------- what the checker found */
+
+function showFound(found) {
+  const box = $("plFound");
+  if (!found || !found.length) { box.hidden = true; return; }
+  box.innerHTML = "";
+  found.forEach((one) => {
+    const line = document.createElement("div");
+    line.className = one.level;
+    const number = document.createElement("span");
+    number.className = "ln";
+    number.textContent = one.line;
+    const why = document.createElement("span");
+    why.className = "msg2";
+    why.textContent = one.why + (one.text ? "  -  " + one.text : "");
+    line.appendChild(number);
+    line.appendChild(why);
+    box.appendChild(line);
+  });
+  box.hidden = false;
+}
+
+/* The same rules as the server's, so the editor answers while you type. The server checks
+ * again on save and is the one that decides. */
+function lint(text) {
+  const found = [];
+  const seen = new Map();
+  const lines = text.split("\n");
+  lines.forEach((raw, at) => {
+    const line = raw.trim();
+    const number = at + 1;
+    if (!line) {
+      if (at < lines.length - 1) found.push({ line: number, level: "note", text: "", why: "blank line" });
+      return;
+    }
+    if (line.startsWith("#")) return;
+    const bar = line.lastIndexOf("|");
+    if (bar >= 0) {
+      const tail = line.slice(bar + 1).trim();
+      if (!/^(\d+:)?\d{1,2}:\d{1,2}$|^\d+(\.\d+)?$/.test(tail)) {
+        found.push({ line: number, level: "error", text: line,
+          why: 'the length "' + tail + '" did not parse, so the whole line including the bar '
+            + "is searched for as the title" });
+        return;
+      }
+      if (!line.slice(0, bar).trim()) {
+        found.push({ line: number, level: "error", text: line,
+          why: "a length with no track in front of it" });
+        return;
+      }
+    }
+    if (!line.includes(" - ")) {
+      found.push({ line: number, level: "warn", text: line,
+        why: 'no "Artist - Title": the whole line is searched as one title, which finds less' });
+    }
+    if (bar < 0) {
+      found.push({ line: number, level: "note", text: line,
+        why: "no length: it is searched without a length filter" });
+    }
+    const key = (bar >= 0 ? line.slice(0, bar) : line).trim().toLowerCase();
+    if (seen.has(key)) {
+      found.push({ line: number, level: "note", text: line,
+        why: "the same track as line " + seen.get(key) + "; the run searches it once" });
+    } else {
+      seen.set(key, number);
+    }
+  });
+  return found;
+}
+
+/* ---------------------------------------------------------------- the login, checked */
+
+$("logCheck").onclick = async () => {
+  $("logCheck").disabled = true;
+  say($("logMsg"), "info", "Asking Soulseek with one search…");
+  try {
+    const answer = await call("/api/login/check", { method: "POST" });
+    if (answer.login === "in") {
+      say($("logMsg"), "good", "Logged in as " + answer.about + ".");
+    } else if (answer.login === "out") {
+      say($("logMsg"), "err", "The login did not work: " + answer.about);
+    } else {
+      say($("logMsg"), "err", "sockseek said nothing about the login this time. "
+        + "The live log on the Run page has whatever it did say.");
+    }
+    setAuth(answer.login, answer.about);
+  } catch (problem) {
+    say($("logMsg"), "err", problem.message);
+  } finally {
+    $("logCheck").disabled = false;
+  }
+};
+
+/* The badge in the header. A run prints "auth: ..." the moment sockseek says it, so the
+ * page reads it from the same line the person reads. */
+function setAuth(state, about) {
+  const badge = $("auth");
+  badge.className = "badge" + (state === "in" ? " in" : state === "out" ? " out" : "");
+  badge.textContent = state === "in" ? "signed in as " + about
+    : state === "out" ? "sign-in failed" : "auth unknown";
+  badge.title = state === "out" ? about
+    : "Soulseek sign-in, as sockseek itself reports it";
+}
+
+function readAuth(text) {
+  const ok = text.match(/^auth: logged in as (.+)$/);
+  if (ok) setAuth("in", ok[1]);
+  const bad = text.match(/^auth: LOGIN FAILED - (.+)$/);
+  if (bad) setAuth("out", bad[1]);
 }

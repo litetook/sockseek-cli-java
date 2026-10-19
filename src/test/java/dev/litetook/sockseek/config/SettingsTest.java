@@ -525,11 +525,23 @@ class SettingsTest {
     void theLocalFileOverridesOurOwnSettingsToo(@TempDir Path dir) throws IOException {
         // it is not a credentials file with a special case; it is the same file, on top
         write(dir.resolve(Settings.CONFIG_NAME), "playlist:\n  attempts: 1\n"
-                + "track:\n  max_sources: 5\n");
+                + "track:\n  attempts_per_pass: 5\n");
         write(dir.resolve(Settings.LOCAL_CONFIG_NAME), "playlist:\n  attempts: 9\n");
         Config config = load(dir.resolve(Settings.CONFIG_NAME));
         assertEquals(OptionalInt.of(9), config.integer("attempts"));
-        assertEquals(OptionalInt.of(5), config.integer("max_sources"));
+        assertEquals(OptionalInt.of(5), config.integer("attempts_per_pass"));
+    }
+
+    @Test
+    void theOldNameOfASettingStillWorks(@TempDir Path dir) throws IOException {
+        // max_sources became attempts_per_pass on 2026-10-19, because it counts tries and
+        // not people. A config file written before that has to keep working
+        write(dir.resolve(Settings.CONFIG_NAME), "track:\n  max_sources: 5\n");
+        java.util.List<String> said = new java.util.ArrayList<>();
+        Config config = Settings.loadConfig(dir.resolve(Settings.CONFIG_NAME), said::add);
+        assertEquals(OptionalInt.of(5), config.integer("attempts_per_pass"));
+        assertTrue(said.stream().anyMatch(line -> line.contains("attempts_per_pass")),
+                said.toString());
     }
 
     @Test

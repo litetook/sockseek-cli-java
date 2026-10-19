@@ -526,6 +526,18 @@ public final class App {
                     + "window. Nothing was started here.");
             return 2;
         }
+        // What the run is about to do, in words, before it does it. The key = value list
+        // the engine prints is still there and still the exact answer; this is the other
+        // half, which the owner asked for on 2026-10-19: "коротко параметри скачування"
+        out.accept("");
+        java.util.LinkedHashMap<String, Integer> picked = new java.util.LinkedHashMap<>();
+        work.forEach(info -> picked.put(info.name(),
+                info.missing().size() - held.getOrDefault(info.name(), 0)));
+        dev.litetook.sockseek.batch.Brief.lines(picked, config,
+                        effectiveSockseek(appDir, folders.get("work"), sockseekConfOf(front)),
+                        formatOrderOf(config, front), outputDir, folders.get("logs"))
+                .forEach(out);
+
         int wanted = wanted(work);
         int arrivedSoFar = 0;
         // A dry run and a preview ask the server for nothing, so there is nothing to pace -
@@ -703,6 +715,37 @@ public final class App {
      * How many times each still-missing track will be searched for: one pass per format in
      * {@code track.format_order}, plus the last one that takes anything.
      */
+    /** The ladder this run would climb, from the flag if there is one and the file if not. */
+    static List<String> formatOrderOf(Config config, Front front) {
+        String given = flagValue(front, "--format-order");
+        String order = given != null ? given : config.text(Settings.FORMAT_ORDER, "");
+        return java.util.Arrays.stream(order.split(","))
+                .map(String::strip)
+                .filter(one -> !one.isEmpty())
+                .toList();
+    }
+
+    /**
+     * The sockseek settings as sockseek will really see them: its block of config.yaml, then
+     * config.local.yaml on top, then any {@code --sockseek-conf}, merged into one file in
+     * work/ - the same file the run itself hands over.
+     */
+    private static Map<String, String> effectiveSockseek(Path appDir, Path workDir,
+                                                         Path override) {
+        Path file = Settings.effectiveConf(appDir, workDir, line -> { }, override);
+        try {
+            return Settings.parseConf(Files.readString(file, StandardCharsets.UTF_8));
+        } catch (IOException cannotRead) {
+            return Map.of();   // the brief loses a few lines; the run loses nothing
+        }
+    }
+
+    /** The sockseek.conf a {@code --sockseek-conf} asked for, or null for the usual one. */
+    private static Path sockseekConfOf(Front front) {
+        String given = flagValue(front, "--sockseek-conf");
+        return given == null ? null : Path.of(given);
+    }
+
     static int passCount(Config config, Front front) {
         String given = flagValue(front, "--format-order");
         String order = given != null ? given : config.text(Settings.FORMAT_ORDER, "");

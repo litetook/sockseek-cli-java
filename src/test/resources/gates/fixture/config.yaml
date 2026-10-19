@@ -1,5 +1,5 @@
 # Sections say what a value affects, and the full name of a setting is
-# section.key - playlist.attempts, track.max_sources. A key found under the
+# section.key - playlist.attempts, track.attempts_per_pass. A key found under the
 # wrong section still works and is named in a warning; an unknown key is named
 # and ignored. Everything under "sockseek:" is sockseek's own and is passed to
 # it untouched.
@@ -72,7 +72,7 @@ track:
   # -1 turns it off. A refused track looks exactly like a missing one
   max_length_diff_s: 45
   # how many different uploaders to try for one track before giving up this run
-  max_sources: 3
+  attempts_per_pass: 3
 
 # ======================================================================
 # MEMORY BETWEEN RUNS - outcomes.tsv
@@ -147,5 +147,5 @@ sockseek:
     fails-to-downrank: 1
     # two failures and it is left out for the rest of the run
     fails-to-ignore: 2
-    # how many DIFFERENT uploaders a track is offered to is track.max_sources
+    # how many tries per track inside one pass is track.attempts_per_pass
     # above: sockseek calls that max-retries, which counts something else

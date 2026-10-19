@@ -10,6 +10,10 @@ import dev.litetook.sockseek.cli.Cli;
 import dev.litetook.sockseek.config.Config;
 import dev.litetook.sockseek.config.Settings;
 import dev.litetook.sockseek.links.Links;
+import dev.litetook.sockseek.playlist.Lint;
+import dev.litetook.sockseek.process.Trace;
+import dev.litetook.sockseek.process.Runner;
+import dev.litetook.sockseek.process.Options;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -69,7 +73,9 @@ final class Api {
                 case "/api/run" -> startRun(call, method);
                 case "/api/stop" -> stopRun(call, method);
                 case "/api/config" -> config(call, method);
+                case "/api/settings" -> settings(call, method);
                 case "/api/login" -> login(call, method);
+                case "/api/login/check" -> loginCheck(call, method);
                 case "/api/link" -> link(call, method);
                 default -> {
                     if (path.startsWith("/api/playlists/")) {
@@ -192,9 +198,11 @@ final class Api {
                 throw new Refused(404, "no playlist called " + name);
             }
             ObjectNode out = JSON.createObjectNode();
+            String content = read(file);
             out.put("name", name);
-            out.put("text", read(file));
+            out.put("text", content);
             out.put("path", file.toString());
+            found(out, Lint.check(content));
             text(call, 200, out.toString(), "application/json");
             return;
         }
@@ -203,14 +211,37 @@ final class Api {
             throw new Refused(409, "a run is going; a playlist it is reading must not change "
                     + "under it");
         }
-        String content = body(call).path("text").asText("");
+        JsonNode asked = body(call);
+        String content = asked.path("text").asText("");
         ObjectNode out = JSON.createObjectNode();
+        List<Lint.Found> found = Lint.check(content);
+        found(out, found);
+        if (Lint.errors(found) > 0 && !asked.path("anyway").asBoolean(false)) {
+            // a line that would be searched for as something other than what it reads like.
+            // The person can still insist; nothing here is a matter of taste
+            out.put("saved", false);
+            text(call, 400, out.toString(), "application/json");
+            return;
+        }
         backup(file).ifPresent(kept -> out.put("backup", kept.getFileName().toString()));
         write(file, content.endsWith("\n") || content.isEmpty() ? content : content + "\n");
         out.put("saved", true);
         out.put("name", name);
         out.put("lines", (int) content.lines().filter(line -> !line.isBlank()).count());
         text(call, 200, out.toString(), "application/json");
+    }
+
+    /** What the checker found, as the page shows it: the line, how bad it is, and why. */
+    private static void found(ObjectNode out, List<Lint.Found> found) {
+        ArrayNode said = out.putArray("found");
+        for (Lint.Found one : found) {
+            ObjectNode row = said.addObject();
+            row.put("line", one.line());
+            row.put("level", one.level().name().toLowerCase(Locale.ROOT));
+            row.put("text", one.text());
+            row.put("why", one.why());
+        }
+        out.put("errors", (int) Lint.errors(found));
     }
 
     /**
@@ -267,6 +298,58 @@ final class Api {
         out.put("saved", true);
         ArrayNode said = out.putArray("warnings");
         complaints.forEach(said::add);
+        stream.state(state(appDir, jobs));
+        text(call, 200, out.toString(), "application/json");
+    }
+
+    /**
+     * The settings as a form: categories, fields, and what the file says today.
+     *
+     * <p>A PUT carries only what changed, and each change is written into the file in place -
+     * see {@link dev.litetook.sockseek.config.Rewrite}. The whole file is then parsed before
+     * it is saved, exactly as the raw editor does, so the two ways in cannot disagree about
+     * what is valid.
+     */
+    private void settings(HttpExchange call, String method) throws IOException {
+        Path file = appDir.resolve(Settings.CONFIG_NAME);
+        String text = Files.isRegularFile(file) ? read(file) : "";
+        if (method.equals("GET")) {
+            Config config = Settings.loadConfig(file, line -> { });
+            text(call, 200, Fields.describe(Settings.parseYaml(text, line -> { }), config.sockseek()),
+                    "application/json");
+            return;
+        }
+        only(call, method, "PUT");
+        JsonNode asked = body(call);
+        JsonNode changes = asked.path("changes");
+        if (!changes.isObject() || changes.isEmpty()) {
+            throw new Refused(400, "nothing to change");
+        }
+        String written = text;
+        List<String> touched = new ArrayList<>();
+        java.util.Iterator<String> names = changes.fieldNames();
+        while (names.hasNext()) {
+            String name = names.next();
+            String value = changes.path(name).asText("").strip();
+            written = dev.litetook.sockseek.config.Rewrite.set(written, Fields.pathOf(name),
+                    value, Fields.oldNamesOf(name));
+            touched.add(name);
+        }
+        List<String> complaints = complaints(written);
+        ObjectNode out = JSON.createObjectNode();
+        ArrayNode said = out.putArray("warnings");
+        complaints.forEach(said::add);
+        if (!complaints.isEmpty() && !asked.path("anyway").asBoolean(false)) {
+            out.put("saved", false);
+            text(call, 400, out.toString(), "application/json");
+            return;
+        }
+        backup(file).ifPresent(kept -> out.put("backup", kept.getFileName().toString()));
+        write(file, written);
+        out.put("saved", true);
+        ArrayNode changed = out.putArray("changed");
+        touched.forEach(changed::add);
+        stream.log("--- settings changed from the page: " + String.join(", ", touched));
         stream.state(state(appDir, jobs));
         text(call, 200, out.toString(), "application/json");
     }
@@ -332,6 +415,61 @@ final class Api {
         text(call, 200, JSON.createObjectNode().put("saved", true).toString(),
                 "application/json");
     }
+
+    /**
+     * Whether the login works, without downloading anything.
+     *
+     * <p>One search, asked with {@code --print results}, which is how this was measured on
+     * 2026-10-19: sockseek logs {@code Logging in as X} and then {@code Logged in as X}
+     * before it searches, and says so plainly when it cannot. The search itself is thrown
+     * away - the point is the two lines above it.
+     *
+     * <p>It costs one search out of the account's budget, and the answer says so.
+     */
+    private void loginCheck(HttpExchange call, String method) throws IOException {
+        only(call, method, "POST");
+        if (jobs.running()) {
+            throw new Refused(409, "a run is going; its own log already says whether the "
+                    + "login worked");
+        }
+        if (Settings.missingLogin(appDir)) {
+            throw new Refused(400, "there is no login to check yet");
+        }
+        Config config = Settings.loadConfig(appDir.resolve(Settings.CONFIG_NAME), line -> { });
+        java.util.Map<String, Path> folders = Settings.configPaths(config, appDir);
+        Path exe = folders.get("sockseek_bin");
+        if (exe == null || !Files.isRegularFile(exe)) {
+            throw new Refused(400, "sockseek is not here yet, so there is nothing to ask");
+        }
+        Path work = folders.get("work");
+        Files.createDirectories(work);
+        Path list = work.resolve("login-check.list.txt");
+        Files.writeString(list, "s:\"title=sockseek cli login check\"\n",
+                StandardCharsets.UTF_8);
+        Path log = work.resolve("login-check.log");
+        Files.deleteIfExists(log);
+        Trace.Tail trace = new Trace.Tail(log, heard -> {
+            if (heard.aboutLogin()) {
+                stream.log("auth: " + (heard.login() == Trace.Login.IN
+                        ? "logged in as " + heard.about()
+                        : "LOGIN FAILED - " + heard.about()));
+            }
+        });
+        List<String> command = Runner.buildCommand(exe, list, work.resolve("login-check"),
+                new Options(-1, true, 1, null, -1), log, List.of("--no-progress"),
+                Runner.INDEX_NAME,
+                Settings.effectiveConf(appDir, work, line -> { }, null));
+        stream.log("--- checking the login with one search (it costs one from the limit)");
+        Runner.runProcess(command, appDir, CHECK_SECONDS, stream::log, null, 0, null, trace);
+        ObjectNode out = JSON.createObjectNode();
+        out.put("login", trace.login().name().toLowerCase(Locale.ROOT));
+        out.put("about", trace.account());
+        out.put("cost", "one search");
+        text(call, 200, out.toString(), "application/json");
+    }
+
+    /** Long enough for a search to come back, short enough not to hold the page open. */
+    private static final double CHECK_SECONDS = 120;
 
     // ------------------------------------------------------------------ add by link
 

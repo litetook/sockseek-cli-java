@@ -70,6 +70,20 @@ would share a search limit, an index and a cache. Whichever asks second is told 
 already going, by an OS-level lock on `work/run.lock` that the system drops by itself if the
 tool is killed.
 
+**The settings page has two views.** *By category* is a form built from the settings
+themselves - every field carries its own explanation, and saving rewrites only the lines you
+changed, so the comments and the order in your file survive. *The file* is the whole yaml, as
+before. Either way it is parsed before it is written, and a file that would not load is
+refused with the reason.
+
+**The playlist editor checks as you type**: blank lines, a length that did not parse (which
+would otherwise be searched for as part of the title), a line with no `Artist - Title`, and
+duplicates. Only the first of those stops a save, and even then there is a "save anyway".
+
+**Check it now**, on the Login page, asks Soulseek with one search and downloads nothing. It
+costs one search out of the limit and answers the only question that matters before a long
+run: whether the account got in.
+
 **The log in the page is this tool's own output**, the same lines that go to
 `logs/session_*.log`: the passes, the live count, and a reason under every failure. It is not
 sockseek's own display — that one is painted straight onto the real console and cannot be
@@ -81,6 +95,20 @@ the machine it runs on.
 ---
 
 ## What a run looks like
+
+Every run opens with a block that says what it is about to do - the ladder it will climb, what
+is refused outright and what is only preferred, how many tries a track gets, what gets killed
+and when, the search budget, and where files land. It is generated from the settings in force,
+never written by hand, and a setting that is not set says so rather than showing sockseek's
+default as if it were yours. The exact `key = value` list is still printed above it.
+
+Soon after a run starts, one more line appears: `auth: logged in as <name>`, read out of
+sockseek's own log - or `auth: LOGIN FAILED` with the reason it gave.
+
+At the end, besides the list of what did not arrive, the failures are counted by cause:
+nobody on the network has it, nothing matched under the conditions, or it was found and the
+upload never came through. Those three mean three different things to do next.
+
 
 ```
 Playlists:
@@ -290,7 +318,7 @@ playlist:
 track:
   format_order: mp3@192, flac, wav   # a pass each, "@192" = a floor for that pass only
   max_length_diff_s: 45        # refuse a file this far off the playlist length; -1 = off
-  max_sources: 3               # different uploaders tried for one track
+  attempts_per_pass: 3         # download tries per track inside ONE pass
 
 cache:
   enabled: true                # remember how each track ended
@@ -311,6 +339,14 @@ is taken as it is.
 
 **Behind the scenes.** The binary is accepted with or without `.exe`, whichever is actually
 there, so one config file works on Windows and Linux.
+
+### `track.attempts_per_pass` — 3 · `--attempts-per-pass`
+
+Download tries for one track **inside one pass**; each try is the next candidate that fits
+that pass. Four passes at three tries is at most twelve attempts over a run.
+
+sockseek takes this as `--max-retries`, whose own default is 10. It was called `max_sources`
+until 2026-10-19, and a file that still says that is read, with a warning naming the new key.
 
 ### `track.max_length_diff_s` — 45 seconds · `--max-length-diff`
 
@@ -644,8 +680,10 @@ on a real run read as "nobody had it" - which is why the floor ships commented o
 and a source that keeps failing should stop being offered.
 
 - `max-stale-time: 12000` — milliseconds with no bytes before a candidate is dropped.
-- how many candidates one track may be tried from is **ours**, `track.max_sources`: sockseek
-  calls it `max-retries`, which counts something else.
+- how many tries one track gets inside one pass is **ours**, `track.attempts_per_pass`
+  (`--attempts-per-pass`, and the old name `--max-sources` still works): sockseek takes it as
+  `max-retries`. Each try is the next candidate that fits that pass, so three tries at four
+  passes is at most twelve over a run.
 - `fails-to-downrank: 1`, `fails-to-ignore: 2` — an uploader drops down the ranking after one
   failure and out of it after two.
 

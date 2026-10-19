@@ -55,8 +55,8 @@ public final class Runner {
                 "--input-type", "list",
                 // the "=" form: sockseek reads "--length-tol -1" as another option
                 "--length-tol=" + options.lengthTol(),
-                // sockseek's name for it; ours says what it counts
-                "--max-retries", Integer.toString(options.maxSources()),
+                // sockseek's name for it; ours says what it counts: tries inside one pass
+                "--max-retries", Integer.toString(options.attemptsPerPass()),
                 "-o", outDir.toString(),
                 "--name-format", NAME_FORMAT,
                 "--index-path", outDir.resolve(indexName).toString()));
@@ -72,8 +72,12 @@ public final class Runner {
         if (options.preview()) {
             command.addAll(List.of("--print", "results"));
         }
+        // Always, not only with --verbose: this file is where sockseek says whether the
+        // login worked and how many candidates a search really returned, and those two
+        // answers are the difference between "it failed" and "it failed because". --verbose
+        // is a separate thing and travels as an ordinary argument when it is asked for.
         if (logFile != null) {
-            command.addAll(List.of("--verbose", "--log-file", logFile.toString()));
+            command.addAll(List.of("--log-file", logFile.toString()));
         }
         boolean decided = extraArgs.stream()
                 .anyMatch(argument -> argument.equals("--no-config")
@@ -129,11 +133,28 @@ public final class Runner {
     public static Status runProcess(List<String> command, Path cwd, double timeoutSeconds,
                                     Consumer<String> log, Events.Tail watch,
                                     double stallSeconds, Path outDir) {
+        return runProcess(command, cwd, timeoutSeconds, log, watch, stallSeconds, outDir, null);
+    }
+
+    /**
+     * The same, following sockseek's own log as well.
+     *
+     * <p>That second watcher is where the login result and the candidate counts come from.
+     * It is polled by this loop rather than by a thread of its own, because the loop is
+     * already here, already running at the right interval, and a thread that outlives the
+     * process it was watching is a bug waiting to be written.
+     */
+    public static Status runProcess(List<String> command, Path cwd, double timeoutSeconds,
+                                    Consumer<String> log, Events.Tail watch,
+                                    double stallSeconds, Path outDir, Trace.Tail trace) {
         // never sampled more rarely than a quarter of the window it has to answer within
         Bytes bytes = outDir == null ? null
                 : new Bytes(outDir, Math.min(Bytes.SAMPLE_MILLIS, (long) (stallSeconds * 250)));
         if (watch != null) {
             watch.restart();   // this attempt's silence, not the previous attempt's
+        }
+        if (trace != null) {
+            trace.restart();   // sockseek writes its log again from the top
         }
         ProcessBuilder builder = new ProcessBuilder(command)
                 .directory(cwd.toFile())
@@ -151,6 +172,9 @@ public final class Runner {
                 if (watch != null) {
                     watch.poll();
                 }
+                if (trace != null) {
+                    trace.poll();
+                }
                 double ran = (System.nanoTime() - started) / 1_000_000_000.0;
                 if (timeoutSeconds > 0 && ran >= timeoutSeconds) {
                     killTree(process);
@@ -167,6 +191,9 @@ public final class Runner {
             }
             if (watch != null) {
                 watch.drain();
+            }
+            if (trace != null) {
+                trace.poll();   // the last lines sockseek wrote on its way out
             }
         } catch (InterruptedException interrupted) {
             killTree(process);
@@ -261,10 +288,20 @@ public final class Runner {
     public static Status runWithRetry(List<String> command, Path cwd, double timeoutSeconds,
                                       int retries, Consumer<String> log, double pauseSeconds,
                                       Events.Tail watch, double stallSeconds, Path outDir) {
+        return runWithRetry(command, cwd, timeoutSeconds, retries, log, pauseSeconds, watch,
+                stallSeconds, outDir, null);
+    }
+
+    /** The same, following sockseek's own log as well. */
+    public static Status runWithRetry(List<String> command, Path cwd, double timeoutSeconds,
+                                      int retries, Consumer<String> log, double pauseSeconds,
+                                      Events.Tail watch, double stallSeconds, Path outDir,
+                                      Trace.Tail trace) {
         Status status = Status.ERROR;
         for (int attempt = 1; attempt <= retries; attempt++) {
             log.accept("attempt " + attempt + "/" + retries);
-            status = runProcess(command, cwd, timeoutSeconds, log, watch, stallSeconds, outDir);
+            status = runProcess(command, cwd, timeoutSeconds, log, watch, stallSeconds, outDir,
+                    trace);
             if (status == Status.OK || status == Status.ERROR) {
                 return status;
             }

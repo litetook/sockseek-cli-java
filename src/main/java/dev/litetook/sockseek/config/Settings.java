@@ -110,7 +110,7 @@ public final class Settings {
               #   format_order: mp3@256, flac, mp3@128
               format_order:
               max_length_diff_s: 45s       # refuse a file this far off the length; -1 = off
-              max_sources: 3               # different uploaders tried for one track
+              attempts_per_pass: 3         # download tries per track inside ONE pass
               # Search EVERY track again, on-disk ones included, and keep the newcomer only
               # if it is better: lossless beats lossy, and the same format wins on size (at
               # least 5% bigger, at most 1.6x - more than that is a different recording).
@@ -161,7 +161,7 @@ public final class Settings {
                 max-stale-time: 12000    # ms with no bytes, then the next uploader
                 fails-to-downrank: 1     # failures before an uploader ranks lower
                 fails-to-ignore: 2       # failures before it is left out for the run
-                # how many DIFFERENT uploaders per track is track.max_sources above
+                # how many tries per track inside one pass is track.attempts_per_pass
             """;
 
     public static final List<Setting> ALL = List.of(
@@ -181,9 +181,15 @@ public final class Settings {
                             + "the same format at a bigger size. Nothing is deleted until a "
                             + "winner is picked, and a track nobody had leaves yours alone "
                             + "(default false)", List.of()),
-            new Setting("track", "max_sources", "--max-sources", Setting.Kind.INTEGER, 3, 1.0,
-                    "how many different uploaders to try for one track before giving up on "
-                            + "it this run (default 3)", List.of()),
+            // sockseek takes this as --max-retries, and "sources" was no better a name:
+            // it is the number of download attempts for ONE track inside ONE pass, and each
+            // attempt is the next candidate that fits that pass. The owner settled it on
+            // 2026-10-19: "на кожному рівні три рази, на кожен файл який ретраїш"
+            new Setting("track", "attempts_per_pass", "--attempts-per-pass",
+                    Setting.Kind.INTEGER, 3, 1.0,
+                    "download tries for one track inside one pass; each try is the next "
+                            + "candidate that fits that pass (default 3)",
+                    List.of("max_sources")),
             // ---- one playlist ----
             // 60 and 1, the same numbers the shipped config.yaml carries. They used to be
             // 40 and 2, so a deleted config file quietly changed how a run behaved and the

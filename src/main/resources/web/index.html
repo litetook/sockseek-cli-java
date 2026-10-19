@@ -17,7 +17,10 @@
     <button data-go="config">Config</button>
     <button data-go="login">Login</button>
   </nav>
-  <div class="status"><i class="dot" id="dot"></i><span id="state">connecting</span></div>
+  <div class="status">
+    <span class="badge" id="auth" title="Soulseek sign-in">auth unknown</span>
+    <i class="dot" id="dot"></i><span id="state">connecting</span>
+  </div>
 </header>
 
 <div class="banner" id="banner" hidden></div>
@@ -86,6 +89,7 @@
       <span class="note">A copy is kept beside the file before it is written.</span>
     </div>
     <div class="msg" id="plMsg" hidden></div>
+    <div class="found" id="plFound" hidden></div>
   </div>
 
  </div>
@@ -125,14 +129,34 @@
 <!-- ======================= Config ======================= -->
 <section class="page" id="p-config">
  <div class="card">
-  <h2>config.yaml <span class="sub" id="cfgPath"></span></h2>
-  <textarea id="cfgText" spellcheck="false" aria-label="config.yaml"></textarea>
-  <div class="bar">
-    <button class="btn primary" id="cfgSave">Save</button>
-    <button class="btn" id="cfgRevert">Revert</button>
-    <span class="grow"></span>
-    <span class="note">Checked before writing. A wrong key or unit stops the write.</span>
+  <h2>
+    <span class="tabs">
+      <button class="tab on" data-cfg="form">By category</button>
+      <button class="tab" data-cfg="raw">The file</button>
+    </span>
+    <span class="sub" id="cfgPath"></span>
+  </h2>
+
+  <div id="cfgForm">
+    <div class="pad" id="cfgFields"></div>
+    <div class="bar">
+      <button class="btn primary" id="cfgApply" disabled>Save changes</button>
+      <button class="btn" id="cfgDrop" disabled>Undo</button>
+      <span class="grow"></span>
+      <span class="note" id="cfgCount">Nothing changed yet. Comments in the file are kept.</span>
+    </div>
   </div>
+
+  <div id="cfgRawBox" hidden>
+    <textarea id="cfgText" spellcheck="false" aria-label="config.yaml"></textarea>
+    <div class="bar">
+      <button class="btn primary" id="cfgSave">Save</button>
+      <button class="btn" id="cfgRevert">Revert</button>
+      <span class="grow"></span>
+      <span class="note">Checked before writing. A wrong key or unit stops the write.</span>
+    </div>
+  </div>
+
   <div class="msg" id="cfgMsg" hidden></div>
  </div>
 </section>
@@ -149,9 +173,12 @@
       <input id="pass" type="password" autocomplete="off"
              placeholder="not shown, not sent back"></label>
     <button class="btn primary" id="logSave">Save login</button>
+    <button class="btn" id="logCheck">Check it now</button>
     <div class="kv">
       Written to <code>config.local.yaml</code>, which git never sees.<br>
-      It is never sent back to this page: the fields start empty on every load.
+      It is never sent back to this page: the fields start empty on every load.<br>
+      <b>Check it now</b> asks Soulseek with one search and nothing else &mdash; no download,
+      and it costs one search out of the limit.
     </div>
   </div>
   <div class="msg" id="logMsg" hidden></div>

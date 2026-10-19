@@ -39,7 +39,7 @@ public final class Cli implements Callable<Integer> {
      * this is finished enough to use, not a preview of something. The release workflow
      * refuses to publish a tag whose name disagrees with this.
      */
-    public static final String VERSION = "2.0.0";
+    public static final String VERSION = "2.1.0";
 
     @Option(names = "--version", versionHelp = true, description = "print the version and exit")
     boolean version;
@@ -111,10 +111,10 @@ public final class Cli implements Callable<Integer> {
                     + "(config: rate_limit.window_s)")
     Integer searchesRenewS;
 
-    @Option(names = "--max-sources", paramLabel = "N",
-            description = "how many different uploaders to try for one track before giving "
-                    + "up on it this run (default 3)")
-    Integer maxSources;
+    @Option(names = {"--attempts-per-pass", "--max-sources"}, paramLabel = "N",
+            description = "download tries for one track inside one pass; each try is the "
+                    + "next candidate that fits that pass (default 3)")
+    Integer attemptsPerPass;
 
     @Option(names = "--why", paramLabel = "TEXT",
             description = "do not download: for every missing track whose line contains TEXT, "
@@ -256,7 +256,7 @@ public final class Cli implements Callable<Integer> {
             case "skip_absent_h" -> skipNotFoundHours;
             case "searches_per_window" -> searchesPerWindow;
             case "window_s" -> searchesRenewS;
-            case "max_sources" -> maxSources;
+            case "attempts_per_pass" -> attemptsPerPass;
             // a flag that is only ever "on": absent means "whatever the file says"
             case "replace_if_better" -> replaceIfBetter ? 1 : null;
             // a flag that is only ever "off": absent means "whatever the file says"
@@ -291,6 +291,22 @@ public final class Cli implements Callable<Integer> {
                 .map(String::strip)
                 .filter(one -> !one.isEmpty())
                 .toList();
+    }
+
+    /**
+     * {@code --verbose} as an ordinary argument to sockseek.
+     *
+     * <p>It used to ride along with the log file, which meant the log could only exist when
+     * the person asked for noise. The log is now written every run - it is where the login
+     * result and the candidate counts are read from - so the two had to come apart.
+     */
+    private List<String> withVerbose(List<String> given) {
+        if (!verbose || given.contains("--verbose")) {
+            return given;
+        }
+        List<String> all = new java.util.ArrayList<>(given);
+        all.add("--verbose");
+        return List.copyOf(all);
     }
 
     public List<String> splitSockseekArgs() {
@@ -333,14 +349,14 @@ public final class Cli implements Callable<Integer> {
                 .logsDir(path("logs"))
                 .sockseek(path("sockseek_bin"))
                 .options(new Options(integer("max_length_diff_s"), preview,
-                        integer("max_sources"), null, -1))
+                        integer("attempts_per_pass"), null, -1))
                 .timeoutMinutes(decimal("attempt_timeout_min"))
                 .retries(integer("attempts"))
                 .dryRun(dryRun)
                 .only(only)
                 .verbose(verbose)
                 .why(why != null ? why : explain && !noExplain ? "" : null)
-                .sockseekArgs(splitSockseekArgs())
+                .sockseekArgs(withVerbose(splitSockseekArgs()))
                 .sockseekConf(sockseekConf)
                 .stallSeconds(decimal("stall_timeout_s"))
                 .skipNotFoundHours(decimal("skip_absent_h"))
