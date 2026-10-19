@@ -165,7 +165,9 @@ public final class Settings {
               pick_source:
                 fast-search: true           # off by default. Take the first candidate that
                                             # fits instead of collecting them all
-                fast-search-delay-ms: 500   # sockseek default 300
+                fast-search-delay-ms: 3000  # sockseek default 300. The search itself
+                                            # lasts 5000 ms (--search-timeout), so 5000
+                                            # here is the same as fast-search: false
                 # fast-search-min-up-speed: 1   # sockseek default 1, and its unit is
                                             # undocumented - leave it alone unless measured
 
