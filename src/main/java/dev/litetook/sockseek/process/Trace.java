@@ -44,6 +44,20 @@ import java.util.regex.Pattern;
  */
 public final class Trace {
 
+    /**
+     * Who the current transfer is coming from, and whether it went wrong.
+     *
+     * <p>sockseek names the uploader nowhere else: not in the on-complete variables, not in
+     * {@code _index.csv}, not in its own name-format. It says it in its log, once, when the
+     * transfer starts - which is why the log is followed at all.
+     */
+    private static final Pattern FROM =
+            Pattern.compile("Downloading:.*? from '([^']+)'");
+
+    /** A transfer that did not make it. The uploader is whoever we were last downloading from. */
+    private static final Pattern DOWNLOAD_ERROR =
+            Pattern.compile("(?i)Error while downloading");
+
     /** What the log said about the account. */
     public enum Login {
         /** Nothing about a login has been read yet. */
@@ -84,6 +98,13 @@ public final class Trace {
         if (in.find()) {
             return Optional.of(Said.login(Login.IN, in.group(1)));
         }
+        Matcher from = FROM.matcher(text);
+        if (from.find()) {
+            return Optional.of(new Said(Login.UNKNOWN, null, from.group(1), false));
+        }
+        if (DOWNLOAD_ERROR.matcher(text).find()) {
+            return Optional.of(new Said(Login.UNKNOWN, null, null, true));
+        }
         return Optional.empty();
     }
 
@@ -100,10 +121,10 @@ public final class Trace {
      * @param about the account name for {@link Login#IN}, the whole complaint for
      *              {@link Login#OUT}
      */
-    public record Said(Login login, String about) {
+    public record Said(Login login, String about, String uploader, boolean transferFailed) {
 
         static Said login(Login state, String about) {
-            return new Said(state, about);
+            return new Said(state, about, null, false);
         }
 
         public boolean aboutLogin() {
@@ -127,6 +148,8 @@ public final class Trace {
         private String pending = "";
         private Login login = Login.UNKNOWN;
         private String account = "";
+        private String from = "";
+        private final java.util.Map<String, Integer> wentBad = new java.util.LinkedHashMap<>();
 
         public Tail(Path file, Consumer<Said> onSaid) {
             this.file = file;
@@ -146,6 +169,18 @@ public final class Trace {
         /** The account sockseek said it logged in as, or the complaint when it did not. */
         public String account() {
             return account;
+        }
+
+        /**
+         * The uploaders whose transfers failed in this pass, and how many times each.
+         *
+         * <p>Attributed to whoever the log last said we were downloading from. With several
+         * transfers in flight that can name the wrong one; it is the only attribution
+         * sockseek makes possible, and the cost of getting it wrong is one uploader ranked
+         * lower for a day, so it is worth having and not worth pretending to be exact.
+         */
+        public java.util.Map<String, Integer> wentBad() {
+            return java.util.Map.copyOf(wentBad);
         }
 
         public void poll() {
@@ -176,6 +211,12 @@ public final class Trace {
                         if (said.aboutLogin()) {
                             login = said.login();
                             account = said.about() == null ? "" : said.about();
+                        }
+                        if (said.uploader() != null) {
+                            from = said.uploader();
+                        }
+                        if (said.transferFailed() && !from.isEmpty()) {
+                            wentBad.merge(from, 1, Integer::sum);
                         }
                         onSaid.accept(said);
                     });

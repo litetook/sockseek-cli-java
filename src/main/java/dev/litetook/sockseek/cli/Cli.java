@@ -97,6 +97,11 @@ public final class Cli implements Callable<Integer> {
                     + "(config: rate_limit.searches_per_window)")
     Integer searchesPerWindow;
 
+    @Option(names = "--bad-uploader-hours", paramLabel = "HOURS",
+            description = "rank an uploader last if a transfer from it failed within this "
+                    + "many hours; 0 = forget them at once (default 24)")
+    Double badUploaderHours;
+
     @Option(names = "--work", paramLabel = "DIR",
             description = "generated list files and the merged sockseek config "
                     + "(config: paths.work)")
@@ -254,6 +259,7 @@ public final class Cli implements Callable<Integer> {
             case "attempts" -> retries;
             case "stall_timeout_s" -> stallTimeout;
             case "skip_absent_h" -> skipNotFoundHours;
+            case "bad_uploader_h" -> badUploaderHours;
             case "searches_per_window" -> searchesPerWindow;
             case "window_s" -> searchesRenewS;
             case "attempts_per_pass" -> attemptsPerPass;
@@ -360,6 +366,7 @@ public final class Cli implements Callable<Integer> {
                 .sockseekConf(sockseekConf)
                 .stallSeconds(decimal("stall_timeout_s"))
                 .skipNotFoundHours(decimal("skip_absent_h"))
+                .badUploaderHours(decimal("bad_uploader_h"))
                 .cache(integer("enabled") != 0)
                 .formatOrder(formatOrder())
                 .rateLimit(integer("searches_per_window"), integer("window_s"))

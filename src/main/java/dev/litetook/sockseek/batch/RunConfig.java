@@ -17,7 +17,8 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
                         Options options, double timeoutMinutes, int retries, boolean dryRun,
                         String only, boolean verbose, String why, List<String> sockseekArgs,
                         Path conf, Path sockseekConf, int runNo, LocalDateTime stamp,
-                        double stallSeconds, double skipNotFoundHours, boolean cache,
+                        double stallSeconds, double skipNotFoundHours,
+                        double badUploaderHours, boolean cache,
                         List<String> formatOrder, int searchesPerWindow, int windowSeconds,
                         boolean replaceIfBetter) {
 
@@ -35,7 +36,8 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
         return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir, sockseek,
                 options, timeoutMinutes, retries, dryRun, only, verbose, why,
                 sockseekArgs, conf, sockseekConf, number, stamp, stallSeconds,
-                skipNotFoundHours, cache, formatOrder, searchesPerWindow, windowSeconds,
+                skipNotFoundHours, badUploaderHours, cache, formatOrder,
+                searchesPerWindow, windowSeconds,
                 replaceIfBetter);
     }
 
@@ -43,7 +45,8 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
         return new RunConfig(appDir, playlistsDir, outputDir, workDir, logsDir, sockseek,
                 options, timeoutMinutes, retries, dryRun, only, verbose, why,
                 sockseekArgs, merged, sockseekConf, runNo, stamp, stallSeconds,
-                skipNotFoundHours, cache, formatOrder, searchesPerWindow, windowSeconds,
+                skipNotFoundHours, badUploaderHours, cache, formatOrder,
+                searchesPerWindow, windowSeconds,
                 replaceIfBetter);
     }
 
@@ -73,6 +76,7 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
         private Path sockseekConf;
         private double stallSeconds = 300;
         private double skipNotFoundHours = 2;
+        private double badUploaderHours = 24;
         private boolean cache = true;
         private List<String> formatOrder = List.of();
         // the same budget the front end paces playlists by. The engine needs it too, because
@@ -178,6 +182,11 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
             return this;
         }
 
+        public Builder badUploaderHours(double value) {
+            this.badUploaderHours = value;
+            return this;
+        }
+
         public Builder skipNotFoundHours(double value) {
             this.skipNotFoundHours = value;
             return this;
@@ -199,7 +208,8 @@ public record RunConfig(Path appDir, Path playlistsDir, Path outputDir, Path wor
                     sockseek, options, timeoutMinutes, retries, dryRun, only, verbose,
                     why, sockseekArgs, null, sockseekConf, 0,
                     LocalDateTime.now(),
-                    stallSeconds, skipNotFoundHours, cache, formatOrder, searchesPerWindow,
+                    stallSeconds, skipNotFoundHours, badUploaderHours, cache,
+                    formatOrder, searchesPerWindow,
                     windowSeconds, replaceIfBetter);
         }
     }

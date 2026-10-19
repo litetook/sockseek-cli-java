@@ -478,6 +478,23 @@ which is the 220-second search window — waiting for that window is not a hang,
 here tries to shorten it. What this is **not** is a deadline for one track: there is no way to
 cancel a single sockseek job from outside, so the tool does not pretend to have one.
 
+### `cache.bad_uploader_h` — 24 hours · `--bad-uploader-hours`
+
+An uploader whose transfer died is written down, and for this many hours after that it is
+handed to sockseek as `--pref-banned-users`: **ranked last, never banned**. One that stalled
+last night may be the only one holding a track tonight, and a ban would turn a slow download
+into no download at all. `0` forgets them at once.
+
+sockseek's own `fails-to-ignore` does the same thing inside **one run** and forgets at the
+end of it; this is the part that outlives the run, which is why it has an expiry of its own
+rather than sharing `cache.skip_absent_h`.
+
+The name comes out of sockseek's log - it is the only place sockseek ever says who a transfer
+is from: not in the on-complete variables, not in `_index.csv`, not in its name format. The
+attribution is the last uploader the log named before the error, so with several transfers in
+flight it can name the wrong one. The cost of that is one uploader ranked lower for a day,
+which is why it ranks rather than bans.
+
 ### `cache.enabled` — true · `--no-cache`
 
 **What it's for.** The master switch for `cache.json`. `false` makes the file not exist for

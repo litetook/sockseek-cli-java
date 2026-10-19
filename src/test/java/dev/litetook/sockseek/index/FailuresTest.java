@@ -229,4 +229,40 @@ class FailuresTest {
         assertEquals(1, Failures.read(file).size());
         assertEquals(List.of(), Failures.read(home.resolve("not-there.tsv")));
     }
+
+    // ------------------------------------------------------------------ the uploaders
+
+    @Test
+    void anUploaderThatFailsAgainIsCountedUpAndItsClockRestarts() {
+        List<Failures.Bad> first = Failures.afterUploaders(List.of(),
+                java.util.Map.of("peer", 1), NOW.minusHours(5), "dropped");
+        assertEquals(1, first.get(0).times());
+        List<Failures.Bad> again = Failures.afterUploaders(first,
+                java.util.Map.of("peer", 2), NOW, "dropped");
+        assertEquals(3, again.get(0).times());
+        assertEquals(NOW, again.get(0).when());
+    }
+
+    @Test
+    void anUploaderIsForgottenWhenItsHoursAreUp() {
+        List<Failures.Bad> all = List.of(
+                new Failures.Bad(NOW.minusHours(2), "fresh", 1, "dropped"),
+                new Failures.Bad(NOW.minusHours(30), "old", 1, "dropped"));
+        assertEquals(List.of("fresh"), Failures.staleUploaders(all, 24, NOW));
+        // zero hours turns the whole thing off rather than remembering for ever
+        assertEquals(List.of(), Failures.staleUploaders(all, 0, NOW));
+    }
+
+    @Test
+    void writingTheTracksLeavesTheUploadersAlone(@TempDir Path home) {
+        Path file = home.resolve(Failures.FILE_NAME);
+        Failures.write(file, new Failures.Cache(List.of(),
+                List.of(new Failures.Bad(NOW, "peer", 2, "dropped"))));
+        // the tracks are written by one part of the run and the uploaders by another;
+        // neither may wipe the other
+        Failures.write(file, List.of(new Failures.Outcome(NOW, Failures.CONFIRMED_ABSENT, 1,
+                "", "mix", "A - one")));
+        assertEquals(1, Failures.read(file).size());
+        assertEquals("peer", Failures.readUploaders(file).get(0).user());
+    }
 }

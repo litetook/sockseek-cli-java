@@ -132,6 +132,9 @@ public final class Settings {
               # skip a track confirmed absent if it was asked for this recently, under the
               # same conditions; 0 = always search. Fractions are fine
               skip_absent_h: 2h
+              bad_uploader_h: 24h          # default 24h, 0 = off. An uploader whose transfer
+                                           # failed this recently is ranked last, never
+                                           # banned - it may be the only one holding a track
 
             # ---------------------------------------------------------------------------
             # sockseek's own options, its names, passed through untouched. The four blocks
@@ -232,6 +235,14 @@ public final class Settings {
                             + "if that was within this many hours; 0 = always search "
                             + "(default 2). Fractions are fine: 0.5 is half an hour",
                     List.of("skip_not_found_hours")),
+            // sockseek's own fails-to-ignore lasts one run; this is the part that outlives
+            // it. Ranked last rather than banned: a peer that stalled last night may be the
+            // only one holding a track tonight. The owner asked for it on 2026-10-20, with
+            // an expiry of its own
+            new Setting("cache", "bad_uploader_h", "--bad-uploader-hours",
+                    Setting.Kind.DECIMAL, 24.0, 0.0,
+                    "rank an uploader last if a transfer from it failed within this many "
+                            + "hours; 0 = forget them at once (default 24)", List.of()),
             new Setting("cache", "enabled", "--no-cache", Setting.Kind.BOOLEAN, 1, 0.0,
                     "remember what happened to a track and act on it; false ignores "
                             + "cache.json completely - searches everything and writes "

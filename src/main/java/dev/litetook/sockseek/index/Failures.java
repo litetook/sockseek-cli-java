@@ -343,6 +343,41 @@ public final class Failures {
     }
 
     /**
+     * The uploaders remembered as bad, with this run's failures folded in.
+     *
+     * <p>A name that fails again has its count raised and its clock restarted; one that
+     * behaved this time is left exactly as it was, because it is still the same thing we
+     * learned yesterday, and it expires on its own.
+     */
+    public static List<Bad> afterUploaders(List<Bad> existing, Map<String, Integer> failed,
+                                           LocalDateTime now, String why) {
+        Map<String, Bad> all = new LinkedHashMap<>();
+        existing.forEach(one -> all.put(one.user(), one));
+        failed.forEach((user, times) -> {
+            Bad was = all.get(user);
+            all.put(user, new Bad(now, user, (was == null ? 0 : was.times()) + times, why));
+        });
+        return List.copyOf(all.values());
+    }
+
+    /**
+     * The uploaders to tell sockseek to rank last, because they let us down recently.
+     *
+     * <p>Ranked last and not banned: an uploader that stalled last night may be the only one
+     * holding a track tonight, and a ban would turn a slow download into no download. Hours
+     * of 0 turns the whole thing off.
+     */
+    public static List<String> staleUploaders(List<Bad> all, double hours, LocalDateTime now) {
+        if (hours <= 0) {
+            return List.of();
+        }
+        return all.stream()
+                .filter(one -> one.when().isAfter(now.minusMinutes((long) (hours * 60))))
+                .map(Bad::user)
+                .toList();
+    }
+
+    /**
      * The playlist lines worth not searching for again today.
      *
      * <p>{@code hours} of 0 means the skipping is off and nothing is held back - the counting

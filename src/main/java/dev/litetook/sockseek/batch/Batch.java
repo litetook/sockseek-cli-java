@@ -182,6 +182,19 @@ public final class Batch {
         // --no-cache makes the file not exist for the length of this run: nothing is read
         // from it and nothing is written back, so a clean sweep leaves no trace either way
         List<Failures.Outcome> remembered = cfg.cache() ? Failures.read(cacheFile) : List.of();
+        // Uploaders that let us down recently. sockseek forgets them when a run ends -
+        // fails-to-ignore lasts one run - so this is the part that outlives it. Ranked
+        // last, never banned: one that stalled last night may be the only one holding a
+        // track tonight
+        List<String> rankLast = cfg.cache()
+                ? Failures.staleUploaders(Failures.readUploaders(cacheFile),
+                        cfg.badUploaderHours(), LocalDateTime.now())
+                : List.of();
+        if (!rankLast.isEmpty()) {
+            log.accept(rankLast.size() + " uploader(s) ranked last after letting a transfer "
+                    + "die within the last " + plainHours(cfg.badUploaderHours()) + " hour(s)");
+        }
+        Map<String, Integer> wentBad = new LinkedHashMap<>();
         // what this run could refuse a file for. A row remembered under other conditions
         // answers a different question and is not acted on - so turning a filter off takes
         // effect at once, instead of after the skip window runs out
@@ -260,8 +273,11 @@ public final class Batch {
             Files.deleteIfExists(eventsFile);
             listFile = passList;   // the explain step probes whatever the last pass asked
             Options options = cfg.options().withPass(format, passes.get(pass).floor());
-            List<String> command = client.command(passList, downloadDir, logFile, options,
-                    Runner.INDEX_NAME, eventsFile);
+            List<String> command = new ArrayList<>(client.command(passList, downloadDir,
+                    logFile, options, Runner.INDEX_NAME, eventsFile));
+            if (!rankLast.isEmpty()) {
+                command.addAll(List.of("--pref-banned-users", String.join(",", rankLast)));
+            }
             if (cfg.dryRun()) {
                 log.accept("dry run: " + Runs.commandLine(command));
                 continue;
@@ -302,6 +318,7 @@ public final class Batch {
             if (trace.login() != Trace.Login.UNKNOWN) {
                 signedIn = trace.login();
             }
+            trace.wentBad().forEach((user, times) -> wentBad.merge(user, times, Integer::sum));
             int passSearches = Pace.searchesOf(passList, eventsFile);
             spentSearches += passSearches;
             if (status == dev.litetook.sockseek.process.Status.ERROR || status.cutShort()) {
@@ -388,6 +405,7 @@ public final class Batch {
         ladder(arrived, arrivedOn, passes);
         if (cfg.cache()) {
             remember(cacheFile, remembered, playlist.name(), said, wideOpen, conditions);
+            rememberUploaders(cacheFile, wentBad);
         }
         // The question the owner kept asking of a cut-short run: how many never got a turn?
         // sockseek leaves state=0 on a row still in the queue, and eleven of them after the
@@ -512,6 +530,29 @@ public final class Batch {
             String reason = Failures.reasonOf(event, wideOpen.contains(line), conditions);
             log.accept("  -> " + Failures.explainClass(reason, conditions));
         }
+    }
+
+    /**
+     * Write down which uploaders let a transfer die, so the next run can rank them last.
+     *
+     * <p>Read back and written whole rather than appended to, because the tracks were just
+     * written to the same file and the two must not overwrite one another.
+     */
+    void rememberUploaders(Path cacheFile, Map<String, Integer> wentBad) {
+        if (wentBad.isEmpty()) {
+            return;
+        }
+        Failures.Cache was = Failures.cache(cacheFile);
+        List<Failures.Bad> after = Failures.afterUploaders(was.uploaders(), wentBad,
+                LocalDateTime.now(), "a transfer from them did not make it");
+        if (!Failures.write(cacheFile, new Failures.Cache(was.tracks(), after))) {
+            log.accept("WARN cannot write " + cacheFile + ", these uploaders will be tried "
+                    + "again as if nothing happened");
+            return;
+        }
+        log.accept(wentBad.size() + " uploader(s) written down as having dropped a transfer; "
+                + "they rank last for the next " + plainHours(cfg.badUploaderHours())
+                + " hour(s)");
     }
 
     /**
