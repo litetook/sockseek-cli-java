@@ -480,7 +480,7 @@ cancel a single sockseek job from outside, so the tool does not pretend to have 
 
 ### `cache.enabled` — true · `--no-cache`
 
-**What it's for.** The master switch for `outcomes.tsv`. `false` makes the file not exist for
+**What it's for.** The master switch for `cache.json`. `false` makes the file not exist for
 the length of a run: nothing is read from it, nothing is written back. A clean sweep that
 leaves no trace, the way `--dry-run` leaves none.
 
@@ -557,16 +557,27 @@ for ever rather than for a day, and the index it reads cannot tell the two class
 
 ---
 
-## `outcomes.tsv`: what happened last time
+## `cache.json`: what happened last time
 
 Every failure is written down; only one class is ever acted on. The file sits next to the
-config, one tab-separated line per track:
+config and holds two lists, because a track and an uploader are two different things:
 
+```json
+{
+  "tracks" : [ {
+    "at" : "2026-10-17T12:24:31", "playlist" : "techno-hard",
+    "track" : "Artist - Title | 4:09",
+    "ended" : "AllDownloadsFailed", "runs" : 4, "under" : "len=45"
+  } ],
+  "uploaders" : [ ]
+}
 ```
-2026-10-17T12:24:31  AllDownloadsFailed  4  techno-hard  Artist - Title | 4:09
-2026-10-17T18:02:10  NoSearchResults     1  chill        Other - Track | 3:12
-       when               class       runs      playlist           playlist line
-```
+
+It was a tab-separated `outcomes.tsv` until 2026-10-20. A folder that still has one is read
+from it once, and the first write afterwards produces `cache.json`; the old file is left
+where it is and stops being looked at, so nothing can be lost in the move. Writes go through
+a temporary file and a rename, so a machine that dies mid-write loses the new records rather
+than the old ones.
 
 **What it's for.** Two jobs that must not be confused:
 
@@ -576,7 +587,7 @@ config, one tab-separated line per track:
   been failing the same way for three runs can say so:
 
   ```
-  3 track(s) have ended the same way 3+ runs in a row - see outcomes.tsv
+  3 track(s) have ended the same way 3+ runs in a row - see cache.json
     x4  AllDownloadsFailed  Blue Kettle - Lantern Drift | 5:23
   ```
 
@@ -800,7 +811,7 @@ FAILED  state=2 reason=9 (no candidate passed the name/length/quality conditions
 27 s off.
 
 Which of the two it was is decided **while the run is going**, and written into
-`outcomes.tsv` with the conditions that were in force:
+`cache.json` with the conditions that were in force:
 
 | What the row says | What it means | Skipped next time? |
 |---|---|---|
@@ -852,7 +863,7 @@ fixes that; another hour of the day might.
 |---|---|
 | `output/<name>/` | the audio, flat, named `Artist - Title.ext` |
 | `output/<name>/_index.csv` | sockseek's index: the only link between a playlist line and a file |
-| `outcomes.tsv` | how each track ended last time, with the time and a run counter |
+| `cache.json` | how each track ended last time, with the time and a run counter |
 | `logs/session_<stamp>.log` | **everything you saw on screen**, one file per start of the command |
 | `logs/run_<NNNN>_<stamp>.log` | one run of one playlist; opens with `run #NNNN` and the effective config |
 | `logs/sockseek_<NNNN>_<name>.log` | sockseek's own verbose log (only with `--verbose`) |

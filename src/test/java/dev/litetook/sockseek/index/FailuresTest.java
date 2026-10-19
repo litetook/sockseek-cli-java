@@ -113,10 +113,10 @@ class FailuresTest {
     void theOldFiveFieldRowsAreStillRead(@TempDir Path home) throws Exception {
         // the file had no conditions column before 2026-10-18; those rows read as "none",
         // which is safe - they are all in classes the cache never skips anyway
-        Path file = home.resolve(Failures.FILE_NAME);
+        Path file = home.resolve(Failures.OLD_FILE_NAME);
         java.nio.file.Files.writeString(file, String.join("\t",
                 "2026-10-17T12:24:31", "AllDownloadsFailed", "4", "mix", "A - one") + "\n");
-        List<Failures.Outcome> read = Failures.read(file);
+        List<Failures.Outcome> read = Failures.read(home.resolve(Failures.FILE_NAME));
         assertEquals(1, read.size());
         assertEquals("", read.get(0).conditions());
         assertEquals("mix", read.get(0).playlist());
@@ -192,11 +192,11 @@ class FailuresTest {
     void theDateOnlyFormOfTheOldFileIsStillRead(@TempDir Path home) throws Exception {
         // a day of real records already existed when the unit changed; a date with no time
         // counts as that day's midnight, which can only make a row look older, never younger
-        Path file = home.resolve(Failures.FILE_NAME);
+        Path file = home.resolve(Failures.OLD_FILE_NAME);
         java.nio.file.Files.writeString(file, String.join("\t",
                 "2026-10-17", "NoSearchResults", "3", "", "mix", "Artist - Title | 4:09")
                 + "\n");
-        List<Failures.Outcome> read = Failures.read(file);
+        List<Failures.Outcome> read = Failures.read(home.resolve(Failures.FILE_NAME));
         assertEquals(1, read.size());
         assertEquals(LocalDateTime.of(2026, 10, 17, 0, 0), read.get(0).when());
         assertEquals(3, read.get(0).runs());
@@ -212,7 +212,7 @@ class FailuresTest {
 
     @Test
     void itSurvivesTheRoundTripThroughTheFile(@TempDir Path home) {
-        Path file = home.resolve(Failures.FILE_NAME);
+        Path file = home.resolve(Failures.OLD_FILE_NAME);
         // a playlist line holds anything: commas, pipes, brackets, an em dash
         List<Failures.Outcome> all = List.of(
                 new Failures.Outcome(NOW, "NoSearchResults", 1, "", "techno-hard",
@@ -223,7 +223,7 @@ class FailuresTest {
 
     @Test
     void aHandEditedLineIsSkippedRatherThanFatal(@TempDir Path home) {
-        Path file = home.resolve(Failures.FILE_NAME);
+        Path file = home.resolve(Failures.OLD_FILE_NAME);
         assertTrue(Failures.write(file, List.of(
                 new Failures.Outcome(NOW, "NoSearchResults", 1, "", "mix", "A - one"))));
         assertEquals(1, Failures.read(file).size());

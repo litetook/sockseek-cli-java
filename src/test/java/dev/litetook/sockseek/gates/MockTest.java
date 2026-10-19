@@ -50,7 +50,7 @@ class MockTest {
         assumeTrue(Files.isRegularFile(Gates.sockseek()),
                 "no sockseek binary beside the project - run the tool once so it fetches one");
         Path folder = build(where.resolve("sockseek-gate-mock"));
-        Path outcomes = folder.resolve("outcomes.tsv");
+        Path outcomes = folder.resolve(Failures.FILE_NAME);
 
         String said = run(folder, 0);
         assertTrue(said.contains(">> 1 of 3 done") && said.contains(">> 3 of 3 done"),
@@ -92,11 +92,9 @@ class MockTest {
                 "the dead uploads are searched again; only the ghost is held back:\n"
                         + tail(said));
         written = Files.readString(outcomes, StandardCharsets.UTF_8);
-        assertTrue(written.lines().anyMatch(line -> {
-            String[] parts = line.split("\t");
-            return parts.length > 2 && parts[1].equals("AllDownloadsFailed")
-                    && parts[2].equals("2");
-        }), "failing the same way twice should count up:\n" + written);
+        assertTrue(Failures.read(outcomes).stream().anyMatch(one ->
+                one.reason().equals("AllDownloadsFailed") && one.runs() == 2),
+                "failing the same way twice should count up:\n" + written);
     }
 
     /** A folder with two tracks somebody shares and one nobody does. */

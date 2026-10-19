@@ -128,7 +128,7 @@ public final class Settings {
 
             cache:
               enabled: true                # default true. Remembers how each track ended
-                                           # (outcomes.tsv)
+                                           # (cache.json)
               # skip a track confirmed absent if it was asked for this recently, under the
               # same conditions; 0 = always search. Fractions are fine
               skip_absent_h: 2h
@@ -234,7 +234,7 @@ public final class Settings {
                     List.of("skip_not_found_hours")),
             new Setting("cache", "enabled", "--no-cache", Setting.Kind.BOOLEAN, 1, 0.0,
                     "remember what happened to a track and act on it; false ignores "
-                            + "outcomes.tsv completely - searches everything and writes "
+                            + "cache.json completely - searches everything and writes "
                             + "nothing down (default true)", List.of("use_cache")),
             // ---- the whole run ----
             new Setting("rate_limit", "searches_per_window", "--searches-per-window",

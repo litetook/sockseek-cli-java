@@ -225,7 +225,7 @@ it for you.
 | `Playlists/<name>.txt` | your lists - the input |
 | `output/<name>/` | the audio, flat, named `Artist - Title.ext` |
 | `output/<name>/_index.csv` | sockseek's index: the only link between a playlist line and a file |
-| `outcomes.tsv` | how each track ended last time, with the time and a run counter |
+| `cache.json` | how each track ended last time, with the time and a run counter |
 | `logs/session_<date>.log` | everything you saw on screen, one file per start |
 | `logs/run_<NNNN>_<date>.log` | one run of one playlist |
 | `work/` | generated lists and the merged config - **holds your login in plain text**; safe to delete |
@@ -275,7 +275,7 @@ flags are still accepted, with a warning naming the new one.
 | `track.replace_if_better` | `false` | **off by default, because on it touches your library.** On, every track is searched for again - the ones already on disk included - and a new copy is kept only when it is better **by the same thing the quality ladder sorts by, the bitrate**. The playlist says how long the track is and the file says how big it is, so bytes x 8 / seconds is its bitrate to within a few percent - no file is ever opened. A 128 kbps mp3 taken on a bad night is replaced by a 320; a 320 is never replaced by a 128. Lossless always beats lossy. A file that is not the length the playlist claims is not compared at all. What arrives lands in a folder of its own first, so nothing of yours is deleted until a winner is picked, and a track nobody is sharing leaves your copy exactly as it was. Off, a track on disk is not searched for at all |
 | `track.max_sources` | `3` | how many different uploaders to try for one track before giving up on it this run. sockseek calls this `max-retries`, which sounds like trying the same one again; what it counts is different people |
 | `track.format_order` | *(empty)* | formats you want, best first, comma separated — `mp3@256, flac, mp3@128`. Each is a separate pass over whatever is still missing with that format **required**, and `@192` is a floor for that pass only: without it the ladder runs downhill, because a 96 kbps mp3 taken first means the flac that was there is never asked for. The last pass has no format and no floor, so nothing is lost. The only way to order formats at all: sockseek's own `pref-format` is unordered by its documentation. It costs searches — every pass is a search per still-missing track, and the price before the one `y` says so |
-| `cache.enabled` | `true` | `false` makes `outcomes.tsv` not exist for the run: nothing read, nothing written |
+| `cache.enabled` | `true` | `false` makes `cache.json` not exist for the run: nothing read, nothing written |
 
 > **How a failure knows what it is.** sockseek reports "nobody on the network had it" and
 > "several people had it and every copy was refused by your filters" with the **same** code —
@@ -351,7 +351,7 @@ about a track that will not come down, and an honest list of what this cannot do
 | **One question** | every missing list first, then the price of the lot — playlists, tracks, and the minutes the search limiter alone will cost — then one `y` |
 | **A live count** | `>> 12 of 31 done, 9 downloaded`, while it is running, across the whole run rather than one playlist |
 | **A silence watchdog** | a playlist that has finished nothing *and* received no bytes for `stall_timeout_s` is stopped and said to have gone quiet, not left to burn its wall clock |
-| **A memory of last time** | `outcomes.tsv`: how each track ended, with a run counter. A track nobody was sharing is not searched again for `cache.skip_absent_h`; every other failure is counted and never skipped, so "this one has failed four runs running" is something you can see |
+| **A memory of last time** | `cache.json`: how each track ended, with a run counter. A track nobody was sharing is not searched again for `cache.skip_absent_h`; every other failure is counted and never skipped, so "this one has failed four runs running" is something you can see |
 | **A brake on searching** | the Soulseek server bans an account that searches too fast, and sockseek's own budget only covers one process. This keeps every playlist together under the limit |
 | **Only what is missing** | a track already on disk is never sent to sockseek |
 | **Reasons in words** | `reason=9` in sockseek's index means both "nobody had it" and "found and rejected". Every failure is written down the moment it happens with which of the two it was, worked out from what the run itself was asking, and with those conditions beside it. `--why` asks the network again about the tracks you name |

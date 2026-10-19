@@ -619,10 +619,9 @@ class AppTest {
         // "len=45" is what the shipped config asks under, and a row is only acted on by
         // a run asking the same way - otherwise the price would promise a skip the run
         // would not make
-        Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
-                LocalDateTime.now().toString(), Failures.CONFIRMED_ABSENT, "1", shipped(),
-                "one", "Artist - A")
-                + NEWLINE);
+        Failures.write(home.resolve(Failures.FILE_NAME),
+                List.of(new Failures.Outcome(LocalDateTime.now(), Failures.CONFIRMED_ABSENT,
+                        1, shipped(), "one", "Artist - A")));
         Run run = run(List.of(), "1", "1", "n");
         assertTrue(run.said("3 missing track(s). 1 of them were searched for recently and "
                 + "nobody had them, so 2 will be searched."), run.printed().toString());
@@ -635,9 +634,9 @@ class AppTest {
         // back" says nothing about today - and the price must not pretend otherwise
         ready();
         playlist("one", "Artist - A", "Artist - B");
-        Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
-                LocalDateTime.now().toString(), Failures.CONFIRMED_ABSENT, "1",
-                "len=45,min-bitrate=256", "one", "Artist - A") + NEWLINE);
+        Failures.write(home.resolve(Failures.FILE_NAME),
+                List.of(new Failures.Outcome(LocalDateTime.now(), Failures.CONFIRMED_ABSENT,
+                        1, "len=45,min-bitrate=256", "one", "Artist - A")));
         Run run = run(List.of(), "1", "1", "n");
         assertTrue(run.said("To download: 1 playlist(s), 2 missing track(s)."),
                 run.printed().toString());
@@ -648,9 +647,9 @@ class AppTest {
     void anExpiredMemoryDoesNotChangeThePrice() throws IOException {
         ready();
         playlist("one", "Artist - A", "Artist - B");
-        Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
-                LocalDateTime.now().minusDays(3).toString(), Failures.CONFIRMED_ABSENT, "1",
-                "len=45", "one", "Artist - A") + NEWLINE);
+        Failures.write(home.resolve(Failures.FILE_NAME),
+                List.of(new Failures.Outcome(LocalDateTime.now().minusDays(3),
+                        Failures.CONFIRMED_ABSENT, 1, "len=45", "one", "Artist - A")));
         Run run = run(List.of(), "1", "1", "n");
         assertTrue(run.said("To download: 1 playlist(s), 2 missing track(s)."),
                 run.printed().toString());
@@ -661,10 +660,9 @@ class AppTest {
     void noCacheMakesThePriceTheWholeThing() throws IOException {
         ready();
         playlist("one", "Artist - A", "Artist - B");
-        Files.writeString(home.resolve(Failures.FILE_NAME), String.join(TAB,
-                LocalDateTime.now().toString(), Failures.CONFIRMED_ABSENT, "1", "one",
-                "Artist - A")
-                + NEWLINE);
+        Failures.write(home.resolve(Failures.FILE_NAME),
+                List.of(new Failures.Outcome(LocalDateTime.now(), Failures.CONFIRMED_ABSENT,
+                        1, "", "one", "Artist - A")));
         Run run = run(List.of("--no-cache"), "1", "1", "n");
         assertTrue(!run.said("will be searched"), run.printed().toString());
     }

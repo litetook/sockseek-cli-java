@@ -136,7 +136,7 @@ public final class Cli implements Callable<Integer> {
     boolean replaceIfBetter;
 
     @Option(names = "--no-cache",
-            description = "ignore outcomes.tsv completely for this run: search everything and "
+            description = "ignore cache.json completely for this run: search everything and "
                     + "write nothing down, as if the file did not exist")
     boolean noCache;
 

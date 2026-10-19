@@ -52,14 +52,32 @@ import java.util.Set;
  * had it" and "found and rejected by the conditions" - run #0004 found two 320 kbps copies of
  * a track whose row said 9, rejected on length. The word can.
  *
- * <p>The file is tab-separated, in the tool's own folder, one line per track:
- * <pre>{@code 2026-10-17T12:24:31<TAB>AllDownloadsFailed<TAB>4<TAB>techno-hard<TAB>Artist - Title}</pre>
- * Tabs, because a playlist line may hold anything else, commas included.
+ * <p>It lives in {@code cache.json} in the tool's own folder, as two lists - what happened
+ * to each track, and which uploaders went bad - because those are two different things and a
+ * file that holds both in one table is a file nobody can read. JSON rather than the
+ * tab-separated table it was until 2026-10-20: the owner's words were "підхід ок,
+ * реалізація не дуже", and a hand-rolled format with a hand-rolled parser was the part that
+ * was not. A file written before that is still read, once, and the next write replaces it.
+ *
+ * <pre>{@code
+ * {
+ *   "tracks" : [ { "at" : "2026-10-18T11:10:35", "playlist" : "real-techno",
+ *                  "track" : "Fatima Hajji - Rellenito | 5:34",
+ *                  "ended" : "NoSearchResults", "runs" : 1, "under" : "" } ],
+ *   "uploaders" : [ ]
+ * }
+ * }</pre>
  */
 public final class Failures {
 
     /** Where it lives: beside the config, not in work/, which is safe to delete at any time. */
-    public static final String FILE_NAME = "outcomes.tsv";
+    public static final String FILE_NAME = "cache.json";
+
+    /** The tab-separated file this used to be. Read once, never written again. */
+    public static final String OLD_FILE_NAME = "outcomes.tsv";
+
+    private static final com.fasterxml.jackson.databind.ObjectMapper JSON =
+            new com.fasterxml.jackson.databind.ObjectMapper();
 
     /**
      * The one class that may ever stop a track being searched for again.
@@ -125,19 +143,124 @@ public final class Failures {
     public record Outcome(LocalDateTime when, String reason, int runs, String conditions,
                           String playlist, String line) {
 
-        String toLine() {
-            return when + "\t" + reason + "\t" + runs + "\t" + conditions + "\t" + playlist
-                    + "\t" + line;
-        }
-
         /** Confirmed absent by a search with every condition off - see CONFIRMED_ABSENT. */
         public boolean notOnNetwork() {
             return reason.equals(CONFIRMED_ABSENT);
         }
     }
 
+    /**
+     * One uploader that did not deliver, and when it last did that.
+     *
+     * <p>sockseek forgets an uploader the moment a run ends - {@code fails-to-ignore} lasts
+     * for one run only - so a peer that stalls every night is tried again every night. This
+     * is the part that outlives a run, with an expiry of its own.
+     *
+     * @param why in our own words, from what the log showed: a transfer that sent nothing,
+     *            or one that failed outright
+     */
+    public record Bad(LocalDateTime when, String user, int times, String why) {
+    }
+
+    /** The whole file: two lists, because a track and a person are not the same thing. */
+    public record Cache(List<Outcome> tracks, List<Bad> uploaders) {
+
+        public Cache {
+            tracks = List.copyOf(tracks);
+            uploaders = List.copyOf(uploaders);
+        }
+
+        static Cache empty() {
+            return new Cache(List.of(), List.of());
+        }
+    }
+
+    /** What JSON sees. Strings for the stamps, so no date module has to be dragged in. */
+    private record Row(String at, String playlist, String track, String ended, int runs,
+                       String under) {
+    }
+
+    private record Peer(String at, String user, int times, String why) {
+    }
+
+    private record Document(List<Row> tracks, List<Peer> uploaders) {
+    }
+
     /** Everything remembered so far; an unreadable or absent file simply remembers nothing. */
     public static List<Outcome> read(Path file) {
+        return cache(file).tracks();
+    }
+
+    /** The uploaders remembered so far. */
+    public static List<Bad> readUploaders(Path file) {
+        return cache(file).uploaders();
+    }
+
+    /**
+     * The whole file, or what can be made of it.
+     *
+     * <p>A file from before 2026-10-20 is a tab-separated table beside this one; it is read
+     * as the tracks list and nothing is lost. Nothing migrates it on purpose - the next write
+     * produces the new file and the old one simply stops being looked at, so a mistake here
+     * cannot take the history with it.
+     */
+    public static Cache cache(Path file) {
+        if (Files.isRegularFile(file)) {
+            try {
+                Document read = JSON.readValue(Files.readString(file, StandardCharsets.UTF_8),
+                        Document.class);
+                return new Cache(outcomes(read), peers(read));
+            } catch (IOException | RuntimeException notReadable) {
+                return Cache.empty();   // a half-written file is not worth failing a run for
+            }
+        }
+        Path old = file.resolveSibling(OLD_FILE_NAME);
+        return Files.isRegularFile(old) ? new Cache(readTabs(old), List.of()) : Cache.empty();
+    }
+
+    /** True when the old table is all there is, which is worth one line in the log. */
+    public static boolean onlyOldFile(Path file) {
+        return !Files.isRegularFile(file)
+                && Files.isRegularFile(file.resolveSibling(OLD_FILE_NAME));
+    }
+
+    private static List<Outcome> outcomes(Document read) {
+        List<Outcome> all = new ArrayList<>();
+        for (Row row : read.tracks() == null ? List.<Row>of() : read.tracks()) {
+            if (row == null || row.track() == null || row.track().isBlank()) {
+                continue;
+            }
+            try {
+                all.add(new Outcome(when(row.at()), text(row.ended()), row.runs(),
+                        text(row.under()), text(row.playlist()), row.track()));
+            } catch (DateTimeParseException notThisOne) {
+                continue;
+            }
+        }
+        return all;
+    }
+
+    private static List<Bad> peers(Document read) {
+        List<Bad> all = new ArrayList<>();
+        for (Peer peer : read.uploaders() == null ? List.<Peer>of() : read.uploaders()) {
+            if (peer == null || peer.user() == null || peer.user().isBlank()) {
+                continue;
+            }
+            try {
+                all.add(new Bad(when(peer.at()), peer.user(), peer.times(), text(peer.why())));
+            } catch (DateTimeParseException notThisOne) {
+                continue;
+            }
+        }
+        return all;
+    }
+
+    private static String text(String maybe) {
+        return maybe == null ? "" : maybe.strip();
+    }
+
+    /** The tab-separated table this file was until 2026-10-20. */
+    private static List<Outcome> readTabs(Path file) {
         List<Outcome> found = new ArrayList<>();
         List<String> lines;
         try {
@@ -174,18 +297,47 @@ public final class Failures {
      * only make a row look older than it is, never younger.
      */
     private static LocalDateTime when(String text) {
-        return text.length() <= 10 ? LocalDate.parse(text).atStartOfDay()
-                : LocalDateTime.parse(text);
+        String said = text == null ? "" : text.strip();
+        return said.length() <= 10 ? LocalDate.parse(said).atStartOfDay()
+                : LocalDateTime.parse(said);
     }
 
-    /** Write the table back. A record that cannot be written is not worth failing a run for. */
+    /** Write the tracks back, leaving whatever is remembered about uploaders alone. */
     public static boolean write(Path file, List<Outcome> all) {
+        return write(file, new Cache(all, cache(file).uploaders()));
+    }
+
+    /**
+     * Write the file.
+     *
+     * <p>Through a temporary file and a rename, so a machine that dies mid-write loses the
+     * new records rather than the old ones. A record that cannot be written is not worth
+     * failing a run for either way.
+     */
+    public static boolean write(Path file, Cache all) {
+        Document document = new Document(
+                all.tracks().stream().map(one -> new Row(one.when().toString(),
+                        one.playlist(), one.line(), one.reason(), one.runs(),
+                        one.conditions())).toList(),
+                all.uploaders().stream().map(one -> new Peer(one.when().toString(),
+                        one.user(), one.times(), one.why())).toList());
+        Path temporary = file.resolveSibling(file.getFileName() + ".writing");
         try {
-            Files.writeString(file, all.stream().map(Outcome::toLine)
-                    .reduce((a, b) -> a + "\n" + b).map(text -> text + "\n").orElse(""),
-                    StandardCharsets.UTF_8);
+            Files.writeString(temporary, JSON.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(document) + "\n", StandardCharsets.UTF_8);
+            try {
+                Files.move(temporary, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                        java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+            } catch (java.nio.file.AtomicMoveNotSupportedException notOnThisDisk) {
+                Files.move(temporary, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
             return true;
         } catch (IOException | RuntimeException cannotWrite) {
+            try {
+                Files.deleteIfExists(temporary);
+            } catch (IOException leaveIt) {
+                // a scratch file we could not remove is not worth a word
+            }
             return false;
         }
     }
