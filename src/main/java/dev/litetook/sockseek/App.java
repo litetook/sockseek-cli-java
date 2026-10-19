@@ -87,6 +87,8 @@ public final class App {
                 --cookies-from-browser <browser>
                                   read a private SoundCloud set with the browser's own login
                                   (chrome, firefox, edge, brave, ...) - you log in there, not here
+                --web             serve the same tool as a page on 127.0.0.1 and open it
+                --web-port <n>    that page on another port (default 8787)
                 --version         print the version and exit
             Anything else is passed straight through to the engine, e.g. --length-tol 60, --verbose,
             --explain, --dry-run.
@@ -213,6 +215,7 @@ public final class App {
     /** The front end's own flags; {@code extra} is everything the engine gets untouched. */
     record Front(String only, boolean yes, boolean all, String importSource, String cookiesFrom,
                  String importName, boolean overwrite, boolean version, boolean help,
+                 boolean web, int webPort,
                  Path playlists, Path output, Path config, List<String> extra) {
     }
 
@@ -324,6 +327,13 @@ public final class App {
 
         Path appDir = wiring.appDir();
         Settings.ensureFiles(appDir, out);
+        // Before the login question on purpose: the page has a field for it, and a fresh
+        // folder should be able to reach the page and type the login there
+        if (front.web()) {
+            return dev.litetook.sockseek.web.Web.serve(appDir,
+                    front.webPort() > 0 ? front.webPort()
+                            : dev.litetook.sockseek.web.Web.DEFAULT_PORT, out, true);
+        }
         // The login, asked for here rather than left as homework in a file. Not for an
         // --import, which downloads nothing and needs no account.
         if (front.importSource() == null && Settings.missingLogin(appDir)) {
@@ -507,6 +517,15 @@ public final class App {
             return 2;
         }
 
+        // One download at a time in one folder. Two ways in exist since the web page, and two
+        // runs over one folder share a rate limit, an index and a cache - see batch/RunLock
+        java.util.Optional<dev.litetook.sockseek.batch.RunLock> single =
+                dev.litetook.sockseek.batch.RunLock.tryAcquire(folders.get("work"));
+        if (single.isEmpty()) {
+            out.accept("A run is already going in this folder - the web page, or another "
+                    + "window. Nothing was started here.");
+            return 2;
+        }
         int wanted = wanted(work);
         int arrivedSoFar = 0;
         // A dry run and a preview ask the server for nothing, so there is nothing to pace -
@@ -514,6 +533,7 @@ public final class App {
         boolean real = front.extra().stream()
                 .noneMatch(flag -> flag.equals("--dry-run") || flag.equals("--preview"));
         Pace pace = new Pace(real ? perWindow : 0, windowSeconds, out);
+        try (dev.litetook.sockseek.batch.RunLock onlyRun = single.get()) {
         for (int number = 0; number < work.size(); number++) {
             Info info = work.get(number);
             String step = "[" + (number + 1) + "/" + work.size() + "] ";
@@ -555,8 +575,44 @@ public final class App {
                 out.accept("Interrupted.");
                 break;
             }
+            // Stop on the web page interrupts this thread; Runner has already killed the
+            // sockseek it was waiting on. Cleared here so the playlists that are no longer
+            // going to run do not each report a failure of their own
+            if (Thread.interrupted()) {
+                out.accept("Stopped.");
+                break;
+            }
+        }
         }
         return worst;
+    }
+
+    /**
+     * One track from a link into {@code unsorted} - menu option 4, without the menu.
+     *
+     * <p>Here because the web page's "Add by link" has to do exactly what option 4 does, and
+     * the way to make sure of that is to call the same code rather than to describe it twice.
+     */
+    public static int addTrack(String url, Path appDir, Consumer<String> out) {
+        Config config = Settings.loadConfig(appDir.resolve(Settings.CONFIG_NAME), out);
+        Path playlistsDir = Settings.configPaths(config, appDir).get("playlists");
+        return trackToUnsorted(url, playlistsDir, out, config, null, null,
+                Wiring.standard(appDir)).code();
+    }
+
+    /** How many passes a run would make over every missing track, by the settings as they are. */
+    public static int passes(Config config) {
+        return passCount(config, parse(new String[0]));
+    }
+
+    /** The search brake as the settings have it, so the page can price a run before it starts. */
+    public static int searchesPerWindow(Config config) {
+        return searchesPerWindow(config, parse(new String[0]));
+    }
+
+    /** The window those searches share, in seconds. */
+    public static int windowSeconds(Config config) {
+        return windowSeconds(config, parse(new String[0]));
     }
 
     /**
@@ -1313,6 +1369,8 @@ public final class App {
         boolean overwrite = false;
         boolean version = false;
         boolean help = false;
+        boolean web = false;
+        int webPort = 0;
         List<String> extra = new ArrayList<>();
         List<String> rest = new ArrayList<>(List.of(args));
         while (!rest.isEmpty()) {
@@ -1335,6 +1393,21 @@ public final class App {
                 case "--yes" -> yes = true;
                 case "--all" -> all = true;
                 case "--overwrite" -> overwrite = true;
+                case "--web" -> web = true;
+                case "--web-port" -> {
+                    web = true;
+                    String given = value(flag, inline, rest);
+                    try {
+                        webPort = Integer.parseInt(given.strip());
+                    } catch (NumberFormatException notANumber) {
+                        throw new IllegalArgumentException("argument --web-port: not a port: "
+                                + given);
+                    }
+                    if (webPort < 1 || webPort > 65535) {
+                        throw new IllegalArgumentException("argument --web-port: a port is 1 to "
+                                + "65535, not " + webPort);
+                    }
+                }
                 case "--version" -> version = true;
                 case "-h", "--help" -> help = true;
                 default -> extra.add(argument);
@@ -1355,7 +1428,7 @@ public final class App {
             extra.add(folder.getValue().toString());
         }
         return new Front(only, yes, all, importSource, cookiesFrom, importName, overwrite,
-                version, help, playlists, output, config, List.copyOf(extra));
+                version, help, web, webPort, playlists, output, config, List.copyOf(extra));
     }
 
     private static String value(String flag, String inline, List<String> rest) {
@@ -1377,8 +1450,25 @@ public final class App {
         }
     }
 
+    /**
+     * The playlists {@code --only} asked for: one name, or several separated by commas.
+     *
+     * <p>The exact match is tried first and wins, so a playlist whose own name has a comma in
+     * it - a file name may - is still found by that name rather than split into two halves
+     * that match nothing. The comma form is what the web page sends when several rows are
+     * ticked; the engine still gets one name at a time.
+     */
     private static List<Info> named(List<Info> infos, String name) {
-        return infos.stream().filter(info -> info.name().equals(name)).toList();
+        List<Info> exact = infos.stream().filter(info -> info.name().equals(name)).toList();
+        if (!exact.isEmpty() || name == null || !name.contains(",")) {
+            return exact;
+        }
+        return java.util.Arrays.stream(name.split(","))
+                .map(App::strip)
+                .filter(wanted -> !wanted.isEmpty())
+                .flatMap(wanted -> infos.stream().filter(info -> info.name().equals(wanted)))
+                .distinct()
+                .toList();
     }
 
     private static long withLength(List<String> lines) {

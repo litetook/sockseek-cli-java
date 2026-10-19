@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sockseek-cli</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header>
+  <div class="brand">sockseek-cli <span id="where">local</span></div>
+  <nav>
+    <button class="on" data-go="run">Run</button>
+    <button data-go="playlists">Playlists</button>
+    <button data-go="link">Add by link</button>
+    <button data-go="config">Config</button>
+    <button data-go="login">Login</button>
+  </nav>
+  <div class="status"><i class="dot" id="dot"></i><span id="state">connecting</span></div>
+</header>
+
+<div class="banner" id="banner" hidden></div>
+
+<main>
+
+<!-- ======================= Run ======================= -->
+<section class="page on" id="p-run">
+ <div class="cols">
+
+  <div class="card">
+    <h2>Playlists <span class="sub" id="plSummary"></span></h2>
+    <div class="wrap"><table id="plTable">
+      <thead><tr>
+        <th style="width:34px"><input type="checkbox" id="all" aria-label="select all"></th>
+        <th>playlist</th><th>tracks</th><th>here</th><th>missing</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <div class="price" id="price">Reading the folder&hellip;</div>
+    <div class="bar">
+      <button class="btn primary" id="go" disabled>Download</button>
+      <button class="btn" id="dry" disabled>Dry run</button>
+      <span class="grow"></span>
+      <button class="btn danger" id="stop" disabled>Stop</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Live <span class="sub" id="runno">no run yet</span></h2>
+    <div class="chips">
+      <span class="chip pass">pass <b id="c-pass">&mdash;</b></span>
+      <span class="chip">done <b id="c-done">0 of 0</b></span>
+      <span class="chip ok">arrived <b id="c-ok">0</b></span>
+      <span class="chip bad">failed <b id="c-bad">0</b></span>
+      <span class="chip">elapsed <b id="c-time">0:00</b></span>
+    </div>
+    <div class="prog"><i id="bar"></i></div>
+    <div class="log" id="log"></div>
+  </div>
+
+ </div>
+</section>
+
+<!-- ======================= Playlists ======================= -->
+<section class="page" id="p-playlists">
+ <div class="cols-edit">
+
+  <div class="card">
+    <h2>Files <span class="sub" id="fileCount"></span></h2>
+    <div class="files" id="files"></div>
+    <div class="bar">
+      <input id="newName" placeholder="new playlist name" aria-label="new playlist name">
+      <button class="btn" id="newFile">Create</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span id="plName">pick a file</span>
+      <span class="sub">one track a line: Artist - Title | m:ss</span></h2>
+    <textarea id="plText" spellcheck="false" aria-label="playlist contents" disabled></textarea>
+    <div class="bar">
+      <button class="btn primary" id="plSave" disabled>Save</button>
+      <button class="btn" id="plRevert" disabled>Revert</button>
+      <span class="grow"></span>
+      <span class="note">A copy is kept beside the file before it is written.</span>
+    </div>
+    <div class="msg" id="plMsg" hidden></div>
+  </div>
+
+ </div>
+</section>
+
+<!-- ======================= Add by link ======================= -->
+<section class="page" id="p-link">
+ <div class="card wide">
+  <h2>Add by link <span class="sub">Spotify &middot; SoundCloud &middot; Beatport</span></h2>
+  <div class="pad">
+    <label class="field">
+      <span>Paste a track or playlist link</span>
+      <div class="row">
+        <input id="linkIn" spellcheck="false"
+               placeholder="https://open.spotify.com/playlist/... or a Beatport chart">
+        <button class="btn primary" id="linkGo">Read</button>
+      </div>
+    </label>
+    <label class="check"><input type="checkbox" id="linkTrack">
+      one track, into <code>unsorted</code></label>
+    <label class="check"><input type="checkbox" id="linkOver">
+      replace a playlist of the same name</label>
+    <div class="kv">
+      A <b>playlist</b> link becomes a new file in <code>Playlists/</code>. Nothing is
+      downloaded here &mdash; the Run page is where a download starts.<br>
+      A <b>track</b> link is appended to <code>unsorted.txt</code>, which is a playlist like
+      any other.<br>
+      Beatport reads a chart, a genre top 100 and <code>beatport.com/top-100</code>. A track,
+      release or library page cannot be read, and says so.
+    </div>
+  </div>
+  <div class="msg" id="linkMsg" hidden></div>
+  <pre class="out" id="linkOut" hidden></pre>
+ </div>
+</section>
+
+<!-- ======================= Config ======================= -->
+<section class="page" id="p-config">
+ <div class="card">
+  <h2>config.yaml <span class="sub" id="cfgPath"></span></h2>
+  <textarea id="cfgText" spellcheck="false" aria-label="config.yaml"></textarea>
+  <div class="bar">
+    <button class="btn primary" id="cfgSave">Save</button>
+    <button class="btn" id="cfgRevert">Revert</button>
+    <span class="grow"></span>
+    <span class="note">Checked before writing. A wrong key or unit stops the write.</span>
+  </div>
+  <div class="msg" id="cfgMsg" hidden></div>
+ </div>
+</section>
+
+<!-- ======================= Login ======================= -->
+<section class="page" id="p-login">
+ <div class="card narrow">
+  <h2>Soulseek login</h2>
+  <div class="pad">
+    <div class="msg info" id="logState" style="margin:0 0 16px"></div>
+    <label class="field"><span>Username</span>
+      <input id="user" autocomplete="off" placeholder="your Soulseek name"></label>
+    <label class="field"><span>Password</span>
+      <input id="pass" type="password" autocomplete="off"
+             placeholder="not shown, not sent back"></label>
+    <button class="btn primary" id="logSave">Save login</button>
+    <div class="kv">
+      Written to <code>config.local.yaml</code>, which git never sees.<br>
+      It is never sent back to this page: the fields start empty on every load.
+    </div>
+  </div>
+  <div class="msg" id="logMsg" hidden></div>
+ </div>
+</section>
+
+</main>
+<script src="app.js"></script>
+</body>
+</html>

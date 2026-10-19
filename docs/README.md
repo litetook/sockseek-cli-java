@@ -37,6 +37,49 @@ before it is put in place. Nothing is installed system-wide and nothing needs ad
 
 ---
 
+## The page, if you would rather click
+
+```bash
+run.cmd --web              # serves it on 127.0.0.1:8787 and opens the browser
+run.cmd --web-port 9000    # the same, on another port
+```
+
+The console is the way in that is always there; this is a second door into the same engine.
+Five pages:
+
+| Page | What it is for |
+|---|---|
+| **Run** | tick playlists, see the price, press Download, watch the log as it happens |
+| **Playlists** | the `.txt` files, in a text box, saved with a backup |
+| **Add by link** | a Spotify, SoundCloud or Beatport link into a playlist, or one track into `unsorted` |
+| **Config** | this `config.yaml`, as text, checked before it is written |
+| **Login** | the Soulseek login, written to `config.local.yaml` and never shown again |
+
+It needs nothing installed. The HTTP server is part of Java itself, the page is three files
+inside the jar, and there is no container and no virtualisation in it anywhere — which was the
+condition it was asked for under.
+
+**The address it prints carries a key.** Paste it as it is. A port on localhost is not private:
+any page open in your browser can send requests to `127.0.0.1`, so a request without that key
+is refused, and so is one whose `Host` header is not the loopback name — that second check is
+what stops a name that resolves to `127.0.0.1` from being used against you. The server binds
+the loopback address only, so nothing off this machine ever reaches it.
+
+**One run at a time.** The console and the page both start runs, and two runs over one folder
+would share a search limit, an index and a cache. Whichever asks second is told there is a run
+already going, by an OS-level lock on `work/run.lock` that the system drops by itself if the
+tool is killed.
+
+**The log in the page is this tool's own output**, the same lines that go to
+`logs/session_*.log`: the passes, the live count, and a reason under every failure. It is not
+sockseek's own display — that one is painted straight onto the real console and cannot be
+carried anywhere.
+
+What it is not: an interface for a network. One key, no accounts, no TLS, no users. It is for
+the machine it runs on.
+
+---
+
 ## What a run looks like
 
 ```
