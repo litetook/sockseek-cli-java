@@ -113,7 +113,10 @@ public final class App {
         SOUNDCLOUD("3", "SoundCloud", "save a .txt from a SoundCloud link, then download it"),
         /** One track, from either service, straight into the unsorted playlist. */
         TRACK("4", "Spotify or SoundCloud",
-                "one track from a link, into " + UNSORTED);
+                "one track from a link, into " + UNSORTED),
+        /** A Beatport chart or top 100. Not a track page: see LinkReader for why. */
+        BEATPORT("5", "Beatport",
+                "save a .txt from a Beatport chart or top 100, then download it");
 
         private final String key;
         private final String label;
@@ -972,7 +975,7 @@ public final class App {
             if (picked.isPresent()) {
                 return picked;
             }
-            out.accept("Type 1, 2, 3 or 4, or Enter to quit.");
+            out.accept("Type 1 to " + Source.values().length + ", or Enter to quit.");
         }
     }
 
@@ -1162,7 +1165,7 @@ public final class App {
         Optional<String> service = Links.detect(url);
         if (service.isEmpty()) {
             out.accept("Not a link this tool can read: " + url);
-            out.accept("Spotify and SoundCloud playlists are supported.");
+            out.accept("Spotify, SoundCloud and Beatport playlists are supported.");
             return new Written(2, null);
         }
         Path tool = null;

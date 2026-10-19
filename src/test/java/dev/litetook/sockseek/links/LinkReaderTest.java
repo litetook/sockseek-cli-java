@@ -65,6 +65,9 @@ class LinkReaderTest {
         expected.put("spotify:playlist:abc", "spotify");
         expected.put(SC_URL, "soundcloud");
         expected.put("https://m.soundcloud.com/u/sets/s", "soundcloud");
+        expected.put("https://www.beatport.com/top-100", "beatport");
+        expected.put("https://www.beatport.com/chart/some-chart/906162", "beatport");
+        expected.put("https://beatport.com/genre/techno/6/top-100", "beatport");
         expected.put("https://example.com/playlist", null);
         expected.put("Playlists/mine.txt", null);
         expected.forEach((url, service) ->
@@ -367,6 +370,94 @@ class LinkReaderTest {
                 + "{\"props\":{\"pageProps\":{\"state\":{\"data\":{\"entity\":{}}}}}}"
                 + "</script></body></html>";
         Linked read = spotify(page, SPOTIFY_URL);
+        assertEquals(List.of(), read.lines());
+        assertTrue(said(read, "no track list"), read.warnings().toString());
+    }
+
+    // ------------------------------------------------------------------ Beatport
+    //
+    // The three fixtures are the real pages of 2026-10-19 with everything but the track list
+    // and the chart's name cut out: same paths, same field names, same values. The three kinds
+    // put the tracks under a different queries[N] each, which is the whole reason the reader
+    // looks for them by shape.
+
+    private static String page(String name) {
+        try (java.io.InputStream stream =
+                     LinkReaderTest.class.getResourceAsStream("/links/" + name)) {
+            return new String(stream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        } catch (IOException | NullPointerException missing) {
+            throw new IllegalStateException("fixture not on the test classpath: " + name, missing);
+        }
+    }
+
+    private static Linked beatport(String fixture, String url) {
+        return new LinkReader(any -> page(fixture), null).read(url, null, null);
+    }
+
+    @Test
+    void aBeatportChartBecomesPlaylistLines() {
+        Linked read = beatport("beatport-chart.html",
+                "https://www.beatport.com/chart/lasting-memories-refraction-chart/906162");
+        assertEquals(List.of(
+                "Luis Damora - Lasting Memories (Extended Mix) | 7:54",
+                "Doug Crawford - Refraction (Luis Damora Remix) | 8:01",
+                "Barberio - Isabella (Original Mix) | 7:09"), read.lines());
+        assertEquals("beatport", read.source());
+        assertEquals("LASTING MEMORIES REFRACTION CHART", read.name());
+        assertEquals(List.of(), read.warnings());
+    }
+
+    @Test
+    void aGenreTopHundredIsNamedAfterItsGenre() {
+        Linked read = beatport("beatport-genre-top-100.html",
+                "https://www.beatport.com/genre/techno-peak-time-driving/6/top-100");
+        assertEquals("Techno (Peak Time / Driving) Top 100", read.name());
+        assertEquals("Faithless - We Come 1 (Adam Beyer Remix) | 6:00", read.lines().get(0));
+    }
+
+    @Test
+    void theFrontTopHundredCarriesNoNameOfItsOwn() {
+        Linked read = beatport("beatport-top-100.html", "https://www.beatport.com/top-100");
+        assertEquals("Beatport Top 100", read.name());
+        // the mix goes in brackets, and only the first artist is searched for
+        assertEquals("Prospa - Think of You (Extended) | 5:44", read.lines().get(0));
+    }
+
+    @Test
+    void aListLongerThanOnePageSaysSo() {
+        // the same shape with "next" filled in, which is how Beatport reports a second page
+        String cut = page("beatport-chart.html")
+                .replace("\"next\": null", "\"next\": \"https://api.beatport.com/v4/next\"")
+                .replace("\"count\": 10", "\"count\": 250");
+        Linked read = new LinkReader(any -> cut, null)
+                .read("https://www.beatport.com/chart/x/1", null, null);
+        assertEquals(3, read.lines().size());
+        assertTrue(said(read, "so the rest are not here"), read.warnings().toString());
+    }
+
+    @Test
+    void onlyTheChartAndTopPagesOfBeatportAreRead() {
+        // a track page carries the charts it appears in and what Beatport suggests next -
+        // 202 track-shaped objects, measured 2026-10-19 - so it is refused before any fetch
+        for (String url : List.of("https://www.beatport.com/track/think-of-you/30860950",
+                "https://www.beatport.com/library/playlists/1",
+                "https://www.beatport.com/release/some-ep/5123")) {
+            Linked read = new LinkReader(any -> {
+                throw new IllegalStateException("must not fetch " + url);
+            }, null).read(url, null, null);
+            assertEquals(List.of(), read.lines(), url);
+            assertTrue(said(read, "/chart/"), read.warnings().toString());
+        }
+    }
+
+    @Test
+    void aBeatportPageWithNoTracksSaysSo() {
+        String empty = "<!DOCTYPE html><html><body>"
+                + "<script id=\"__NEXT_DATA__\" type=\"application/json\">"
+                + "{\"props\":{\"pageProps\":{\"dehydratedState\":{\"queries\":[]}}}}"
+                + "</script></body></html>";
+        Linked read = new LinkReader(any -> empty, null)
+                .read("https://www.beatport.com/chart/gone/1", null, null);
         assertEquals(List.of(), read.lines());
         assertTrue(said(read, "no track list"), read.warnings().toString());
     }

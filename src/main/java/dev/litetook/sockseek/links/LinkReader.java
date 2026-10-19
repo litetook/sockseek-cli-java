@@ -13,6 +13,7 @@ import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -25,7 +26,7 @@ import java.util.regex.Pattern;
 /**
  * Turning a playlist link into playlist lines.
  *
- * <p>Two services, two mechanisms, neither of which asks the person to register anything:
+ * <p>Three services, three mechanisms, none of which asks the person to register anything:
  *
  * <ul>
  *   <li><b>Spotify</b> - the embed page carries the whole track list as JSON: title, artist and
@@ -34,6 +35,12 @@ import java.util.regex.Pattern;
  *   at exactly 100), and a playlist that is not public is not there at all.
  *   <li><b>SoundCloud</b> - sockseek has no SoundCloud input type, so yt-dlp reads it. A public
  *   set needs nothing; a private one needs the browser's own cookies.
+ *   <li><b>Beatport</b> - the page itself carries its tracks as JSON, the same Next.js shape
+ *   Spotify uses, with no login and no key. Measured 2026-10-19 on three page kinds -
+ *   {@code /top-100}, {@code /genre/<name>/<id>/top-100} and {@code /chart/<name>/<id>} - which
+ *   differ only in which query of the page holds the tracks, so the tracks are looked for by
+ *   their own shape rather than at a fixed path. A page under {@code /library/} is behind a
+ *   login and cannot be read at all.
  * </ul>
  *
  * <p>A link only ever becomes a playlist file. The downloading stays with the engine, so a link
@@ -82,10 +89,14 @@ public final class LinkReader {
         try {
             if (kind.isEmpty()) {
                 return new Linked(List.of(), List.of("not a link this tool can read: " + url
-                        + ". Spotify and SoundCloud playlists are supported"), "link", "");
+                        + ". Spotify, SoundCloud and Beatport playlists are supported"),
+                        "link", "");
             }
-            return kind.get().equals("spotify") ? spotify(url)
-                    : soundcloud(url, tool, cookiesFrom);
+            return switch (kind.get()) {
+                case "spotify" -> spotify(url);
+                case "beatport" -> beatport(url);
+                default -> soundcloud(url, tool, cookiesFrom);
+            };
         } catch (LinkError problem) {
             return new Linked(List.of(), List.of(problem.getMessage()), kind.orElse("link"), "");
         } catch (RuntimeException problem) {   // a dead network, a 404, a timeout
@@ -166,18 +177,28 @@ public final class LinkReader {
                 artist.isEmpty() ? title : artist + " - " + title, length));
     }
 
-    private static JsonNode entity(String page) {
-        Matcher found = NEXT_DATA.matcher(page);
+    /**
+     * The JSON a Next.js page carries inside {@code __NEXT_DATA__}.
+     *
+     * <p>Shared by Spotify and Beatport: both are Next.js pages, and both fail the same two
+     * ways - the block is gone, or it is no longer JSON. Saying which service it was keeps the
+     * message useful when the page, and not this tool, is what changed.
+     */
+    private static JsonNode nextData(String page, String service) {
+        Matcher found = NEXT_DATA.matcher(page == null ? "" : page);
         if (!found.find()) {
-            throw new LinkError("the Spotify embed page has no __NEXT_DATA__ block - the page "
+            throw new LinkError("the " + service + " page has no __NEXT_DATA__ block - the page "
                     + "changed, so this needs a look");
         }
-        JsonNode node;
         try {
-            node = new ObjectMapper().readTree(found.group(1));
+            return new ObjectMapper().readTree(found.group(1));
         } catch (IOException notJson) {
-            throw new LinkError("the Spotify embed page's JSON did not parse - the page changed");
+            throw new LinkError("the " + service + " page's JSON did not parse - the page changed");
         }
+    }
+
+    private static JsonNode entity(String page) {
+        JsonNode node = nextData(page, "Spotify embed");
         for (String key : ENTITY_PATH) {
             node = node.path(key);
         }
@@ -186,6 +207,125 @@ public final class LinkReader {
                     + " - the page changed, so this needs a look");
         }
         return node;
+    }
+
+    // ------------------------------------------------------------------ Beatport
+
+    /**
+     * A Beatport chart, genre top 100 or the front top 100, as playlist lines.
+     *
+     * <p>The tracks are found by their own shape - an object carrying both {@code mix_name} and
+     * {@code artists} - rather than at a fixed path. Measured 2026-10-19: the three page kinds
+     * put the list under a different {@code queries[N]} each, so a fixed path would read one of
+     * them and silently find nothing on the other two.
+     */
+    public Linked beatport(String url) {
+        String where = url == null ? "" : url.toLowerCase(Locale.ROOT);
+        // Only the pages whose shape was measured. A track page carries 202 track-shaped
+        // objects - the charts it appears in and what Beatport recommends next - so reading
+        // one "like a list" would hand back two hundred tracks nobody asked for
+        // (measured 2026-10-19 on /track/think-of-you/30860950).
+        if (!where.contains("/top-100") && !where.contains("/chart/")) {
+            throw new LinkError("this Beatport page is not one this tool reads. A chart "
+                    + "(/chart/...), a genre top 100 (/genre/.../top-100) or "
+                    + "beatport.com/top-100 can be read; a track, release or library page "
+                    + "cannot");
+        }
+        JsonNode root = nextData(fetch.apply(url), "Beatport");
+        List<JsonNode> tracks = new ArrayList<>();
+        collect(root, tracks, new HashSet<>());
+        if (tracks.isEmpty()) {
+            throw new LinkError("the Beatport page carries no track list. A page under "
+                    + "/library/ is behind a login; a chart, a genre top 100 or "
+                    + "beatport.com/top-100 can be read");
+        }
+        List<String> lines = new ArrayList<>();
+        for (JsonNode track : tracks) {
+            String title = track.path("name").asText("").strip();
+            if (title.isEmpty()) {
+                continue;
+            }
+            String mix = track.path("mix_name").asText("").strip();
+            // "Think of You" + "Extended" -> "Think of You (Extended)", because that is how
+            // the file is named on the network. A mix already inside the title is not repeated
+            if (!mix.isEmpty()
+                    && !title.toLowerCase(Locale.ROOT).contains(mix.toLowerCase(Locale.ROOT))) {
+                title = title + " (" + mix + ")";
+            }
+            // the FIRST artist only: a Beatport credit runs to three or four names on a
+            // collaboration, and that whole string as a search finds nothing
+            JsonNode artists = track.path("artists");
+            String artist = artists.isArray() && !artists.isEmpty()
+                    ? artists.get(0).path("name").asText("").strip() : "";
+            lines.add(Imports.trackLine(artist.isEmpty() ? title : artist + " - " + title,
+                    milliseconds(track.path("length_ms"))));
+        }
+        return new Linked(lines, beatportWarnings(root), "beatport", beatportName(root, url));
+    }
+
+    /** Every object below this node that looks like a Beatport track, in page order, once each. */
+    private static void collect(JsonNode node, List<JsonNode> found, Set<String> seen) {
+        if (node.isArray()) {
+            node.forEach(child -> collect(child, found, seen));
+            return;
+        }
+        if (!node.isObject()) {
+            return;
+        }
+        if (node.has("mix_name") && node.path("artists").isArray()) {
+            // the same track can sit in more than one query of the page - the chart's own
+            // preview and the chart's track list both carry it
+            if (seen.add(node.path("id").asText(node.path("name").asText("")))) {
+                found.add(node);
+            }
+            return;
+        }
+        node.forEach(child -> collect(child, found, seen));
+    }
+
+    /**
+     * What to call the file: the chart's or the genre's own name, and "Beatport Top 100" for the
+     * front page, which carries no name of its own.
+     */
+    private static String beatportName(JsonNode root, String url) {
+        String path = url == null ? "" : url.toLowerCase(Locale.ROOT);
+        String name = "";
+        for (JsonNode query : root.path("props").path("pageProps").path("dehydratedState")
+                .path("queries")) {
+            JsonNode data = query.path("state").path("data");
+            // the page of tracks has "results" and no name; the chart or genre object has a name
+            if (data.isObject() && !data.has("results") && !data.path("name").asText("").isBlank()) {
+                name = data.path("name").asText("").strip();
+                break;
+            }
+        }
+        if (name.isEmpty()) {
+            return path.contains("/top-100") ? "Beatport Top 100" : "Beatport";
+        }
+        return path.endsWith("/top-100") ? name + " Top 100" : name;
+    }
+
+    /** Beatport hands out one page of 100; {@code next} says a longer list was cut here. */
+    private static List<String> beatportWarnings(JsonNode root) {
+        for (JsonNode query : root.path("props").path("pageProps").path("dehydratedState")
+                .path("queries")) {
+            JsonNode data = query.path("state").path("data");
+            if (data.isObject() && data.path("results").isArray()
+                    && !data.path("next").isNull() && data.path("next").isTextual()) {
+                return List.of("Beatport gives " + data.path("results").size() + " tracks a page "
+                        + "and this list has " + data.path("count").asInt() + ", so the rest are "
+                        + "not here. Check the file");
+            }
+        }
+        return List.of();
+    }
+
+    /** Beatport reports a length in milliseconds as a number, not as text. */
+    private static OptionalInt milliseconds(JsonNode node) {
+        if (!node.isNumber() || node.asLong() <= 0) {
+            return OptionalInt.empty();
+        }
+        return OptionalInt.of((int) Math.round(node.asLong() / 1000.0));
     }
 
     // ------------------------------------------------------------------ SoundCloud

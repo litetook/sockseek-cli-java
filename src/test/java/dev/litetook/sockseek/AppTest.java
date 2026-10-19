@@ -116,7 +116,7 @@ class AppTest {
     // ------------------------------------------------------------------ the opening menu
 
     @Test
-    void theMenuOffersFourWaysIn() throws IOException {
+    void theMenuOffersEveryWayIn() throws IOException {
         ready();
         assertEquals(List.of(
                 "Where from?",
@@ -125,6 +125,7 @@ class AppTest {
                 "  2  save a .txt from a Spotify link, then download it",
                 "  3  save a .txt from a SoundCloud link, then download it",
                 "  4  one track from a link, into unsorted",
+                "  5  save a .txt from a Beatport chart or top 100, then download it",
                 "",
                 "Pick one (Enter quits): "), run(List.of()).printed());
     }
@@ -147,7 +148,7 @@ class AppTest {
     @Test
     void aWrongAnswerAsksAgainInsteadOfGuessing() throws IOException {
         ready();
-        assertTrue(run(List.of(), "7", "x", "").said("Type 1, 2, 3 or 4, or Enter to quit."));
+        assertTrue(run(List.of(), "7", "x", "").said("Type 1 to 5, or Enter to quit."));
     }
 
     // ------------------------------------------------------------------ the table and the list
@@ -501,7 +502,7 @@ class AppTest {
         assertEquals(2, run.code());
         assertTrue(run.said("Not a link this tool can read: https://example.com/some/list"),
                 run.printed().toString());
-        assertTrue(run.said("Spotify and SoundCloud playlists are supported."),
+        assertTrue(run.said("Spotify, SoundCloud and Beatport playlists are supported."),
                 run.printed().toString());
     }
 

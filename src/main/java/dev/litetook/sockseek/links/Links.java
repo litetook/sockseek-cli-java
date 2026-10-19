@@ -30,7 +30,7 @@ public final class Links {
                 || value.startsWith("spotify:");
     }
 
-    /** "spotify", "soundcloud", or empty for a link to something we cannot read. */
+    /** "spotify", "soundcloud", "beatport", or empty for a link to something we cannot read. */
     public static Optional<String> detect(String text) {
         String value = text == null ? "" : text.strip();
         if (value.toLowerCase(Locale.ROOT).startsWith("spotify:")) {
@@ -54,6 +54,9 @@ public final class Links {
         }
         if (host.equals("soundcloud.com") || host.endsWith(".soundcloud.com")) {
             return Optional.of("soundcloud");
+        }
+        if (host.equals("beatport.com") || host.endsWith(".beatport.com")) {
+            return Optional.of("beatport");
         }
         return Optional.empty();
     }

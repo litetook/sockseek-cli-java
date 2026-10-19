@@ -107,10 +107,33 @@ a warning each time — fix the file rather than rely on it.
 ```bash
 run.cmd --import "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M"
 run.cmd --import "https://soundcloud.com/bonobo/sets/outlier-radio-on-nts" --as outlier
+run.cmd --import "https://www.beatport.com/genre/techno-peak-time-driving/6/top-100"
 run.cmd --import exported.csv --as techno-2026 --overwrite
 ```
 
 `--import` writes the playlist file and stops. Downloading stays a separate, confirmed step.
+
+### Beatport
+
+Option **5** of the opening menu, and `--import`, read a Beatport **chart**
+(`/chart/<name>/<id>`), a **genre top 100** (`/genre/<name>/<id>/top-100`) and the front
+`beatport.com/top-100`. No account, no API key: the page itself carries its tracks as JSON.
+
+What it does **not** read:
+
+- a **track** page — it carries the charts that track appears in and what Beatport suggests
+  next, 202 track-shaped objects on the page measured 2026-10-19, so "read it as a list" would
+  hand back two hundred tracks nobody asked for
+- a **release** or **artist** page — the same risk, and neither shape was measured
+- anything under `/library/` — that is your own account, behind a login
+
+Each of those is refused by name before anything is fetched.
+
+A line comes out as `Artist - Title (Mix) | m:ss`: the **first** artist only, because a
+Beatport credit runs to three or four names on a collaboration and that whole string as a
+search finds nothing; the mix name in brackets, because that is how the file tends to be named
+on the network; the length from `length_ms`. Beatport hands out 100 tracks a page, and a
+longer chart warns that the rest are not in the file.
 
 ### One track, into `unsorted`
 

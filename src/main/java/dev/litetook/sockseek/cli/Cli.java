@@ -39,7 +39,7 @@ public final class Cli implements Callable<Integer> {
      * this is finished enough to use, not a preview of something. The release workflow
      * refuses to publish a tag whose name disagrees with this.
      */
-    public static final String VERSION = "1.8.0";
+    public static final String VERSION = "1.9.0";
 
     @Option(names = "--version", versionHelp = true, description = "print the version and exit")
     boolean version;
