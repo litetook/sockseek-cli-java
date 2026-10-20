@@ -74,15 +74,33 @@ final class Fields {
             ObjectNode block = category(categories, section);
             ArrayNode theseFields = block.putArray("fields");
             if (section.equals("track")) {
-                // not a number, so it is not in Settings.ALL: the ladder is a list of
-                // "format@floor" rungs and the page edits it as one
-                placed.add("track.format_order");
-                field(theseFields, "track.format_order", "format_order", "ladder",
-                        said.get("track.format_order"), "",
-                        "a pass each over whatever is still missing, best first; \"@256\" is "
-                                + "a floor in kbps for THAT pass only. The last pass always "
-                                + "takes anything, so nothing is lost - this only decides "
-                                + "what is taken first", List.of());
+                // Two keys that belong in one control: the order of the formats, and the
+                // worst quality accepted of each. They are separate in the file on purpose
+                // (2026-10-20) and would be senseless apart on the page
+                String formats = said.get("track." + Settings.FORMATS);
+                if (formats == null) {
+                    formats = said.get("track." + Settings.FORMAT_ORDER);   // the old name
+                }
+                placed.add("track." + Settings.FORMATS);
+                placed.add("track." + Settings.FORMAT_ORDER);
+                ObjectNode ladder = fieldNode(theseFields, "track." + Settings.FORMATS,
+                        Settings.FORMATS, "ladder", formats, "",
+                        "a pass each over whatever is still missing, in this order; nothing "
+                                + "outside the list is taken at all. There is no last pass "
+                                + "that takes anything: below its floor, a format is not "
+                                + "taken", List.of());
+                // the floor of each format travels with it, so the page can show one row
+                ObjectNode floors = ladder.putObject("floors");
+                said.keySet().stream()
+                        .filter(name -> name.startsWith("track.")
+                                && name.endsWith(Settings.FLOOR_SUFFIX))
+                        .forEach(name -> {
+                            placed.add(name);
+                            String format = name.substring("track.".length(),
+                                    name.length() - Settings.FLOOR_SUFFIX.length());
+                            floors.put(format, said.get(name));
+                        });
+                ladder.put("floorSuffix", Settings.FLOOR_SUFFIX);
             }
             for (Setting setting : Settings.ALL) {
                 if (!setting.section().equals(section)) {
@@ -147,6 +165,13 @@ final class Fields {
     private static void field(ArrayNode fields, String path, String label, String kind,
                               String value, String fallback, String help,
                               List<String> oldNames) {
+        fieldNode(fields, path, label, kind, value, fallback, help, oldNames);
+    }
+
+    /** The same, handing back the node so a field can carry more of its own. */
+    private static ObjectNode fieldNode(ArrayNode fields, String path, String label,
+                                        String kind, String value, String fallback,
+                                        String help, List<String> oldNames) {
         ObjectNode one = fields.addObject();
         one.put("path", path);
         one.put("label", label);
@@ -159,6 +184,7 @@ final class Fields {
         one.put("help", help);
         ArrayNode old = one.putArray("oldNames");
         oldNames.forEach(old::add);
+        return one;
     }
 
     private static String kindOf(Setting setting) {

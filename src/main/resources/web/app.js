@@ -519,43 +519,80 @@ function switchBox(field) {
   return wrap;
 }
 
-/* The ladder is the one setting that is a list: "mp3@256, flac, mp3@128" is three rungs,
- * and a rung is a format with an optional floor. The pass that takes anything at all is
- * always there and is not editable - that is what keeps the ladder from losing tracks. */
+/* The ladder is two settings in one control: the order of the formats (track.formats) and
+ * the worst quality accepted of each (track.<format>-min-kbps). They are separate keys in
+ * the file - the order says what is tried first, the floor says what is acceptable at all -
+ * and senseless apart on a page, so one row holds both. */
 function ladderBox(field) {
   const wrap = document.createElement("div");
   wrap.className = "ladder";
-  const rungs = field.value.split(",").map((one) => one.trim()).filter(Boolean);
-  const push = () => mark(field.path, rungs.filter(Boolean).join(", "), field.value);
+  const suffix = field.floorSuffix || "-min-kbps";
+  const floors = Object.assign({}, field.floors || {});
+  const was = Object.assign({}, floors);
+  // a format written the old way, "mp3@256", is split back into its two halves
+  const rungs = field.value.split(",").map((one) => one.trim()).filter(Boolean)
+    .map((one) => {
+      const at = one.indexOf("@");
+      if (at < 0) return one;
+      const name = one.slice(0, at).trim();
+      floors[name] = one.slice(at + 1).trim();
+      return name;
+    });
+
+  const push = () => {
+    mark(field.path, rungs.filter(Boolean).join(", "), field.value);
+    const names = new Set(Object.keys(floors).concat(Object.keys(was)));
+    names.forEach((name) => {
+      const now = (floors[name] || "").trim();
+      mark("track." + name.toLowerCase() + suffix, now, (was[name] || "").trim());
+    });
+  };
 
   const redraw = () => {
     wrap.innerHTML = "";
     rungs.forEach((rung, at) => {
       const step = document.createElement("div");
       step.className = "rung";
-      const input = document.createElement("input");
-      input.type = "text";
-      input.value = rung;
-      input.placeholder = "mp3@256";
-      input.oninput = () => { rungs[at] = input.value.trim(); push(); };
+
+      const name = document.createElement("input");
+      name.type = "text";
+      name.value = rung;
+      name.placeholder = "flac";
+      name.oninput = () => { rungs[at] = name.value.trim().toLowerCase(); push(); };
+
+      const floor = document.createElement("input");
+      floor.type = "text";
+      floor.className = "floor";
+      floor.value = floors[rung] || "";
+      floor.placeholder = "no floor";
+      floor.title = "the worst quality of this format that is accepted, in kbps";
+      floor.oninput = () => { floors[rung] = floor.value.trim(); push(); };
+
+      const kbps = document.createElement("span");
+      kbps.className = "last";
+      kbps.textContent = "kbps";
+
       const drop = document.createElement("button");
       drop.className = "mini";
       drop.textContent = "remove";
       drop.onclick = () => { rungs.splice(at, 1); redraw(); push(); };
-      step.appendChild(input);
+
+      step.appendChild(name);
+      step.appendChild(floor);
+      step.appendChild(kbps);
       step.appendChild(drop);
       wrap.appendChild(step);
     });
     const add = document.createElement("button");
     add.className = "mini";
-    add.textContent = "+ pass";
+    add.textContent = "+ format";
     add.onclick = () => { rungs.push(""); redraw(); push(); };
     wrap.appendChild(add);
-    const last = document.createElement("div");
-    last.className = "last";
-    last.textContent = "then one last pass that takes anything at all - always, so nothing "
-      + "is lost";
-    wrap.appendChild(last);
+    const note = document.createElement("div");
+    note.className = "last";
+    note.textContent = "no floor = the format is taken at any quality, which is what flac "
+      + "and wav want. Nothing outside this list is taken at all.";
+    wrap.appendChild(note);
   };
   redraw();
   return wrap;

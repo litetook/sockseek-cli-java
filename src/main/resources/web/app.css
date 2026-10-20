@@ -179,6 +179,7 @@ code{font-family:var(--mono);color:var(--ink-dim);background:var(--sunken);paddi
 .ladder{display:flex;flex-direction:column;gap:6px}
 .ladder .rung{display:flex;gap:6px;align-items:center}
 .ladder .rung input{flex:1;min-width:0}
+.ladder .rung input.floor{flex:0 0 90px;text-align:right}
 .ladder .last{color:var(--ink-faint);font-size:12.5px;padding-left:2px}
 .mini{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;
   padding:4px 9px;cursor:pointer;font-size:12.5px}
